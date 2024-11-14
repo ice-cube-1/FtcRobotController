@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.Random;
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@TeleOp(name="Datalogger main", group="Linear OpMode")
 public class BasicOmniOpMode_Linear_copy extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -45,6 +45,14 @@ public class BasicOmniOpMode_Linear_copy extends LinearOpMode {
     private DcMotor leftBackDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
+    static final double     COUNTS_PER_MOTOR_REV    = ((((1+(46.0/11))) * (1+(46.0/11))) * 28) ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // No External Gearing.
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+    static final double COUNTS_PER_CM = (COUNTS_PER_MOTOR_REV) /
+            (14 * 3.1415);
+    static final double     DRIVE_SPEED             = 0.6;
+    static final double     TURN_SPEED              = 0.5;
+
     Datalog datalog;
     Random random = new Random();
 
@@ -57,61 +65,102 @@ public class BasicOmniOpMode_Linear_copy extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        datalog = new Datalog("datalog"+String.format("%02d",random.nextInt(100)));
+        datalog = new Datalog("datalog"+ System.currentTimeMillis());
 
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
-        runtime.reset();
+        encoderDrive(DRIVE_SPEED,  100,  100, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
+        //encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
+        //encoderDrive(DRIVE_SPEED, -100, -100, 4.0);
+        sleep(1000);
+    }
+    public void encoderDrive(double speed,
+                             double leftInches, double rightInches,
+                             double timeoutS) {
+        int newLeftTarget;
+        int newRightTarget;
 
-        while (opModeIsActive()) {
-            leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if (opModeIsActive()) {
+
+            newLeftTarget = leftBackDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_CM);
+            newRightTarget = rightBackDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_CM);
+            leftFrontDrive.setTargetPosition(newLeftTarget);
+            rightFrontDrive.setTargetPosition(newRightTarget);
+            leftBackDrive.setTargetPosition(newLeftTarget);
+            rightBackDrive.setTargetPosition(newRightTarget);
+
+            // Turn On RUN_TO_POSITION
+            leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+            leftFrontDrive.setPower(Math.abs(speed));
+            rightFrontDrive.setPower(Math.abs(speed));
+            leftBackDrive.setPower(Math.abs(speed));
+            rightBackDrive.setPower(Math.abs(speed));
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (leftFrontDrive.isBusy() && rightFrontDrive.isBusy()) && leftBackDrive.isBusy() && rightBackDrive.isBusy()) {
+
+                // Display it for the driver.
+                telemetry.addData("Running to",  " %7d :%7d", newLeftTarget,  newRightTarget);
+                telemetry.addData("Currently at",  " at %7d :%7d",
+                        leftFrontDrive.getCurrentPosition(), rightFrontDrive.getCurrentPosition());
+                telemetry.update();
+                telemetry.addData("Starting at",  "%7d %7d %7d %7d",
+                        leftFrontDrive.getCurrentPosition(),
+                        leftBackDrive.getCurrentPosition(),
+                        rightFrontDrive.getCurrentPosition(),
+                        rightBackDrive.getCurrentPosition()
+                );
+                telemetry.update();
+                datalog.leftFrontEncoder.set(leftFrontDrive.getCurrentPosition());
+                datalog.leftBackEncoder.set(leftFrontDrive.getCurrentPosition());
+                datalog.rightFrontEncoder.set(rightFrontDrive.getCurrentPosition());
+                datalog.rightBackEncoder.set(rightBackDrive.getCurrentPosition());
+                datalog.leftFrontPower.set(Math.abs(speed));
+                datalog.leftBackPower.set(Math.abs(speed));
+                datalog.rightFrontPower.set(Math.abs(speed));
+                datalog.rightBackPower.set(Math.abs(speed));
+                datalog.writeLine();
+            }
+
+            // Stop all motion;
             leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-            double max;
-            double axial   = -gamepad1.left_stick_y;
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
-            double leftFrontPower  = axial + lateral + yaw;
-            double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower   = axial - lateral + yaw;
-            double rightBackPower  = axial + lateral - yaw;
-            max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-            max = Math.max(max, Math.abs(leftBackPower));
-            max = Math.max(max, Math.abs(rightBackPower));
-
-            if (max > 1.0) {
-                leftFrontPower  /= max;
-                rightFrontPower /= max;
-                leftBackPower   /= max;
-                rightBackPower  /= max;
-            }
-            leftFrontDrive.setPower(leftFrontPower);
-            rightFrontDrive.setPower(rightFrontPower);
-            leftBackDrive.setPower(leftBackPower);
-            rightBackDrive.setPower(rightBackPower);
-
-            telemetry.addData("Starting at",  "%7d %7d %7d %7d",
-                    leftFrontDrive.getCurrentPosition(),
-                    leftBackDrive.getCurrentPosition(),
-                    rightFrontDrive.getCurrentPosition(),
-                    rightBackDrive.getCurrentPosition()
-            );
-            telemetry.update();
-            datalog.leftFrontEncoder.set(leftFrontDrive.getCurrentPosition());
-            datalog.leftBackEncoder.set(leftFrontDrive.getCurrentPosition());
-            datalog.rightFrontEncoder.set(rightFrontDrive.getCurrentPosition());
-            datalog.rightBackEncoder.set(rightBackDrive.getCurrentPosition());
-            datalog.leftFrontPower.set(leftFrontPower);
-            datalog.leftBackPower.set(leftBackPower);
-            datalog.rightFrontPower.set(rightFrontPower);
-            datalog.rightBackPower.set(rightBackPower);
-            datalog.writeLine();
+            leftFrontDrive.setPower(0);
+            rightFrontDrive.setPower(0);
+            leftBackDrive.setPower(0);
+            rightBackDrive.setPower(0);
+            // Turn off RUN_TO_POSITION
+            leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
     public static class Datalog
