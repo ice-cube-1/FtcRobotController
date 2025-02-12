@@ -54,7 +54,6 @@ public class BasicOmniOpMode_Linear_copy extends LinearOpMode {
     static final double     TURN_SPEED              = 0.5;
 
     Datalog datalog;
-    Random random = new Random();
 
     @Override
     public void runOpMode() {
