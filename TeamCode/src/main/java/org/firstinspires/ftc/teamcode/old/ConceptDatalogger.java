@@ -16,7 +16,7 @@ Credit to @Windwoes (https://github.com/Windwoes).
 */
 
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.old;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
