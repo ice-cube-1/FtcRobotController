@@ -18,7 +18,7 @@ public class manual_imu extends LinearOpMode {
     Motor[] motors;
     IMU imu;
     double imu_yaw = 0;
-    double prev_imu_yaw = 0;
+    double target_imu = 0;
     double lateral_multiplier = 0.1;
     double proportional_gain = 0.1;
     double power_multiplier = 0.25;
@@ -31,24 +31,16 @@ public class manual_imu extends LinearOpMode {
                 new Motor("right_front_drive", DcMotor.Direction.FORWARD),
                 new Motor("right_back_drive", DcMotor.Direction.FORWARD),
         };
-
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-        imu = hardwareMap.get(IMU.class, "imu");
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
-        imu.resetYaw();
+        init_imu();
 
         waitForStart();
-
         while (opModeIsActive()) {
-            double max;
 
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral =  gamepad1.right_stick_x;
             double yaw     =  gamepad1.left_stick_x;
 
-            prev_imu_yaw = imu_yaw + lateral*lateral_multiplier;
+            target_imu = target_imu + lateral*lateral_multiplier;
 
             imu_yaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
@@ -59,10 +51,11 @@ public class manual_imu extends LinearOpMode {
             motors[1].power = axial - yaw;
             motors[2].power = axial + yaw;
             motors[3].power = axial - yaw;
+            double rotate_adjustment = target_imu - imu_yaw;
+            rotate_adjustment = Math.atan2(Math.sin(rotate_adjustment), Math.cos(rotate_adjustment));
+            rotate_slightly(rotate_adjustment, proportional_gain);
 
-            rotate_slightly(imu_yaw-prev_imu_yaw, proportional_gain);
-
-            max = Arrays.stream(motors).mapToDouble(motor -> motor.power).max().orElse(1);
+            double max = Arrays.stream(motors).mapToDouble(motor -> Math.abs(motor.power)).max().orElse(1);
             if (max > 1.0) {
                 for (Motor motor: motors) {
                     motor.power/=max;
@@ -90,10 +83,21 @@ public class manual_imu extends LinearOpMode {
         }
     }
 
+    void init_imu() {
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+        imu = hardwareMap.get(IMU.class, "imu");
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
+        imu.resetYaw();
+    }
+
     void update_telemetry() {
         for (Motor motor: motors) {
             telemetry.addData(motor.name, motor.drive.getCurrentPosition());
         }
+        telemetry.addData("target", target_imu);
+        telemetry.addData("yaw", imu_yaw);
         telemetry.update();
     }
 
