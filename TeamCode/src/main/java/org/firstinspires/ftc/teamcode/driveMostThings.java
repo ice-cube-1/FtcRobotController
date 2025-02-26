@@ -34,10 +34,9 @@ import static java.lang.Math.round;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.UtilityOctoQuadConfigMenu;
+import java.util.Arrays;
 
 
 @TeleOp(name="Drive  all things", group="Linear OpMode")
@@ -77,6 +76,22 @@ public class driveMostThings extends LinearOpMode {
         rightElevator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftElevator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightElevator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        double leftFrontEncoder = 0;
+        double leftFrontPowerMultiple = 0;
+        double leftBackEncoder = 0;
+        double leftBackPowerMultiple = 0;
+        double rightFrontEncoder = 0;
+        double rightFrontPowerMultiple = 0;
+        double rightBackEncoder = 0;
+        double rightBackPowerMultiple = 0;
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -103,23 +118,53 @@ public class driveMostThings extends LinearOpMode {
                 rightElevator.setPower(direction-0.5);
             }
 
-            leftElevator.setPower(0.0005);
-            rightElevator.setPower(0.0005);
+            //leftElevator.setPower(0.0005);
+            //rightElevator.setPower(0.0005);
 
+            int[] encoderValues = {leftFrontDrive.getCurrentPosition(), leftBackDrive.getCurrentPosition(), rightFrontDrive.getCurrentPosition(), rightBackDrive.getCurrentPosition()};
+            leftFrontPowerMultiple = Math.abs(encoderValues[0]-leftFrontEncoder);
+            leftBackPowerMultiple = Math.abs(encoderValues[1]-leftBackEncoder)/2;
+            rightFrontPowerMultiple = Math.abs(encoderValues[2]-rightFrontEncoder);
+            rightBackPowerMultiple = Math.abs(encoderValues[3]-rightBackEncoder)/2;
+            leftFrontEncoder = encoderValues[0];
+            leftBackEncoder = encoderValues[1];
+            rightFrontEncoder = encoderValues[2];
+            rightBackEncoder = encoderValues[3];
 
+            double actual = (leftFrontPowerMultiple+leftBackPowerMultiple+rightFrontPowerMultiple+rightBackPowerMultiple)/4;
+
+            if (actual==0) {
+                actual = 1;
+                leftFrontEncoder = 1;
+                leftBackEncoder = 1;
+                rightFrontEncoder = 1;
+                rightBackEncoder = 1;
+            }
 
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  0;
+            double lateral =  gamepad1.right_stick_x;
+            double yaw     =  gamepad1.left_stick_x;
+            int leftMultiple = 1;
+            int rightMultiple = 1;
+            if (Math.abs(yaw) > Math.abs(axial)) {
+                axial = 0;
+                if (yaw > 0) {
+                    rightMultiple = 2;
+                } else {
+                    leftMultiple = 2;
+                }
+            } else {
+                yaw = 0;
+            }
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower  = axial + lateral + yaw;
-            double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower   = axial - lateral + yaw;
-            double rightBackPower  = axial + lateral - yaw;
+            double leftFrontPower  = (axial + lateral + yaw)/leftFrontPowerMultiple*actual;
+            double rightFrontPower = (axial - lateral - yaw)/rightFrontPowerMultiple*actual;
+            double leftBackPower   = (axial - lateral + yaw)/leftBackPowerMultiple*actual;
+            double rightBackPower  = (axial + lateral - yaw)/rightBackPowerMultiple*actual;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -134,16 +179,18 @@ public class driveMostThings extends LinearOpMode {
                 rightBackPower  /= max;
             }
 
-            leftFrontDrive.setPower(leftFrontPower);
-            rightFrontDrive.setPower(rightFrontPower);
-            leftBackDrive.setPower(leftBackPower);
-            rightBackDrive.setPower(rightBackPower);
-            arm.setPower(-gamepad1.right_stick_y*0.25);
+            leftFrontDrive.setPower(leftFrontPower*1);
+            rightFrontDrive.setPower(rightFrontPower*0.5);
+            leftBackDrive.setPower(leftBackPower*0.5);
+            rightBackDrive.setPower(rightBackPower*1);
+            // arm.setPower(-gamepad1.right_stick_y*0.25);
 
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Left Elevator Position", leftElevator.getCurrentPosition());
-            telemetry.addData("Right Elevator Position", rightElevator.getCurrentPosition());
+            telemetry.addData("Status", "Run Time: " + actual + Arrays.toString(encoderValues));
+            telemetry.addData("LF", leftFrontDrive.getCurrentPosition());
+            telemetry.addData("RF", rightFrontDrive.getCurrentPosition());
+            telemetry.addData("LB", leftBackDrive.getCurrentPosition());
+            telemetry.addData("RB", rightBackDrive.getCurrentPosition());
             telemetry.update();
         }
     }}
