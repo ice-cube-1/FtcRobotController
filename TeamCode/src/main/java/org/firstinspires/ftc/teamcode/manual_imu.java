@@ -19,8 +19,8 @@ public class manual_imu extends LinearOpMode {
     IMU imu;
     double imu_yaw = 0;
     double target_imu = 0;
-    double lateral_multiplier = 0.1;
-    double proportional_gain = 12;
+    double lateral_multiplier = 0.01;
+    double proportional_gain = 8;
     double power_multiplier = 0.5;
 
     @Override
@@ -53,15 +53,15 @@ public class manual_imu extends LinearOpMode {
             motors[3].power = axial - yaw;
             double rotate_adjustment = imu_yaw - target_imu;
             rotate_adjustment = Math.atan2(Math.sin(rotate_adjustment), Math.cos(rotate_adjustment));
-            if (Math.abs(rotate_adjustment) > 0.1)
+            if (Math.abs(rotate_adjustment) > 0.06)
                 rotate_slightly(rotate_adjustment, proportional_gain);
             if (yaw != 0) {
                 for (Motor motor : motors) {
-                    motor.power += rotate_adjustment / Math.abs(rotate_adjustment)*0.2;
+                    motor.power += rotate_adjustment / Math.abs(rotate_adjustment)*0.8;
                 }
             }
-            motors[0].power *= 1.1;
-            motors[2].power *= 1.1;
+            motors[0].power *= 1.2;
+            motors[2].power *= 1.2;
             double max = Arrays.stream(motors).mapToDouble(motor -> Math.abs(motor.power)).max().orElse(1);
             if (max > 1.0) {
                 for (Motor motor : motors) {
