@@ -44,8 +44,6 @@ public class manual_imu extends LinearOpMode {
 
             imu_yaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
-            if (Math.abs(yaw) > Math.abs(axial)) axial = 0;
-            else yaw = 0;
 
             motors[0].power = axial + yaw;
             motors[1].power = axial - yaw;
