@@ -11,7 +11,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.Arrays;
 
-
 @TeleOp(name="Manual IMU", group="Linear OpMode")
 public class manual_imu extends LinearOpMode {
 
@@ -21,7 +20,9 @@ public class manual_imu extends LinearOpMode {
     double target_imu = 0;
     double lateral_multiplier = 0.01;
     double proportional_gain = 8;
+    double derivative_gain = 0.2; // New derivative gain
     double power_multiplier = 0.5;
+    double previous_error = 0; // Previous error for derivative calculation
 
     @Override
     public void runOpMode() {
@@ -44,20 +45,27 @@ public class manual_imu extends LinearOpMode {
 
             imu_yaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
+            double error = imu_yaw - target_imu;
+            double derivative = error - previous_error; // Calculate derivative
+            previous_error = error; // Update previous error
+
+            double rotate_adjustment = error * proportional_gain * (1+Math.abs(lateral)) + derivative * derivative_gain; // PID control
+            rotate_adjustment = Math.atan2(Math.sin(rotate_adjustment), Math.cos(rotate_adjustment));
 
             motors[0].power = axial + yaw;
             motors[1].power = axial - yaw;
             motors[2].power = axial + yaw;
             motors[3].power = axial - yaw;
-            double rotate_adjustment = imu_yaw - target_imu;
-            rotate_adjustment = Math.atan2(Math.sin(rotate_adjustment), Math.cos(rotate_adjustment));
-            if (Math.abs(rotate_adjustment) > 0.06)
-                rotate_slightly(rotate_adjustment, proportional_gain);
+
+            if (Math.abs(error) > 0.08)
+                rotate_slightly(rotate_adjustment);
+
             if (yaw != 0) {
                 for (Motor motor : motors) {
-                    motor.power += rotate_adjustment / Math.abs(rotate_adjustment)*0.8;
+                    motor.power += rotate_adjustment / Math.abs(rotate_adjustment) * 0.8;
                 }
             }
+
             motors[0].power *= 1.2;
             motors[2].power *= 1.2;
             double max = Arrays.stream(motors).mapToDouble(motor -> Math.abs(motor.power)).max().orElse(1);
@@ -107,10 +115,10 @@ public class manual_imu extends LinearOpMode {
         telemetry.update();
     }
 
-    void rotate_slightly(double rad, double pg) {
-        motors[0].power += rad * pg;
-        motors[1].power -= rad * pg;
-        motors[2].power -= rad * pg;
-        motors[3].power += rad * pg;
+    void rotate_slightly(double rad) {
+        motors[0].power += rad;
+        motors[1].power -= rad;
+        motors[2].power -= rad;
+        motors[3].power += rad;
     }
 }
