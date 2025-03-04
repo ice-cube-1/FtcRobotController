@@ -15,14 +15,11 @@ import java.util.Arrays;
 public class manual_imu extends LinearOpMode {
 
     Motor[] motors;
-    IMU imu;
+    Motor[] elevators;
     double imu_yaw = 0;
     double target_imu = 0;
     double lateral_multiplier = 0.01;
-    double proportional_gain = 6;
-    double derivative_gain = 0.4; // New derivative gain
     double power_multiplier = 0.5;
-    double previous_error = 0; // Previous error for derivative calculation
 
     @Override
     public void runOpMode() {
@@ -32,8 +29,10 @@ public class manual_imu extends LinearOpMode {
                 new Motor("right_front_drive", DcMotor.Direction.FORWARD),
                 new Motor("right_back_drive", DcMotor.Direction.FORWARD),
         };
-        init_imu();
-
+        elevators = new Motor[]{
+                new Motor("left_elevator", DcMotor.Direction.FORWARD),
+                new Motor("right_elevator", DcMotor.Direction.REVERSE)
+        };
         waitForStart();
         while (opModeIsActive()) {
 
@@ -41,34 +40,25 @@ public class manual_imu extends LinearOpMode {
             double lateral = gamepad1.right_stick_x;
             double yaw = gamepad1.left_stick_x;
 
+            if (gamepad1.dpad_up) {
+                for (Motor elevator: elevators) {
+                    elevator.drive.setPower(0.25);
+                }
+            }
+
+            if (gamepad1.dpad_down) {
+                for (Motor elevator: elevators) {
+                    elevator.drive.setPower(-0.25);
+                }
+            }
+
             target_imu = target_imu + lateral * lateral_multiplier;
 
-            imu_yaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-            double error = imu_yaw - target_imu;
-            double derivative = error - previous_error; // Calculate derivative
-            previous_error = error; // Update previous error
 
             motors[0].power = axial + yaw + lateral;
             motors[1].power = axial - yaw + lateral;
             motors[2].power = axial - yaw - lateral;
             motors[3].power = axial + yaw - lateral;
-            /*
-            double rotate_adjustment = error * proportional_gain * (1+Math.abs(lateral)) + derivative * derivative_gain; // PID control
-            rotate_adjustment = Math.atan2(Math.sin(rotate_adjustment), Math.cos(rotate_adjustment));
-            if (Math.abs(error) > 0.08)
-                rotate_slightly(rotate_adjustment);
-
-            if (yaw != 0) {
-                for (Motor motor : motors) {
-                    motor.power += rotate_adjustment / Math.abs(rotate_adjustment) * 0.8;
-                }
-            }
-
-            motors[0].power *= 1.2;
-            motors[2].power *= 1.2;
-
-            */
             double max = Arrays.stream(motors).mapToDouble(motor -> Math.abs(motor.power)).max().orElse(1);
             if (max > 1.0) {
                 for (Motor motor : motors) {
@@ -98,15 +88,6 @@ public class manual_imu extends LinearOpMode {
         }
     }
 
-    void init_imu() {
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-        imu = hardwareMap.get(IMU.class, "imu");
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
-        imu.resetYaw();
-    }
-
     void update_telemetry() {
         for (Motor motor : motors) {
             telemetry.addData(motor.name, motor.drive.getCurrentPosition());
@@ -114,12 +95,5 @@ public class manual_imu extends LinearOpMode {
         telemetry.addData("target", target_imu);
         telemetry.addData("yaw", imu_yaw);
         telemetry.update();
-    }
-
-    void rotate_slightly(double rad) {
-        motors[0].power += rad;
-        motors[1].power -= rad;
-        motors[2].power -= rad;
-        motors[3].power += rad;
     }
 }

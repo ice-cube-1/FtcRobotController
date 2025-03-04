@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 @Autonomous(name ="Robot: Mecanum drive by gyro", group="Robot")
 public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
-    private final double speed = 0.2;
+    private final double speed = 0.5;
 
     static final double COUNTS_PER_MOTOR_REV = 537.7 ;   // eg: GoBILDA 312 RPM Yellow Jacket
     static final double DRIVE_GEAR_REDUCTION = 1.0 ;     // No External Gearing.
