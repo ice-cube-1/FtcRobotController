@@ -19,8 +19,8 @@ public class manual_imu extends LinearOpMode {
     double imu_yaw = 0;
     double target_imu = 0;
     double lateral_multiplier = 0.01;
-    double proportional_gain = 8;
-    double derivative_gain = 0.2; // New derivative gain
+    double proportional_gain = 6;
+    double derivative_gain = 0.4; // New derivative gain
     double power_multiplier = 0.5;
     double previous_error = 0; // Previous error for derivative calculation
 
@@ -39,7 +39,7 @@ public class manual_imu extends LinearOpMode {
 
             double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral = gamepad1.right_stick_x;
-            double yaw = -gamepad1.left_stick_x;
+            double yaw = gamepad1.left_stick_x;
 
             target_imu = target_imu + lateral * lateral_multiplier;
 
@@ -49,14 +49,13 @@ public class manual_imu extends LinearOpMode {
             double derivative = error - previous_error; // Calculate derivative
             previous_error = error; // Update previous error
 
+            motors[0].power = axial + yaw + lateral;
+            motors[1].power = axial - yaw + lateral;
+            motors[2].power = axial - yaw - lateral;
+            motors[3].power = axial + yaw - lateral;
+            /*
             double rotate_adjustment = error * proportional_gain * (1+Math.abs(lateral)) + derivative * derivative_gain; // PID control
             rotate_adjustment = Math.atan2(Math.sin(rotate_adjustment), Math.cos(rotate_adjustment));
-
-            motors[0].power = axial + yaw;
-            motors[1].power = axial - yaw;
-            motors[2].power = axial + yaw;
-            motors[3].power = axial - yaw;
-
             if (Math.abs(error) > 0.08)
                 rotate_slightly(rotate_adjustment);
 
@@ -68,6 +67,8 @@ public class manual_imu extends LinearOpMode {
 
             motors[0].power *= 1.2;
             motors[2].power *= 1.2;
+
+            */
             double max = Arrays.stream(motors).mapToDouble(motor -> Math.abs(motor.power)).max().orElse(1);
             if (max > 1.0) {
                 for (Motor motor : motors) {

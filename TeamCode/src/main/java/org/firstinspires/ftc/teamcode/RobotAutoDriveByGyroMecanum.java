@@ -27,7 +27,7 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
     static final double WHEEL_DIAMETER_INCHES = 4.0 ;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
     static final double P_TURN_GAIN = 0.02;     // Larger is more responsive, but also less stable.
-    static final double P_DRIVE_GAIN = 0.1;
+    static final double P_DRIVE_GAIN = 0.03;
 
 
     private Motor[] motors = null;
@@ -38,6 +38,8 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
     private double turnSpeed = 0;
     private double drive_x = 0;
     private double drive_y = 0;
+    private double angle = 0;
+    private double yaw = 0;
 
     @Override
     public void runOpMode() {
@@ -51,38 +53,64 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
             motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         imu.resetYaw();
+        x=0;
+        y=0;
         /*
         * PUT DRIVE CODE HERE
-        * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) ETC
+        * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
         * SHOULD CURRENTLY BE IN INCHES / DEGREES */
-        driveToPoint(5,0);
-        /*
-        * rotate(40);
-        * driveToPoint(0,0);
-        */
+        rotate(135);
+        driveToPoint(30,30);
+        rotate(0);
+        driveToPoint(0,0);
+    }
+
+    void rotate(double degrees) {
+        if (opModeIsActive()) {
+            double delta_deg = degrees - rotation_deg;
+            double initialHeading = getHeading();
+            double targetHeading = initialHeading + delta_deg;
+            while (targetHeading > 180) targetHeading -= 360;
+            while (targetHeading <= -180) targetHeading += 360;
+
+            double proportionalGain = P_TURN_GAIN;
+            while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
+                turnSpeed = getSteeringCorrection(targetHeading, proportionalGain);
+                moveRobot(0, 0, turnSpeed);
+                updateTelemetry();
+            }
+            moveRobot(0, 0, 0);
+        }
+        rotation_deg = degrees;
+        sleep(1000);
     }
 
     void driveToPoint(double new_x, double new_y) {
         double delta_x = new_x - x;
         double delta_y = new_y - y;
-        double crow_flies = Math.sqrt(Math.pow(delta_x, 2)+Math.pow(delta_y, 2));
-        double angle = Math.toDegrees(Math.atan2(delta_y,delta_x));
-        driveDistance(crow_flies, angle - rotation_deg, P_DRIVE_GAIN);
+
+        double rotation_radians = Math.toRadians(rotation_deg);
+
+        double transformed_delta_x = delta_x * Math.cos(rotation_radians) + delta_y * Math.sin(rotation_radians);
+        double transformed_delta_y = -delta_x * Math.sin(rotation_radians) + delta_y * Math.cos(rotation_radians);
+
+        double crow_flies = Math.sqrt(Math.pow(transformed_delta_x, 2) + Math.pow(transformed_delta_y, 2));
+        angle = Math.toDegrees(Math.atan2(transformed_delta_y, transformed_delta_x));
+        updateTelemetry();
+        driveDistance(transformed_delta_x, transformed_delta_y, crow_flies);
+        updateTelemetry();
         x = new_x;
         y = new_y;
+        sleep(1000);
     }
 
-    void rotate(double angle_deg) {
-        driveDistance(-0.0001, rotation_deg-angle_deg, P_TURN_GAIN);
-        rotation_deg = angle_deg;
-    }
 
-    void driveDistance(double distance, double heading, double proportionalGain) {
+    void driveDistance(double x, double y, double distance) {
         if (opModeIsActive()) {
-            drive_x = Math.cos(Math.toRadians(heading))*distance;
-            drive_y = Math.sin(Math.toRadians(heading))*distance;
+            drive_x = x;
+            drive_y = y;
             motors[0].target = motors[0].drive.getCurrentPosition() + (int)((drive_y + drive_x) * COUNTS_PER_INCH);
-            motors[1].target = motors[1].drive.getCurrentPosition() + (int)((drive_y - drive_x) * COUNTS_PER_INCH);
+            motors[1].target = motors[1].drive.getCurrentPosition() + (int)((drive_y - drive_x)  * COUNTS_PER_INCH);
             motors[2].target = motors[2].drive.getCurrentPosition() + (int)((drive_y - drive_x) * COUNTS_PER_INCH);
             motors[3].target = motors[3].drive.getCurrentPosition() + (int)((drive_y + drive_x) * COUNTS_PER_INCH);
             for (Motor motor: motors) {
@@ -90,11 +118,8 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
                 motor.drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             moveRobot(drive_x/distance, drive_y/distance, 0);
-            while (opModeIsActive() && Arrays.stream(motors).allMatch(motor -> motor.drive.isBusy())) {
-                this.turnSpeed = getSteeringCorrection(rotation_deg, proportionalGain);
-                if (drive_y <= 0) {
-                    turnSpeed *= -1.0;
-                }
+            while (opModeIsActive() && Arrays.stream(motors).anyMatch(motor -> motor.drive.isBusy())) {
+                this.turnSpeed = getSteeringCorrection(rotation_deg, RobotAutoDriveByGyroMecanum.P_DRIVE_GAIN);
                 moveRobot(drive_x/distance,drive_y/distance, turnSpeed);
                 updateTelemetry();
             }
@@ -111,6 +136,9 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
         telemetry.addData("LB", motors[2].drive.getCurrentPosition());
         telemetry.addData("RB", motors[3].drive.getCurrentPosition());
         telemetry.addData("Turn speed",turnSpeed);
+        telemetry.addData("rotation", rotation_deg);
+        telemetry.addData("yaw", yaw);
+        telemetry.addData("angle", angle);
         telemetry.addData("move_x", drive_x);
         telemetry.addData("move_y", drive_y);
         telemetry.addData("LFT", motors[0].target);
@@ -145,7 +173,7 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
     }
 
     double getSteeringCorrection(double desiredHeading, double proportionalGain) {
-        double headingError = desiredHeading - getHeading();
+        double headingError = getHeading() - desiredHeading;
         while (headingError > 180)  headingError -= 360;
         while (headingError <= -180) headingError += 360;
         return Range.clip(headingError * proportionalGain, -1, 1);
@@ -153,7 +181,7 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
 
     IMU InitIMU() {
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
         IMU imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(orientationOnRobot));
@@ -162,6 +190,7 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
 
     double getHeading() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        yaw = orientation.getYaw(AngleUnit.DEGREES);
         return orientation.getYaw(AngleUnit.DEGREES);
     }
 

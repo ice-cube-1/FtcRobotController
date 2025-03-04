@@ -146,25 +146,14 @@ public class driveMostThings extends LinearOpMode {
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral =  gamepad1.right_stick_x;
             double yaw     =  gamepad1.left_stick_x;
-            int leftMultiple = 1;
-            int rightMultiple = 1;
-            if (Math.abs(yaw) > Math.abs(axial)) {
-                axial = 0;
-                if (yaw > 0) {
-                    rightMultiple = 2;
-                } else {
-                    leftMultiple = 2;
-                }
-            } else {
-                yaw = 0;
-            }
+
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower  = (axial + lateral + yaw)/leftFrontPowerMultiple*actual;
-            double rightFrontPower = (axial - lateral - yaw)/rightFrontPowerMultiple*actual;
-            double leftBackPower   = (axial - lateral + yaw)/leftBackPowerMultiple*actual;
-            double rightBackPower  = (axial + lateral - yaw)/rightBackPowerMultiple*actual;
+            double leftFrontPower  = (axial + lateral + yaw);//leftFrontPowerMultiple*actual;
+            double rightFrontPower = (axial - lateral - yaw);//rightFrontPowerMultiple*actual;
+            double leftBackPower   = (axial - lateral + yaw);//leftBackPowerMultiple*actual;
+            double rightBackPower  = (axial + lateral - yaw);//rightBackPowerMultiple*actual;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
