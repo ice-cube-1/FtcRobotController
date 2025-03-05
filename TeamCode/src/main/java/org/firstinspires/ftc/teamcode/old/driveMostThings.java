@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.old;
 
 import static java.lang.Math.round;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 
 
 @TeleOp(name="Drive  all things", group="Linear OpMode")
+@Disabled
 public class driveMostThings extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
