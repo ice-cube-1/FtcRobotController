@@ -1,25 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.IMU;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.Arrays;
 
-@TeleOp(name="Manual IMU", group="Linear OpMode")
-public class manual_imu extends LinearOpMode {
+@TeleOp(name="Manual", group="Linear OpMode")
+public class manual extends LinearOpMode {
 
     Motor[] motors;
     Motor[] elevators;
-    double imu_yaw = 0;
-    double target_imu = 0;
-    double lateral_multiplier = 0.01;
-    double power_multiplier = 0.5;
+    Motor box;
+    Motor arm;
+    int box_position = 0;
 
     @Override
     public void runOpMode() {
@@ -33,6 +28,8 @@ public class manual_imu extends LinearOpMode {
                 new Motor("left_elevator", DcMotor.Direction.FORWARD),
                 new Motor("right_elevator", DcMotor.Direction.REVERSE)
         };
+        box = new Motor("box", DcMotor.Direction.FORWARD);
+        arm = new Motor("arm", DcMotor.Direction.FORWARD);
         waitForStart();
         while (opModeIsActive()) {
 
@@ -44,33 +41,47 @@ public class manual_imu extends LinearOpMode {
                 for (Motor elevator: elevators) {
                     elevator.drive.setPower(0.25);
                 }
-            }
-
-            if (gamepad1.dpad_down) {
+            } else if (gamepad1.dpad_down) {
                 for (Motor elevator: elevators) {
                     elevator.drive.setPower(-0.25);
                 }
+            } else {
+                for (Motor elevator: elevators) {
+                    elevator.drive.setPower(0);
+                }
             }
 
-            target_imu = target_imu + lateral * lateral_multiplier;
+            double trigger = gamepad1.left_trigger;
+            if (trigger == 1) {
+                box_position = 1;
+                box.drive.setPower(0);
+            } else if (trigger == 0) {
+                box_position = 0;
+                box.drive.setPower(0);
+            } else {
+                box.drive.setPower(0.25 * (box_position - trigger) / Math.abs(box_position - trigger));
+            }
+
+            if (gamepad1.a) {
+                arm.drive.setPower(0.25);
+            } if (gamepad1.b) {
+                arm.drive.setPower(-0.25);
+            } else {
+                arm.drive.setPower(0);
+            }
 
 
             motors[0].power = axial + yaw + lateral;
             motors[1].power = axial - yaw + lateral;
             motors[2].power = axial - yaw - lateral;
             motors[3].power = axial + yaw - lateral;
+
             double max = Arrays.stream(motors).mapToDouble(motor -> Math.abs(motor.power)).max().orElse(1);
             if (max > 1.0) {
                 for (Motor motor : motors) {
                     motor.power /= max;
                 }
             }
-
-            for (Motor motor : motors) {
-                motor.drive.setPower(motor.power * power_multiplier);
-            }
-
-            update_telemetry();
         }
     }
 
@@ -86,14 +97,5 @@ public class manual_imu extends LinearOpMode {
             this.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             this.name = name;
         }
-    }
-
-    void update_telemetry() {
-        for (Motor motor : motors) {
-            telemetry.addData(motor.name, motor.drive.getCurrentPosition());
-        }
-        telemetry.addData("target", target_imu);
-        telemetry.addData("yaw", imu_yaw);
-        telemetry.update();
     }
 }
