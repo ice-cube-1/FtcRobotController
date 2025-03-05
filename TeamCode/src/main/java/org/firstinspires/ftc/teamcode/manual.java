@@ -25,20 +25,23 @@ public class manual extends LinearOpMode {
                 new Motor("right_back_drive", DcMotor.Direction.FORWARD),
         };
         elevators = new Motor[]{
-                new Motor("left_elevator", DcMotor.Direction.FORWARD),
-                new Motor("right_elevator", DcMotor.Direction.REVERSE)
+                new Motor("left_elevator", DcMotor.Direction.REVERSE),
+                new Motor("right_elevator", DcMotor.Direction.FORWARD)
         };
         box = new Motor("box", DcMotor.Direction.FORWARD);
         arm = new Motor("arm", DcMotor.Direction.FORWARD);
+
         waitForStart();
+
         while (opModeIsActive()) {
 
             double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral = gamepad1.right_stick_x;
             double yaw = gamepad1.left_stick_x;
-
+            /*
             if (gamepad1.dpad_up) {
                 for (Motor elevator: elevators) {
+                    elevator.power = elevator.position - elevator.drive.getCurrentPosition();
                     elevator.drive.setPower(0.25);
                 }
             } else if (gamepad1.dpad_down) {
@@ -51,12 +54,17 @@ public class manual extends LinearOpMode {
                 }
             }
 
+            double leftElevatorPosition = elevators[0].drive.getCurrentPosition();
+            double rightElevatorPosition = elevators[1].drive.getCurrentPosition();
+            double positionDifference = leftElevatorPosition - rightElevatorPosition;
+            double kP = 0.001; // Proportional gain
+
+            elevators[0].drive.setPower(elevators[0].drive.getPower() - kP * positionDifference);
+            elevators[1].drive.setPower(elevators[1].drive.getPower() + kP * positionDifference);
+
             double trigger = gamepad1.left_trigger;
-            if (trigger == 1) {
-                box_position = 1;
-                box.drive.setPower(0);
-            } else if (trigger == 0) {
-                box_position = 0;
+            if (trigger == 1 || trigger == 0) {
+                box_position = (int) trigger;
                 box.drive.setPower(0);
             } else {
                 box.drive.setPower(0.25 * (box_position - trigger) / Math.abs(box_position - trigger));
@@ -70,6 +78,8 @@ public class manual extends LinearOpMode {
                 arm.drive.setPower(0);
             }
 
+             */
+
 
             motors[0].power = axial + yaw + lateral;
             motors[1].power = axial - yaw + lateral;
@@ -80,6 +90,7 @@ public class manual extends LinearOpMode {
             if (max > 1.0) {
                 for (Motor motor : motors) {
                     motor.power /= max;
+                    motor.drive.setPower(motor.power);
                 }
             }
         }
@@ -89,6 +100,7 @@ public class manual extends LinearOpMode {
         DcMotor drive;
         double power;
         String name;
+        double position;
 
         Motor(String name, DcMotorSimple.Direction direction) {
             this.drive = hardwareMap.get(DcMotor.class, name);

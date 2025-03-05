@@ -26,7 +26,7 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
     static final double DRIVE_GEAR_REDUCTION = 1.0 ;     // No External Gearing.
     static final double WHEEL_DIAMETER_INCHES = 4.0 ;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
-    static final double P_TURN_GAIN = 0.02;     // Larger is more responsive, but also less stable.
+    static final double P_TURN_GAIN = 0.015;     // Larger is more responsive, but also less stable.
     static final double P_DRIVE_GAIN = 0.03;
 
 
@@ -59,13 +59,12 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
         * PUT DRIVE CODE HERE
         * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
         * SHOULD CURRENTLY BE IN INCHES / DEGREES */
-        rotate(135);
+        driveToPoint(0,30);
         driveToPoint(30,30);
-        rotate(0);
-        driveToPoint(0,0);
+        rotate(90, P_TURN_GAIN);
     }
 
-    void rotate(double degrees) {
+    void rotate(double degrees, double gain) {
         if (opModeIsActive()) {
             double delta_deg = degrees - rotation_deg;
             double initialHeading = getHeading();
@@ -73,8 +72,8 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
             while (targetHeading > 180) targetHeading -= 360;
             while (targetHeading <= -180) targetHeading += 360;
 
-            double proportionalGain = P_TURN_GAIN;
-            while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
+            double proportionalGain = gain;
+            while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 0.5) {
                 turnSpeed = getSteeringCorrection(targetHeading, proportionalGain);
                 moveRobot(0, 0, turnSpeed);
                 updateTelemetry();
@@ -82,6 +81,7 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
             moveRobot(0, 0, 0);
         }
         rotation_deg = degrees;
+
         sleep(1000);
     }
 
@@ -96,12 +96,13 @@ public class RobotAutoDriveByGyroMecanum extends LinearOpMode {
 
         double crow_flies = Math.sqrt(Math.pow(transformed_delta_x, 2) + Math.pow(transformed_delta_y, 2));
         angle = Math.toDegrees(Math.atan2(transformed_delta_y, transformed_delta_x));
+        rotate(0,0.015);
         updateTelemetry();
         driveDistance(transformed_delta_x, transformed_delta_y, crow_flies);
         updateTelemetry();
         x = new_x;
         y = new_y;
-        sleep(1000);
+        moveRobot(0,0,0);
     }
 
 
