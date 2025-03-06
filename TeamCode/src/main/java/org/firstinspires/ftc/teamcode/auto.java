@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 
 @Autonomous(name ="Auto_gyro", group="Robot")
-@Disabled
 public class auto extends LinearOpMode {
     double robot_length_inches = 18;
     double robot_width_inches = 18;
@@ -36,17 +35,28 @@ public class auto extends LinearOpMode {
 
 
     private Motor[] motors = null;
+    private Motor[] elevators = null;
     private IMU imu = null;
     double start_x = 0;
     double start_y = 0;
     private double x = start_x;
     private double y = start_y;
-    double initial_rotation = 90;
+    double initial_rotation = 0;
     private double rotation_deg = initial_rotation;
     private double turnSpeed = 0;
     private double drive_x = 0;
     private double drive_y = 0;
     private double yaw = 0;
+
+    ElevatorState elevator_state = ElevatorState.ELEVATOR_STOPPED_DOWN;
+    private final int elevator_position_up = 1000;
+
+    enum ElevatorState {
+        ELEVATOR_UP,
+        ELEVATOR_DOWN,
+        ELEVATOR_STOPPED_UP,
+        ELEVATOR_STOPPED_DOWN,
+    }
 
     @Override
     public void runOpMode() {
@@ -56,14 +66,28 @@ public class auto extends LinearOpMode {
         * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
         * SHOULD CURRENTLY BE IN INCHES / DEGREES
         */
-        rotate(180, P_TURN_GAIN, true, speed/2);
+        elevator_state = ElevatorState.ELEVATOR_UP;
+        rotate(90, P_TURN_GAIN, true, speed/2);
+        driveToPoint(0,12);
+        elevator_state = ElevatorState.ELEVATOR_DOWN;
+        while (opModeIsActive()) {
+            check_elevator();
+        }
     }
+
 
     void init_stuff() {
         motors = new Motor[]{new Motor("left_front_drive", DcMotor.Direction.REVERSE),
                 new Motor("right_front_drive", DcMotor.Direction.FORWARD),
                 new Motor("left_back_drive", DcMotor.Direction.REVERSE),
                 new Motor("right_back_drive", DcMotor.Direction.FORWARD)};
+        elevators = new Motor[]{
+                new Motor("left_elevator", DcMotor.Direction.REVERSE),
+                new Motor("right_elevator", DcMotor.Direction.FORWARD)
+        };
+        for (Motor elevator: elevators) {
+            elevator.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
         imu = InitIMU();
         waitForStart();
         for (Motor motor: motors) {
@@ -83,6 +107,7 @@ public class auto extends LinearOpMode {
             while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
                 turnSpeed = getSteeringCorrection(targetHeading, gain);
                 moveRobot(0, 0, turnSpeed,power);
+                check_elevator();
                 updateTelemetry();
             }
             moveRobot(0, 0, 0, power);
@@ -134,6 +159,7 @@ public class auto extends LinearOpMode {
             while (opModeIsActive() && Arrays.stream(motors).anyMatch(motor -> motor.drive.isBusy())) {
                 this.turnSpeed = getSteeringCorrection(rotation_deg, auto.P_DRIVE_GAIN);
                 moveRobot(drive_x/distance,drive_y/distance, turnSpeed, speed);
+                check_elevator();
                 updateTelemetry();
             }
             moveRobot(0,0,0, speed);
@@ -141,6 +167,44 @@ public class auto extends LinearOpMode {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
         }
+    }
+
+    private void check_elevator() {
+        for (Motor elevator : elevators) {
+            elevator.position = elevator.drive.getCurrentPosition();
+        }
+        switch (elevator_state) {
+            case ELEVATOR_UP -> {
+                if (elevators[0].position >= elevator_position_up) {
+                    elevator_state = ElevatorState.ELEVATOR_STOPPED_UP;
+                } else {
+                    for (Motor elevator: elevators) {
+                        elevator.drive.setPower(0.25);
+                    }
+                }
+            } case ELEVATOR_DOWN -> {
+                if (elevators[0].position <= 25) {
+                    elevator_state = ElevatorState.ELEVATOR_STOPPED_DOWN;
+                } else {
+                    for (Motor elevator: elevators) {
+                        elevator.drive.setPower(-0.25);
+                    }
+                }
+            } case ELEVATOR_STOPPED_DOWN -> {
+                for (Motor elevator: elevators) {
+                    elevator.drive.setPower(0);
+                }
+            } case ELEVATOR_STOPPED_UP -> {
+                for (Motor elevator: elevators) {
+                    elevator.drive.setPower(0.001);
+                }
+            }
+        }
+        double position_difference = elevators[0].position - elevators[1].position;
+        double gain = 0.001;
+        elevators[0].drive.setPower(elevators[0].drive.getPower() - gain * position_difference);
+        elevators[1].drive.setPower(elevators[1].drive.getPower() + gain * position_difference);
+
     }
 
     private void updateTelemetry() {
@@ -164,6 +228,7 @@ public class auto extends LinearOpMode {
         DcMotor drive;
         double speed = 0;
         int target = 0;
+        int position = 0;
         Motor(String name, DcMotorSimple.Direction direction) {
             this.drive = hardwareMap.get(DcMotor.class, name);
             this.drive.setDirection(direction);
