@@ -41,7 +41,6 @@ public class manual extends LinearOpMode {
 
             if (gamepad1.dpad_up) {
                 for (Motor elevator: elevators) {
-                    elevator.power = elevator.position - elevator.drive.getCurrentPosition();
                     elevator.drive.setPower(0.25);
                 }
             } else if (gamepad1.dpad_down) {
@@ -53,14 +52,14 @@ public class manual extends LinearOpMode {
                     elevator.drive.setPower(0.001);
                 }
             }
+            for (Motor elevator : elevators) {
+                elevator.position = elevator.drive.getCurrentPosition();
+            }
+            double position_difference = elevators[0].position - elevators[1].position;
+            double gain = 0.001;
 
-            double leftElevatorPosition = elevators[0].drive.getCurrentPosition();
-            double rightElevatorPosition = elevators[1].drive.getCurrentPosition();
-            double positionDifference = leftElevatorPosition - rightElevatorPosition;
-            double kP = 0.001; // Proportional gain
-
-            elevators[0].drive.setPower(elevators[0].drive.getPower() - kP * positionDifference);
-            elevators[1].drive.setPower(elevators[1].drive.getPower() + kP * positionDifference);
+            elevators[0].drive.setPower(elevators[0].drive.getPower() - gain * position_difference);
+            elevators[1].drive.setPower(elevators[1].drive.getPower() + gain * position_difference);
 
             double trigger = gamepad1.left_trigger;
             if (trigger == 1 || trigger == 0) {
@@ -77,7 +76,6 @@ public class manual extends LinearOpMode {
             } else {
                 arm.drive.setPower(0);
             }
-
 
 
 
@@ -101,7 +99,6 @@ public class manual extends LinearOpMode {
     class Motor {
         DcMotor drive;
         double power;
-        String name;
         double position;
 
         Motor(String name, DcMotorSimple.Direction direction) {
@@ -109,7 +106,6 @@ public class manual extends LinearOpMode {
             this.drive.setDirection(direction);
             this.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             this.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            this.name = name;
         }
     }
 }

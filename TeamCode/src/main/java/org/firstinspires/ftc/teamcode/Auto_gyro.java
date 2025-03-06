@@ -22,11 +22,12 @@ import java.util.Arrays;
 public class Auto_gyro extends LinearOpMode {
     private final double speed = 0.5;
 
-    static final double COUNTS_PER_MOTOR_REV = 537.7 ;   // eg: GoBILDA 312 RPM Yellow Jacket
-    static final double DRIVE_GEAR_REDUCTION = 1.0 ;     // No External Gearing.
-    static final double WHEEL_DIAMETER_INCHES = 4.0 ;     // For figuring circumference
+    static final double COUNTS_PER_MOTOR_REV = (double) (3249 * 28) / 121 ;   // eg: GoBILDA 223 RPM Yellow Jacket
+    static final double DRIVE_GEAR_REDUCTION = 1;
+    static final double WHEEL_DIAMETER_INCHES = 5.51181;   // For figuring circumference
+
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
-    static final double P_TURN_GAIN = 0.01;     // Larger is more responsive, but also less stable.
+    static final double P_TURN_GAIN = 0.015;     // Larger is more responsive, but also less stable.
     static final double P_DRIVE_GAIN = 0.03;
 
 
@@ -38,11 +39,26 @@ public class Auto_gyro extends LinearOpMode {
     private double turnSpeed = 0;
     private double drive_x = 0;
     private double drive_y = 0;
-    private double angle = 0;
     private double yaw = 0;
 
     @Override
     public void runOpMode() {
+        init_stuff();
+
+        x=0;
+        y=0;
+        /*
+        * PUT DRIVE CODE HERE
+        * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
+        * SHOULD CURRENTLY BE IN INCHES / DEGREES
+        */
+        driveToPoint(0,78);
+        rotate(90, P_TURN_GAIN, true, speed/2);
+        driveToPoint(0,0);
+        rotate(0, P_TURN_GAIN, true, speed/2);
+    }
+
+    void init_stuff() {
         motors = new Motor[]{new Motor("left_front_drive", DcMotor.Direction.REVERSE),
                 new Motor("right_front_drive", DcMotor.Direction.FORWARD),
                 new Motor("left_back_drive", DcMotor.Direction.REVERSE),
@@ -53,18 +69,6 @@ public class Auto_gyro extends LinearOpMode {
             motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         imu.resetYaw();
-        x=0;
-        y=0;
-        /*
-        * PUT DRIVE CODE HERE
-        * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
-        * SHOULD CURRENTLY BE IN INCHES / DEGREES
-        */
-        driveToPoint(0,30);
-        rotate(90, P_TURN_GAIN, true, 0.05);
-        //driveToPoint(30,30);
-        //rotate(45, P_TURN_GAIN, true);
-        driveToPoint(0,0);
     }
 
     void rotate(double degrees, double gain, boolean recursive, double power) {
@@ -78,13 +82,15 @@ public class Auto_gyro extends LinearOpMode {
             while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
                 sleep(200);
                 turnSpeed = getSteeringCorrection(targetHeading, gain);
-                moveRobot(0, 0, turnSpeed,0.25);
+                moveRobot(0, 0, turnSpeed,power);
                 updateTelemetry();
             }
             moveRobot(0, 0, 0, power);
             rotation_deg = degrees;
             if (recursive) {
-                rotate(rotation_deg,gain/2, false, power/2);
+                sleep(600);
+                rotate(rotation_deg,gain/2, false, power/4);
+                moveRobot(0, 0, 0, power);
             }
         }
 
@@ -100,15 +106,15 @@ public class Auto_gyro extends LinearOpMode {
         double transformed_delta_y = -delta_x * Math.sin(rotation_radians) + delta_y * Math.cos(rotation_radians);
 
         double crow_flies = Math.sqrt(Math.pow(transformed_delta_x, 2) + Math.pow(transformed_delta_y, 2));
-        angle = Math.toDegrees(Math.atan2(transformed_delta_y, transformed_delta_x));
         updateTelemetry();
         driveDistance(transformed_delta_x, transformed_delta_y, crow_flies);
-        moveRobot(0,0,0,0.5);
-        rotate(rotation_deg,0.01, false, 0.05);
+        moveRobot(0,0,0,speed);
+        sleep(600);
+        rotate(rotation_deg,0.0075, false, speed/8);
         updateTelemetry();
         x = new_x;
         y = new_y;
-        moveRobot(0,0,0,0.5);
+        moveRobot(0,0,0,speed);
     }
 
 
@@ -124,13 +130,13 @@ public class Auto_gyro extends LinearOpMode {
                 motor.drive.setTargetPosition(motor.target);
                 motor.drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
-            moveRobot(drive_x/distance, drive_y/distance, 0, 0.5);
+            moveRobot(drive_x/distance, drive_y/distance, 0, speed);
             while (opModeIsActive() && Arrays.stream(motors).anyMatch(motor -> motor.drive.isBusy())) {
                 this.turnSpeed = getSteeringCorrection(rotation_deg, Auto_gyro.P_DRIVE_GAIN);
-                moveRobot(drive_x/distance,drive_y/distance, turnSpeed, 0.5);
+                moveRobot(drive_x/distance,drive_y/distance, turnSpeed, speed);
                 updateTelemetry();
             }
-            moveRobot(0,0,0, 0.5);
+            moveRobot(0,0,0, speed);
             for (Motor motor: motors) {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
@@ -145,7 +151,6 @@ public class Auto_gyro extends LinearOpMode {
         telemetry.addData("Turn speed",turnSpeed);
         telemetry.addData("rotation", rotation_deg);
         telemetry.addData("yaw", yaw);
-        telemetry.addData("angle", angle);
         telemetry.addData("move_x", drive_x);
         telemetry.addData("move_y", drive_y);
         telemetry.addData("LFT", motors[0].target);
