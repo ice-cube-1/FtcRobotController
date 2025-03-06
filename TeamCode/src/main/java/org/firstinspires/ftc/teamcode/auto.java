@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -19,7 +20,10 @@ import java.util.Arrays;
 
 
 @Autonomous(name ="Auto_gyro", group="Robot")
-public class Auto_gyro extends LinearOpMode {
+@Disabled
+public class auto extends LinearOpMode {
+    double robot_length_inches = 18;
+    double robot_width_inches = 18;
     private final double speed = 0.5;
 
     static final double COUNTS_PER_MOTOR_REV = (double) (3249 * 28) / 121 ;   // eg: GoBILDA 223 RPM Yellow Jacket
@@ -33,9 +37,12 @@ public class Auto_gyro extends LinearOpMode {
 
     private Motor[] motors = null;
     private IMU imu = null;
-    private double x = 0;
-    private double y = 0;
-    private double rotation_deg = 0;
+    double start_x = 0;
+    double start_y = 0;
+    private double x = start_x;
+    private double y = start_y;
+    double initial_rotation = 90;
+    private double rotation_deg = initial_rotation;
     private double turnSpeed = 0;
     private double drive_x = 0;
     private double drive_y = 0;
@@ -44,18 +51,12 @@ public class Auto_gyro extends LinearOpMode {
     @Override
     public void runOpMode() {
         init_stuff();
-
-        x=0;
-        y=0;
         /*
         * PUT DRIVE CODE HERE
         * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
         * SHOULD CURRENTLY BE IN INCHES / DEGREES
         */
-        driveToPoint(0,78);
-        rotate(90, P_TURN_GAIN, true, speed/2);
-        driveToPoint(0,0);
-        rotate(0, P_TURN_GAIN, true, speed/2);
+        rotate(180, P_TURN_GAIN, true, speed/2);
     }
 
     void init_stuff() {
@@ -80,7 +81,6 @@ public class Auto_gyro extends LinearOpMode {
             while (targetHeading <= -180) targetHeading += 360;
 
             while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
-                sleep(200);
                 turnSpeed = getSteeringCorrection(targetHeading, gain);
                 moveRobot(0, 0, turnSpeed,power);
                 updateTelemetry();
@@ -88,8 +88,8 @@ public class Auto_gyro extends LinearOpMode {
             moveRobot(0, 0, 0, power);
             rotation_deg = degrees;
             if (recursive) {
-                sleep(600);
-                rotate(rotation_deg,gain/2, false, power/4);
+                sleep(200);
+                rotate(rotation_deg,gain/2, false, power/8);
                 moveRobot(0, 0, 0, power);
             }
         }
@@ -109,8 +109,8 @@ public class Auto_gyro extends LinearOpMode {
         updateTelemetry();
         driveDistance(transformed_delta_x, transformed_delta_y, crow_flies);
         moveRobot(0,0,0,speed);
-        sleep(600);
-        rotate(rotation_deg,0.0075, false, speed/8);
+        sleep(200);
+        rotate(rotation_deg,P_TURN_GAIN/1.5, false, speed/4);
         updateTelemetry();
         x = new_x;
         y = new_y;
@@ -132,7 +132,7 @@ public class Auto_gyro extends LinearOpMode {
             }
             moveRobot(drive_x/distance, drive_y/distance, 0, speed);
             while (opModeIsActive() && Arrays.stream(motors).anyMatch(motor -> motor.drive.isBusy())) {
-                this.turnSpeed = getSteeringCorrection(rotation_deg, Auto_gyro.P_DRIVE_GAIN);
+                this.turnSpeed = getSteeringCorrection(rotation_deg, auto.P_DRIVE_GAIN);
                 moveRobot(drive_x/distance,drive_y/distance, turnSpeed, speed);
                 updateTelemetry();
             }
@@ -203,7 +203,7 @@ public class Auto_gyro extends LinearOpMode {
     double getHeading() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         yaw = orientation.getYaw(AngleUnit.DEGREES);
-        return orientation.getYaw(AngleUnit.DEGREES);
+        return orientation.getYaw(AngleUnit.DEGREES) + initial_rotation;
     }
 
 }
