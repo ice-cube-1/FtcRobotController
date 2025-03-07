@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -41,7 +40,7 @@ public class auto extends LinearOpMode {
     double start_y = 0;
     private double x = start_x;
     private double y = start_y;
-    double initial_rotation = 0;
+    double initial_rotation = 45;
     private double rotation_deg = initial_rotation;
     private double turnSpeed = 0;
     private double drive_x = 0;
@@ -67,8 +66,8 @@ public class auto extends LinearOpMode {
         * SHOULD CURRENTLY BE IN INCHES / DEGREES
         */
         elevator_state = ElevatorState.ELEVATOR_UP;
-        rotate(90, P_TURN_GAIN, true, speed/2);
         driveToPoint(0,12);
+        rotate(90, P_TURN_GAIN, true, speed/2);
         elevator_state = ElevatorState.ELEVATOR_DOWN;
         while (opModeIsActive()) {
             check_elevator();
@@ -121,6 +120,10 @@ public class auto extends LinearOpMode {
 
     }
 
+    void dropSample() {
+
+    }
+
     void driveToPoint(double new_x, double new_y) {
         double delta_x = new_x - x;
         double delta_y = new_y - y;
@@ -169,7 +172,7 @@ public class auto extends LinearOpMode {
         }
     }
 
-    private void check_elevator() {
+    void check_elevator() {
         for (Motor elevator : elevators) {
             elevator.position = elevator.drive.getCurrentPosition();
         }
@@ -268,7 +271,7 @@ public class auto extends LinearOpMode {
     double getHeading() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         yaw = orientation.getYaw(AngleUnit.DEGREES);
-        return orientation.getYaw(AngleUnit.DEGREES) + initial_rotation;
+        return orientation.getYaw(AngleUnit.DEGREES) - initial_rotation;
     }
 
 }
