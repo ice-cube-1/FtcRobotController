@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import static org.firstinspires.ftc.teamcode.robot_constants.*;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -15,34 +16,20 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.Arrays;
 
+abstract public class auto extends LinearOpMode {
 
-
-
-@Autonomous(name ="Auto_gyro", group="Robot")
-public class auto extends LinearOpMode {
-    double robot_length_inches = 18;
-    double robot_width_inches = 18;
-    private final double speed = 0.5;
-
-    static final double COUNTS_PER_MOTOR_REV = (double) (3249 * 28) / 121 ;
-    static final double DRIVE_GEAR_REDUCTION = 1;
-    static final double WHEEL_DIAMETER_INCHES = 5.51181;
-
-    static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
-    static final double P_TURN_GAIN = 0.015;
-    static final double P_DRIVE_GAIN = 0.03;
-
+    double start_x = 0;
+    double start_y = 0;
+    double initial_rotation = 90;
 
     private Motor[] motors = null;
     private Motor[] elevators = null;
     private Motor arm = null;
     private Motor box = null;
     private IMU imu = null;
-    double start_x = 0;
-    double start_y = 0;
+
     private double x = start_x;
     private double y = start_y;
-    double initial_rotation = 90;
     private double rotation_deg = initial_rotation;
     private double turnSpeed = 0;
     private double drive_x = 0;
@@ -50,30 +37,8 @@ public class auto extends LinearOpMode {
     private double yaw = 0;
 
     ElevatorState elevator_state = ElevatorState.DOWN;
-    private final int elevator_position_up = 3000;
-    private final int elevator_position_down = 25;
-
     ArmState arm_state = ArmState.REST;
-    private final int arm_position_basket = 400;
-    private final int arm_position_up = 200;
-    private final int arm_position_rest = 0;
 
-
-    enum ElevatorState {
-        TO_UP,
-        TO_DOWN,
-        UP,
-        DOWN,
-    }
-
-    enum ArmState {
-        TO_REST,
-        REST,
-        TO_UP,
-        UP,
-        TO_BASKET,
-        BASKET,
-    }
 
     @Override
     public void runOpMode() {
@@ -83,26 +48,11 @@ public class auto extends LinearOpMode {
         * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
         * SHOULD CURRENTLY BE IN INCHES / DEGREES
         */
-        elevator_state = ElevatorState.TO_UP;
         driveToPoint(0,50);
         driveToPoint(10,50);
-        //rotate(90, P_TURN_GAIN, true, speed/2);
-        while (elevator_state != ElevatorState.UP  /* || arm_state != ArmState.UP */) {
-            check_elevator_arm();
-        }
-        /*
-        arm_state = ArmState.TO_BASKET;
-        while (arm_state != ArmState.BASKET) {
-            check_elevator_arm();
-        }
-        */
-        dropSample();
-        elevator_state = ElevatorState.TO_DOWN;
+        rotate(45, P_TURN_GAIN, true, speed/2);
         driveToPoint(0,0);
-        //rotate(45, P_TURN_GAIN, true, speed/2);
-        while (/*arm_state != ArmState.REST || */ elevator_state != ElevatorState.DOWN) {
-            check_elevator_arm();
-        }
+        rotate(0, P_TURN_GAIN, true, speed/2);
     }
 
 
@@ -128,13 +78,8 @@ public class auto extends LinearOpMode {
         imu.resetYaw();
     }
 
-    void rotate(double degrees, double gain, boolean recursive, double power) {
+    void rotate(double targetHeading, double gain, boolean recursive, double power) {
         if (opModeIsActive()) {
-            double delta_deg = degrees - rotation_deg;
-            double initialHeading = getHeading();
-            double targetHeading = initialHeading + delta_deg;
-            while (targetHeading > 180) targetHeading -= 360;
-            while (targetHeading <= -180) targetHeading += 360;
 
             while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
                 turnSpeed = getSteeringCorrection(targetHeading, gain);
@@ -143,7 +88,7 @@ public class auto extends LinearOpMode {
                 updateTelemetry();
             }
             moveRobot(0, 0, 0, power);
-            rotation_deg = degrees;
+            rotation_deg = targetHeading;
             if (recursive) {
                 sleep(400);
                 rotate(rotation_deg, gain / 2, false, power / 8);
@@ -191,7 +136,7 @@ public class auto extends LinearOpMode {
             }
             moveRobot(drive_x/distance, drive_y/distance, 0, speed);
             while (opModeIsActive() && Arrays.stream(motors).anyMatch(motor -> motor.drive.isBusy())) {
-                this.turnSpeed = getSteeringCorrection(rotation_deg, auto.P_DRIVE_GAIN);
+                this.turnSpeed = getSteeringCorrection(rotation_deg, P_DRIVE_GAIN);
                 moveRobot(drive_x/distance,drive_y/distance, turnSpeed, speed);
                 check_elevator_arm();
                 updateTelemetry();
@@ -200,7 +145,7 @@ public class auto extends LinearOpMode {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             moveRobot(0,0,0, speed);
-            sleep(400);
+            sleep(200);
             rotate(rotation_deg,P_TURN_GAIN/1.5, false, speed/4);
             moveRobot(0,0,0, speed);
         }
@@ -249,7 +194,6 @@ public class auto extends LinearOpMode {
         elevators[0].drive.setPower(elevators[0].drive.getPower() - gain * position_difference);
         elevators[1].drive.setPower(elevators[1].drive.getPower() + gain * position_difference);
 
-        /*
         arm.position = arm.drive.getCurrentPosition();
         switch (arm_state) {
             case TO_UP -> {
@@ -272,7 +216,6 @@ public class auto extends LinearOpMode {
                 }
             } case BASKET, REST, UP -> arm.drive.setPower(0);
         }
-        */
     }
 
     private void updateTelemetry() {

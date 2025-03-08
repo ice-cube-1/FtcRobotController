@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  *  rotation is anticlockwise, with zero pointing from observation zone -> net zone
  *  general measurements are in inches, tolerance to walls is 2 inches */
 
-@TeleOp(name="auto_a", group="Robot")
-public class auto_a extends auto {
+@TeleOp(name="auto_c", group="Robot")
+public class auto_c extends auto {
     @Override
     public void runOpMode() {
         start_x = robot_length_inches/2;
