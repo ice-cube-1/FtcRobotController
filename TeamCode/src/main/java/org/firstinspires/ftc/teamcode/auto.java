@@ -24,12 +24,12 @@ public class auto extends LinearOpMode {
     double robot_width_inches = 18;
     private final double speed = 0.5;
 
-    static final double COUNTS_PER_MOTOR_REV = (double) (3249 * 28) / 121 ;   // eg: GoBILDA 223 RPM Yellow Jacket
+    static final double COUNTS_PER_MOTOR_REV = (double) (3249 * 28) / 121 ;
     static final double DRIVE_GEAR_REDUCTION = 1;
-    static final double WHEEL_DIAMETER_INCHES = 5.51181;   // For figuring circumference
+    static final double WHEEL_DIAMETER_INCHES = 5.51181;
 
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
-    static final double P_TURN_GAIN = 0.015;     // Larger is more responsive, but also less stable.
+    static final double P_TURN_GAIN = 0.015;
     static final double P_DRIVE_GAIN = 0.03;
 
 
@@ -42,7 +42,7 @@ public class auto extends LinearOpMode {
     double start_y = 0;
     private double x = start_x;
     private double y = start_y;
-    double initial_rotation = 45;
+    double initial_rotation = 90;
     private double rotation_deg = initial_rotation;
     private double turnSpeed = 0;
     private double drive_x = 0;
@@ -50,7 +50,7 @@ public class auto extends LinearOpMode {
     private double yaw = 0;
 
     ElevatorState elevator_state = ElevatorState.DOWN;
-    private final int elevator_position_up = 1000;
+    private final int elevator_position_up = 3000;
     private final int elevator_position_down = 25;
 
     ArmState arm_state = ArmState.REST;
@@ -84,30 +84,34 @@ public class auto extends LinearOpMode {
         * SHOULD CURRENTLY BE IN INCHES / DEGREES
         */
         elevator_state = ElevatorState.TO_UP;
-        driveToPoint(0,12);
-        rotate(90, P_TURN_GAIN, true, speed/2);
-        while (elevator_state != ElevatorState.UP || arm_state != ArmState.UP) {
+        driveToPoint(0,50);
+        driveToPoint(10,50);
+        //rotate(90, P_TURN_GAIN, true, speed/2);
+        while (elevator_state != ElevatorState.UP  /* || arm_state != ArmState.UP */) {
             check_elevator_arm();
         }
+        /*
         arm_state = ArmState.TO_BASKET;
         while (arm_state != ArmState.BASKET) {
             check_elevator_arm();
         }
+        */
         dropSample();
-        elevator_state = ElevatorState.DOWN;
+        elevator_state = ElevatorState.TO_DOWN;
         driveToPoint(0,0);
-        while (arm_state != ArmState.REST || elevator_state != ElevatorState.DOWN) {
+        //rotate(45, P_TURN_GAIN, true, speed/2);
+        while (/*arm_state != ArmState.REST || */ elevator_state != ElevatorState.DOWN) {
             check_elevator_arm();
         }
     }
 
 
     void init_stuff() {
-        motors = new Motor[]{new Motor("left_front_drive", DcMotor.Direction.REVERSE),
+        motors = new Motor[] {new Motor("left_front_drive", DcMotor.Direction.REVERSE),
                 new Motor("right_front_drive", DcMotor.Direction.FORWARD),
                 new Motor("left_back_drive", DcMotor.Direction.REVERSE),
                 new Motor("right_back_drive", DcMotor.Direction.FORWARD)};
-        elevators = new Motor[]{
+        elevators = new Motor[] {
                 new Motor("left_elevator", DcMotor.Direction.REVERSE),
                 new Motor("right_elevator", DcMotor.Direction.FORWARD)
         };
@@ -141,7 +145,7 @@ public class auto extends LinearOpMode {
             moveRobot(0, 0, 0, power);
             rotation_deg = degrees;
             if (recursive) {
-                sleep(200);
+                sleep(400);
                 rotate(rotation_deg, gain / 2, false, power / 8);
                 moveRobot(0, 0, 0, power);
             }
@@ -167,13 +171,9 @@ public class auto extends LinearOpMode {
         double crow_flies = Math.sqrt(Math.pow(transformed_delta_x, 2) + Math.pow(transformed_delta_y, 2));
         updateTelemetry();
         driveDistance(transformed_delta_x, transformed_delta_y, crow_flies);
-        moveRobot(0,0,0,speed);
-        sleep(200);
-        rotate(rotation_deg,P_TURN_GAIN/1.5, false, speed/4);
         updateTelemetry();
         x = new_x;
         y = new_y;
-        moveRobot(0,0,0,speed);
     }
 
 
@@ -196,10 +196,13 @@ public class auto extends LinearOpMode {
                 check_elevator_arm();
                 updateTelemetry();
             }
-            moveRobot(0,0,0, speed);
             for (Motor motor: motors) {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
+            moveRobot(0,0,0, speed);
+            sleep(400);
+            rotate(rotation_deg,P_TURN_GAIN/1.5, false, speed/4);
+            moveRobot(0,0,0, speed);
         }
     }
 
@@ -213,7 +216,7 @@ public class auto extends LinearOpMode {
                     elevator_state = ElevatorState.UP;
                 } else {
                     for (Motor elevator: elevators) {
-                        elevator.drive.setPower(1);
+                        elevator.drive.setPower(0.5);
                         if (arm_state == ArmState.REST) {
                             arm_state = ArmState.TO_UP;
                         }
@@ -224,7 +227,7 @@ public class auto extends LinearOpMode {
                     elevator_state = ElevatorState.DOWN;
                 } else {
                     for (Motor elevator: elevators) {
-                        elevator.drive.setPower(-1);
+                        elevator.drive.setPower(-0.5);
                         if (arm_state == ArmState.UP || arm_state == ArmState.BASKET) {
                             arm_state = ArmState.TO_REST;
                         }
@@ -246,6 +249,7 @@ public class auto extends LinearOpMode {
         elevators[0].drive.setPower(elevators[0].drive.getPower() - gain * position_difference);
         elevators[1].drive.setPower(elevators[1].drive.getPower() + gain * position_difference);
 
+        /*
         arm.position = arm.drive.getCurrentPosition();
         switch (arm_state) {
             case TO_UP -> {
@@ -268,6 +272,7 @@ public class auto extends LinearOpMode {
                 }
             } case BASKET, REST, UP -> arm.drive.setPower(0);
         }
+        */
     }
 
     private void updateTelemetry() {
@@ -331,7 +336,7 @@ public class auto extends LinearOpMode {
     double getHeading() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         yaw = orientation.getYaw(AngleUnit.DEGREES);
-        return orientation.getYaw(AngleUnit.DEGREES) - initial_rotation;
+        return orientation.getYaw(AngleUnit.DEGREES) + initial_rotation;
     }
 
 }
