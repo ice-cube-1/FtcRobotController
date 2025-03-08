@@ -35,6 +35,8 @@ public class auto extends LinearOpMode {
 
     private Motor[] motors = null;
     private Motor[] elevators = null;
+    private Motor arm = null;
+    private Motor box = null;
     private IMU imu = null;
     double start_x = 0;
     double start_y = 0;
@@ -47,14 +49,30 @@ public class auto extends LinearOpMode {
     private double drive_y = 0;
     private double yaw = 0;
 
-    ElevatorState elevator_state = ElevatorState.ELEVATOR_STOPPED_DOWN;
+    ElevatorState elevator_state = ElevatorState.DOWN;
     private final int elevator_position_up = 1000;
+    private final int elevator_position_down = 25;
+
+    ArmState arm_state = ArmState.REST;
+    private final int arm_position_basket = 400;
+    private final int arm_position_up = 200;
+    private final int arm_position_rest = 0;
+
 
     enum ElevatorState {
-        ELEVATOR_UP,
-        ELEVATOR_DOWN,
-        ELEVATOR_STOPPED_UP,
-        ELEVATOR_STOPPED_DOWN,
+        TO_UP,
+        TO_DOWN,
+        UP,
+        DOWN,
+    }
+
+    enum ArmState {
+        TO_REST,
+        REST,
+        TO_UP,
+        UP,
+        TO_BASKET,
+        BASKET,
     }
 
     @Override
@@ -65,12 +83,21 @@ public class auto extends LinearOpMode {
         * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
         * SHOULD CURRENTLY BE IN INCHES / DEGREES
         */
-        elevator_state = ElevatorState.ELEVATOR_UP;
+        elevator_state = ElevatorState.TO_UP;
         driveToPoint(0,12);
         rotate(90, P_TURN_GAIN, true, speed/2);
-        elevator_state = ElevatorState.ELEVATOR_DOWN;
-        while (opModeIsActive()) {
-            check_elevator();
+        while (elevator_state != ElevatorState.UP || arm_state != ArmState.UP) {
+            check_elevator_arm();
+        }
+        arm_state = ArmState.TO_BASKET;
+        while (arm_state != ArmState.BASKET) {
+            check_elevator_arm();
+        }
+        dropSample();
+        elevator_state = ElevatorState.DOWN;
+        driveToPoint(0,0);
+        while (arm_state != ArmState.REST || elevator_state != ElevatorState.DOWN) {
+            check_elevator_arm();
         }
     }
 
@@ -84,6 +111,8 @@ public class auto extends LinearOpMode {
                 new Motor("left_elevator", DcMotor.Direction.REVERSE),
                 new Motor("right_elevator", DcMotor.Direction.FORWARD)
         };
+        arm = new Motor("arm", DcMotor.Direction.FORWARD);
+        box = new Motor("box", DcMotor.Direction.FORWARD);
         for (Motor elevator: elevators) {
             elevator.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
@@ -105,15 +134,15 @@ public class auto extends LinearOpMode {
 
             while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
                 turnSpeed = getSteeringCorrection(targetHeading, gain);
-                moveRobot(0, 0, turnSpeed,power);
-                check_elevator();
+                moveRobot(0, 0, turnSpeed, power);
+                check_elevator_arm();
                 updateTelemetry();
             }
             moveRobot(0, 0, 0, power);
             rotation_deg = degrees;
             if (recursive) {
                 sleep(200);
-                rotate(rotation_deg,gain/2, false, power/8);
+                rotate(rotation_deg, gain / 2, false, power / 8);
                 moveRobot(0, 0, 0, power);
             }
         }
@@ -121,7 +150,9 @@ public class auto extends LinearOpMode {
     }
 
     void dropSample() {
-
+        box.drive.setPower(-0.5);
+        sleep(500);
+        box.drive.setPower(0);
     }
 
     void driveToPoint(double new_x, double new_y) {
@@ -162,7 +193,7 @@ public class auto extends LinearOpMode {
             while (opModeIsActive() && Arrays.stream(motors).anyMatch(motor -> motor.drive.isBusy())) {
                 this.turnSpeed = getSteeringCorrection(rotation_deg, auto.P_DRIVE_GAIN);
                 moveRobot(drive_x/distance,drive_y/distance, turnSpeed, speed);
-                check_elevator();
+                check_elevator_arm();
                 updateTelemetry();
             }
             moveRobot(0,0,0, speed);
@@ -172,42 +203,71 @@ public class auto extends LinearOpMode {
         }
     }
 
-    void check_elevator() {
+    void check_elevator_arm() {
         for (Motor elevator : elevators) {
             elevator.position = elevator.drive.getCurrentPosition();
         }
         switch (elevator_state) {
-            case ELEVATOR_UP -> {
+            case TO_UP -> {
                 if (elevators[0].position >= elevator_position_up) {
-                    elevator_state = ElevatorState.ELEVATOR_STOPPED_UP;
+                    elevator_state = ElevatorState.UP;
                 } else {
                     for (Motor elevator: elevators) {
-                        elevator.drive.setPower(0.25);
+                        elevator.drive.setPower(1);
+                        if (arm_state == ArmState.REST) {
+                            arm_state = ArmState.TO_UP;
+                        }
                     }
                 }
-            } case ELEVATOR_DOWN -> {
-                if (elevators[0].position <= 25) {
-                    elevator_state = ElevatorState.ELEVATOR_STOPPED_DOWN;
+            } case TO_DOWN -> {
+                if (elevators[0].position <= elevator_position_down) {
+                    elevator_state = ElevatorState.DOWN;
                 } else {
                     for (Motor elevator: elevators) {
-                        elevator.drive.setPower(-0.25);
+                        elevator.drive.setPower(-1);
+                        if (arm_state == ArmState.UP || arm_state == ArmState.BASKET) {
+                            arm_state = ArmState.TO_REST;
+                        }
                     }
                 }
-            } case ELEVATOR_STOPPED_DOWN -> {
+            } case DOWN -> {
                 for (Motor elevator: elevators) {
                     elevator.drive.setPower(0);
                 }
-            } case ELEVATOR_STOPPED_UP -> {
+            } case UP -> {
                 for (Motor elevator: elevators) {
                     elevator.drive.setPower(0.001);
                 }
             }
         }
+
         double position_difference = elevators[0].position - elevators[1].position;
         double gain = 0.001;
         elevators[0].drive.setPower(elevators[0].drive.getPower() - gain * position_difference);
         elevators[1].drive.setPower(elevators[1].drive.getPower() + gain * position_difference);
 
+        arm.position = arm.drive.getCurrentPosition();
+        switch (arm_state) {
+            case TO_UP -> {
+                if (Math.abs(arm.position - arm_position_up) < 25) {
+                    arm_state = ArmState.UP;
+                } else {
+                    arm.drive.setPower(0.25 * (arm.position - arm_position_up)/Math.abs(arm.position - arm_position_up));
+                }
+            } case TO_REST -> {
+                if (Math.abs(arm.position - arm_position_rest) < 25) {
+                    arm_state = ArmState.REST;
+                } else {
+                    arm.drive.setPower(-0.25);
+                }
+            } case TO_BASKET -> {
+                if (Math.abs(arm.position - arm_position_basket) < 25) {
+                    arm_state = ArmState.BASKET;
+                } else {
+                    arm.drive.setPower(0.25);
+                }
+            } case BASKET, REST, UP -> arm.drive.setPower(0);
+        }
     }
 
     private void updateTelemetry() {
