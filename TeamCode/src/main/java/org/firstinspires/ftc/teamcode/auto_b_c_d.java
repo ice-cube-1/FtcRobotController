@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import static org.firstinspires.ftc.teamcode.robot_constants.*;
 import static org.firstinspires.ftc.teamcode.field_constants.*;
 
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 /* start xy are coordinates from far observation zone corner
  *  rotation is anticlockwise, with zero pointing from observation zone -> net zone
  *  general measurements are in inches, tolerance to walls is 2 inches */
 
-@TeleOp(name="auto_b/c/d", group="Robot")
+@Autonomous(name="auto_b/c/d", group="auto")
 public class auto_b_c_d extends auto {
     @Override
     public void runOpMode() {

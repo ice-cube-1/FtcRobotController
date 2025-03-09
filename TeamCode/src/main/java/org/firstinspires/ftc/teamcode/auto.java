@@ -18,9 +18,9 @@ import java.util.Arrays;
 
 abstract public class auto extends LinearOpMode {
 
-    double start_x = 0;
-    double start_y = 0;
-    double initial_rotation = 90;
+    protected double start_x = 0;
+    protected double start_y = 0;
+    protected double initial_rotation = 90;
 
     private Motor[] motors = null;
     private Motor[] elevators = null;
@@ -28,9 +28,9 @@ abstract public class auto extends LinearOpMode {
     private Motor box = null;
     private IMU imu = null;
 
-    private double x = start_x;
-    private double y = start_y;
-    private double rotation_deg = initial_rotation;
+    private double x;
+    private double y;
+    private double rotation_deg;
     private double turnSpeed = 0;
     private double drive_x = 0;
     private double drive_y = 0;
@@ -39,24 +39,10 @@ abstract public class auto extends LinearOpMode {
     ElevatorState elevator_state = ElevatorState.DOWN;
     ArmState arm_state = ArmState.REST;
 
-
-    @Override
-    public void runOpMode() {
-        init_stuff();
-        /*
-        * PUT DRIVE CODE HERE
-        * BASE IT ON DRIVE TO POINT, TURN TO POSITION (RELATIVE TO START) CLOCKWISE ETC
-        * SHOULD CURRENTLY BE IN INCHES / DEGREES
-        */
-        driveToPoint(0,50);
-        driveToPoint(10,50);
-        rotate(45, P_TURN_GAIN, true, speed/2);
-        driveToPoint(0,0);
-        rotate(0, P_TURN_GAIN, true, speed/2);
-    }
-
-
     void init_stuff() {
+        x = start_x;
+        y = start_y;
+        rotation_deg = initial_rotation;
         motors = new Motor[] {new Motor("left_front_drive", DcMotor.Direction.REVERSE),
                 new Motor("right_front_drive", DcMotor.Direction.FORWARD),
                 new Motor("left_back_drive", DcMotor.Direction.REVERSE),
@@ -90,7 +76,7 @@ abstract public class auto extends LinearOpMode {
             moveRobot(0, 0, 0, power);
             rotation_deg = targetHeading;
             if (recursive) {
-                sleep(400);
+                sleep(100);
                 rotate(rotation_deg, gain / 2, false, power / 8);
                 moveRobot(0, 0, 0, power);
             }
@@ -145,8 +131,8 @@ abstract public class auto extends LinearOpMode {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             moveRobot(0,0,0, speed);
-            sleep(200);
-            rotate(rotation_deg,P_TURN_GAIN/1.5, false, speed/4);
+            sleep(100);
+            rotate(rotation_deg,P_TURN_GAIN/2, false, speed/6);
             moveRobot(0,0,0, speed);
         }
     }
