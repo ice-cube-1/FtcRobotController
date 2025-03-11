@@ -67,7 +67,7 @@ abstract public class auto extends LinearOpMode {
     void rotate(double targetHeading, double gain, boolean recursive, double power) {
         if (opModeIsActive()) {
 
-            while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 1) {
+            while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 2) {
                 turnSpeed = getSteeringCorrection(targetHeading, gain);
                 moveRobot(0, 0, turnSpeed, power);
                 check_elevator_arm();

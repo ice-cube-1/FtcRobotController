@@ -13,7 +13,7 @@ public final class robot_constants {
 
     static final double speed = 0.5;
 
-    static final int elevator_position_up = 3000;
+    static final int elevator_position_up = 5000;
     static final int elevator_position_down = 25;
 
     static final int arm_position_basket = 400;

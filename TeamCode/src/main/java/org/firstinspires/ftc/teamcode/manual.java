@@ -70,11 +70,11 @@ public class manual extends LinearOpMode {
             }
 
             if (gamepad1.a) {
-                arm.drive.setPower(0.25);
-            } if (gamepad1.b) {
-                arm.drive.setPower(-0.25);
+                arm.drive.setPower(1);
+            } else if (gamepad1.b) {
+                arm.drive.setPower(-1);
             } else {
-                arm.drive.setPower(0);
+                arm.drive.setPower(0.01*-arm.drive.getPower()/Math.abs(arm.drive.getPower()));
             }
 
 
