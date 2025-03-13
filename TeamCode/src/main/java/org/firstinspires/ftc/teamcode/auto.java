@@ -121,7 +121,7 @@ abstract public class auto extends LinearOpMode {
                 motor.drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             moveRobot(drive_x/distance, drive_y/distance, 0, speed);
-            while (opModeIsActive() && Arrays.stream(motors).anyMatch(motor -> motor.drive.isBusy())) {
+            while (opModeIsActive() && (motors[0].drive.isBusy() || motors[1].drive.isBusy())) {
                 this.turnSpeed = getSteeringCorrection(rotation_deg, P_DRIVE_GAIN);
                 moveRobot(drive_x/distance,drive_y/distance, turnSpeed, speed);
                 check_elevator_arm();
@@ -240,6 +240,19 @@ abstract public class auto extends LinearOpMode {
         motors[2].speed = drive_y - drive_x + turn;
         motors[3].speed = drive_y + drive_x - turn;
         double max = Arrays.stream(motors).mapToDouble(motor -> motor.speed).max().getAsDouble();
+        if (drive_y == 0) {
+            for (Motor motor: motors) {
+                motor.speed*=0.98;
+            }
+        } else if (drive_x == 0) {
+            for (Motor motor: motors) {
+                motor.speed*=0.9;
+            }
+        } else {
+            for (Motor motor: motors) {
+                motor.speed*=0.92;
+            }
+        }
         for (Motor motor: motors) {
             motor.speed = motor.speed*power/max;
             motor.drive.setPower(motor.speed);
