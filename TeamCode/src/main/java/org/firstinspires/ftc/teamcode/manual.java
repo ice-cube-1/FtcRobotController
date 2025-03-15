@@ -37,13 +37,14 @@ public class manual extends LinearOpMode {
 
     void move_arm() {
         if (gamepad1.a) {
-            arm.drive.setPower(0.5);
+            arm.drive.setPower(1);
         } else if (gamepad1.b) {
-            arm.drive.setPower(-0.5);
+            arm.drive.setPower(-1);
         } else {
-            arm.drive.setPower(0);
+            arm.drive.setPower(gamepad1.left_trigger);
         }
     }
+
 
     void move_box() {
         if (gamepad1.left_bumper) {
@@ -115,6 +116,8 @@ public class manual extends LinearOpMode {
         box = new Motor("box", DcMotor.Direction.FORWARD);
         arm = new Motor("arm", DcMotor.Direction.FORWARD);
         box.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        arm.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
     }
 
     class Motor {
@@ -127,19 +130,6 @@ public class manual extends LinearOpMode {
             this.drive.setDirection(direction);
             this.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             this.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
-    class Arm_servo {
-        Servo servo;
-        int direction;
-        Arm_servo(String name, int direction) {
-            this.servo = hardwareMap.get(Servo.class, name);
-            this.direction = direction;
-        }
-        void move(double move_by) {
-            double position = servo.getPosition();
-            position+=direction*move_by;
-            servo.setPosition(position);
         }
     }
 }

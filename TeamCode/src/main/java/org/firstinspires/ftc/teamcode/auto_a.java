@@ -14,10 +14,10 @@ public class auto_a extends auto {
     @Override
     public void runOpMode() {
         start_x = robot_length_inches/2;
-        start_y = 20; // CHANGE THIS
+        start_y = 48; // CHANGE THIS
         initial_rotation = -90; // CHANGE THIS
         init_stuff();
         driveToPoint(robot_length_inches/2 + 2,start_y);
-        driveToPoint(robot_length_inches/2 + 2, robot_length_inches/2 + 2);
+        driveToPoint(robot_length_inches/2 + 2, robot_length_inches/2 + 5);
     }
 }

@@ -27,16 +27,14 @@ public class auto_b_c_d extends auto {
         rotate(0,P_TURN_GAIN, true, speed/2);
         driveToPoint(basket_distance_from_corner, field_length - basket_distance_from_corner);
         rotate(45,P_TURN_GAIN, true, speed/2);
-        while (elevator_state != ElevatorState.UP /*|| arm_state != ArmState.BASKET */) {
+        while (elevator_state != ElevatorState.UP || arm_state != ArmState.BASKET) {
             check_elevator_arm();
         }
-        /*
-        arm_state = ArmState.TO_BASKET;
+        arm_state = ArmState.MOTOR_TO_BASKET;
         while (arm_state != ArmState.BASKET) {
             check_elevator_arm();
         }
         dropSample();
-         */
         //rotate(90, P_TURN_GAIN, true, speed/2);
         elevator_state = ElevatorState.TO_DOWN;
 
@@ -50,7 +48,7 @@ public class auto_b_c_d extends auto {
         // and if we park first)
         rotate(0,P_TURN_GAIN, true, speed/2);
         driveToPoint(robot_length_inches/2 + 2, robot_length_inches/2 + 2);
-        while (elevator_state != ElevatorState.DOWN /* || arm_state != ArmState.REST*/ ) {
+        while (elevator_state != ElevatorState.DOWN  || arm_state != ArmState.REST ) {
             check_elevator_arm();
         }
     }

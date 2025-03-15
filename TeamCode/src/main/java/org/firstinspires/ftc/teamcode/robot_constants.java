@@ -15,29 +15,22 @@ public final class robot_constants {
 
     static final int elevator_position_up = 5000;
     static final int elevator_position_down = 25;
-    static final int elevator_position_catapult = 1000;
 
     static final int arm_motor_position_basket = 400;
     static final int arm_motor_position_rest = 200;
-    static final int arm_motor_position_catapult = 0;
 
 
     enum ElevatorState {
         TO_UP,
         TO_DOWN,
-        TO_CATAPULT,
         UP,
         DOWN,
-        CATAPULT
-
     }
 
     enum ArmState {
         MOTOR_TO_REST,
         REST,
         MOTOR_TO_BASKET,
-        BASKET,
-        MOTOR_TO_CATAPULT,
-        CATAPULT
+        BASKET
     }
 }
