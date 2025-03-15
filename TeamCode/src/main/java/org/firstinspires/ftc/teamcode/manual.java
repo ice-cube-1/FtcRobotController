@@ -13,7 +13,6 @@ public class manual extends LinearOpMode {
 
     Motor[] motors;
     Motor[] elevators;
-    Arm_servo[] arm_servos;
     Motor box;
     Motor arm;
 
@@ -25,34 +24,32 @@ public class manual extends LinearOpMode {
             this.move_elevators();
             this.move_drivetrain();
             this.move_box();
-
-            if (gamepad1.a) {
-                arm.drive.setPower(0.5);
-            } else if (gamepad1.b) {
-                arm.drive.setPower(-0.5);
-            } else {
-                arm.drive.setPower(0);
-            }
+            this.move_arm();
+            this.updateTelemetry();
         }
     }
 
+    private void updateTelemetry() {
+        telemetry.addData("arm pos", arm.drive.getCurrentPosition());
+        telemetry.addData("elevator pos", elevators[0].drive.getCurrentPosition());
+        telemetry.update();
+    }
+
     void move_arm() {
-        if (gamepad1.left_trigger > gamepad1.right_trigger) {
-            for (Arm_servo servo: arm_servos) {
-                servo.move(gamepad1.left_trigger * 0.002);
-            }
+        if (gamepad1.a) {
+            arm.drive.setPower(0.5);
+        } else if (gamepad1.b) {
+            arm.drive.setPower(-0.5);
         } else {
-            for (Arm_servo servo: arm_servos) {
-                servo.move(gamepad1.right_trigger * -0.002);
-            }
+            arm.drive.setPower(0);
         }
     }
 
     void move_box() {
         if (gamepad1.left_bumper) {
-            box.drive.setPower(0.5);
+            box.drive.setPower(0.7);
         } else if (gamepad1.right_bumper) {
-            box.drive.setPower(-0.5);
+            box.drive.setPower(-0.7);
         } else {
             box.drive.setPower(0);
         }
@@ -61,11 +58,11 @@ public class manual extends LinearOpMode {
     void move_elevators() {
         if (gamepad1.dpad_up) {
             for (Motor elevator: elevators) {
-                elevator.drive.setPower(0.25);
+                elevator.drive.setPower(0.4);
             }
         } else if (gamepad1.dpad_down) {
             for (Motor elevator: elevators) {
-                elevator.drive.setPower(-0.25);
+                elevator.drive.setPower(-0.4);
             }
         } else {
             for (Motor elevator: elevators) {
@@ -114,12 +111,10 @@ public class manual extends LinearOpMode {
                 new Motor("left_elevator", DcMotor.Direction.REVERSE),
                 new Motor("right_elevator", DcMotor.Direction.FORWARD)
         };
-        arm_servos = new Arm_servo[]{
-                new Arm_servo("left", 1),
-                new Arm_servo("right", -1)
-        };
+
         box = new Motor("box", DcMotor.Direction.FORWARD);
         arm = new Motor("arm", DcMotor.Direction.FORWARD);
+        box.drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     class Motor {
@@ -142,7 +137,9 @@ public class manual extends LinearOpMode {
             this.direction = direction;
         }
         void move(double move_by) {
-            servo.setPosition(servo.getPosition()+direction*move_by);
+            double position = servo.getPosition();
+            position+=direction*move_by;
+            servo.setPosition(position);
         }
     }
 }

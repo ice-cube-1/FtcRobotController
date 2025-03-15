@@ -27,7 +27,7 @@ public class auto_b_c_d extends auto {
         rotate(0,P_TURN_GAIN, true, speed/2);
         driveToPoint(basket_distance_from_corner, field_length - basket_distance_from_corner);
         rotate(45,P_TURN_GAIN, true, speed/2);
-        while (elevator_state != ElevatorState.UP /*|| arm_state != ArmState.UP */) {
+        while (elevator_state != ElevatorState.UP /*|| arm_state != ArmState.BASKET */) {
             check_elevator_arm();
         }
         /*
