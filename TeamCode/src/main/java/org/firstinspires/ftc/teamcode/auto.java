@@ -149,9 +149,6 @@ abstract public class auto extends LinearOpMode {
                 } else {
                     for (Motor elevator: elevators) {
                         elevator.drive.setPower(0.5);
-                        if (arm_state == ArmState.REST) {
-                            arm_state = ArmState.MOTOR_TO_BASKET;
-                        }
                     }
                 }
             } case TO_DOWN -> {
@@ -166,18 +163,9 @@ abstract public class auto extends LinearOpMode {
                 for (Motor elevator: elevators) {
                     elevator.drive.setPower(0);
                 }
-            } case UP, CATAPULT -> {
-                for (Motor elevator: elevators) {
+            } case UP -> {
+                for (Motor elevator : elevators) {
                     elevator.drive.setPower(0.001);
-                }
-            } case TO_CATAPULT -> {
-                if (elevators[0].position >= elevator_position_catapult) {
-                    elevator_state = ElevatorState.CATAPULT;
-                    arm_state = ArmState.MOTOR_TO_CATAPULT;
-                } else {
-                    for (Motor elevator: elevators) {
-                        elevator.drive.setPower(0.5);
-                    }
                 }
             }
         }
@@ -201,15 +189,7 @@ abstract public class auto extends LinearOpMode {
                 } else {
                     arm.drive.setPower(0.7);
                 }
-            } case MOTOR_TO_CATAPULT -> {
-                if (Math.abs(arm.position - arm_motor_position_catapult) < 25) {
-                    arm_state = ArmState.CATAPULT;
-                    elevator_state = ElevatorState.TO_DOWN;
-                } else {
-                    arm.drive.setPower(-0.7);
-                }
-            }
-            case BASKET, REST, CATAPULT -> arm.drive.setPower(0.001);
+            } case BASKET, REST -> arm.drive.setPower(0.001);
         }
     }
 
