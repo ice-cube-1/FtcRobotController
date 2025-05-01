@@ -20,28 +20,28 @@ public class wheelTest extends LinearOpMode {
     }
     @Override
     public void runOpMode() {
-        motors = new Motor[]{new Motor("left_front_drive", DcMotor.Direction.REVERSE),
-                new Motor("right_front_drive", DcMotor.Direction.FORWARD),
-                new Motor("left_back_drive", DcMotor.Direction.REVERSE),
-                new Motor("right_back_drive", DcMotor.Direction.FORWARD)};
+        motors = new Motor[]{new Motor("left_front_drive", DcMotor.Direction.FORWARD),
+                new Motor("right_front_drive", DcMotor.Direction.REVERSE),
+                new Motor("left_back_drive", DcMotor.Direction.FORWARD),
+                new Motor("right_back_drive", DcMotor.Direction.REVERSE)};
         waitForStart();
         while (opModeIsActive()) {
-            if (gamepad1.left_stick_x < -0.5) {
+            if (gamepad1.dpad_up) {
                 motors[0].drive.setPower(0.2);
             } else {
                 motors[0].drive.setPower(0);
             }
-            if (gamepad1.left_stick_x > 0.5) {
+            if (gamepad1.dpad_down) {
                 motors[1].drive.setPower(0.2);
             } else {
                 motors[1].drive.setPower(0);
             }
-            if (gamepad1.right_stick_x < -0.5) {
+            if (gamepad1.dpad_left) {
                 motors[2].drive.setPower(0.2);
             } else {
                 motors[2].drive.setPower(0);
             }
-            if (gamepad1.right_stick_x > 0.5) {
+            if (gamepad1.dpad_right) {
                 motors[3].drive.setPower(0.2);
             } else {
                 motors[3].drive.setPower(0);
