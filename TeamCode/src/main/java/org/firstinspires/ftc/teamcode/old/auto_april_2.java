@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.old;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -13,8 +13,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "Auto AprilTag Center", group = "Robot")
-public class auto_new_april extends LinearOpMode {
+@Autonomous(name = "Auto AprilTag Center 2", group = "Robot")
+public class auto_april_2 extends LinearOpMode {
 
     private DcMotor lf, rf, lb, rb;
     private AprilTagProcessor aprilTag;
@@ -22,7 +22,7 @@ public class auto_new_april extends LinearOpMode {
 
     private final double targetRange = 30.0; // inches
     private final double rangeTolerance = 1.0; // inches
-    private final double bearingTolerance = 2.0; // degrees
+    private final double bearingTolerance = 4.0; // degrees
     private final double yawTolerance = 2.0; // degrees
 
     @Override
@@ -45,9 +45,7 @@ public class auto_new_april extends LinearOpMode {
 
         // Vision setup
         aprilTag = AprilTagProcessor.easyCreateWithDefaults();
-        visionPortal = VisionPortal.easyCreateWithDefaults(
-                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
-
+        visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
         FtcDashboard.getInstance().startCameraStream(visionPortal, 0);
         telemetry.addLine("Ready to start");
         telemetry.update();
@@ -74,15 +72,19 @@ public class auto_new_april extends LinearOpMode {
                     stopAllMotors();
                     telemetry.addLine("Centered on tag!");
                 } else {
-                    double forward = clip(rangeError / 12.0);   // normalize range
-                    double strafe = clip(-bearing / 15.0);      // strafe left/right (invert because bearing is +right)
-                    double turn = clip(yaw / 30.0);            // rotate (invert to correct yaw direction)
+                    double forward = clip(rangeError / 2.0);   // normalize range
+                    double strafe = clip(bearing / 15.0);      // strafe left/right (invert because bearing is +right)
+                    double turn = clip(yaw / 15.0);            // rotate (invert to correct yaw direction)
+
+                    telemetry.addLine("forward "+forward);
+                    telemetry.addLine("strafe "+strafe);
+                    telemetry.addLine("turn "+turn);
 
                     // Mecanum drive mixing
-                    lf.setPower(0.1 * (forward + strafe + turn));
-                    rf.setPower(0.1 * (forward - strafe - turn));
-                    lb.setPower(0.1 * (forward - strafe + turn));
-                    rb.setPower(0.1 * (forward + strafe - turn));
+                    lf.setPower(0.2 * (forward + strafe + turn));
+                    rf.setPower(0.2 * (forward - strafe - turn));
+                    lb.setPower(0.2 * (forward - strafe + turn));
+                    rb.setPower(0.2 * (forward + strafe - turn));
                 }
             } else {
                 stopAllMotors();

@@ -19,7 +19,7 @@ public class auto_e extends auto_new {
         init_stuff();
         driveToPoint(-10,-10);
         driveToPoint(0,0);
-        centerOnAprilTag(30);
+        centerOnAprilTag(30,20);
         //rotate(45, P_TURN_GAIN, true, speed);
     }
 }

@@ -86,33 +86,37 @@ abstract public class auto_new extends LinearOpMode {
         return Math.max(-1.0, Math.min(1.0, val));
     }
 
-    void centerOnAprilTag(double target_range) {
+    void centerOnAprilTag(double target_range, double target_angle_degrees) {
         List<AprilTagDetection> detections = aprilTag.getDetections();
         telemetry.addData("detection size ",detections.size());
         double forward = 0;
         double strafe = 0;
         double turn = 0;
 
+        double target_angle_rad = Math.toRadians(target_angle_degrees);
+        double desiredX = -target_range * Math.sin(target_angle_rad);
+        double desiredY = target_range * Math.cos(target_angle_rad);
+
         while (true) {
             if (detections.size() == 1) {
                 AprilTagDetection tag = detections.get(0);
 
-                double rangeError = tag.ftcPose.range - target_range;
-                double bearing = tag.ftcPose.bearing;
-                double yaw = tag.ftcPose.yaw;
-                telemetry.addLine(String.format("Range: %.1f in, Bearing: %.1f°, Yaw: %.1f°", tag.ftcPose.range, bearing, yaw));
+                double errorX = -tag.ftcPose.x+desiredX;
+                double errorY = tag.ftcPose.y - desiredY;
+                double yawError = tag.ftcPose.yaw - target_angle_degrees;
 
-                boolean centered = Math.abs(rangeError) < range_tolerance &&
-                        Math.abs(bearing) < bearing_tolerance &&
-                        Math.abs(yaw) < yaw_tolerance;
+                telemetry.addLine(String.format("X Error: %.1f, Y Error: %.1f, Yaw Error: %.1f°", errorX, errorY, yawError));
+                telemetry.update();
 
-                if (centered) {
-                    break;
-                }
+                boolean centered = Math.abs(errorX) < strafe_tolerance &&
+                        Math.abs(errorY) < range_tolerance &&
+                        Math.abs(yawError) < yaw_tolerance;
 
-                forward = clip(rangeError / 2.0);
-                strafe = clip(bearing / 15.0);
-                turn = clip(yaw / 15.0);
+                if (centered) break;
+
+                forward = clip(errorY / 2.0);
+                strafe = clip(errorX / 15.0);
+                turn = clip(yawError / 15.0);
 
             }
 
@@ -122,13 +126,11 @@ abstract public class auto_new extends LinearOpMode {
             motors[3].drive.setPower(0.2 * (forward + strafe - turn));
 
             detections = aprilTag.getDetections();
-            telemetry.update();
 
         }
         for (Motor motor: motors) {
             motor.drive.setPower(0);
         }
-        telemetry.update();
     }
 
     void driveToPoint(double new_x, double new_y) {

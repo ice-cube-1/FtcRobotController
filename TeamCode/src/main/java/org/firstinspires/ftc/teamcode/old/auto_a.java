@@ -1,9 +1,8 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.old;
 
 import static org.firstinspires.ftc.teamcode.robot_constants.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 /* start xy are coordinates from far observation zone corner
  *  rotation is anticlockwise, with zero pointing from observation zone -> net zone
