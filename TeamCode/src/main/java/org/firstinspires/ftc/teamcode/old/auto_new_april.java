@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.old;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 @Autonomous(name = "Auto AprilTag Center", group = "Robot")
+@Disabled
 public class auto_new_april extends LinearOpMode {
 
     private DcMotor lf, rf, lb, rb;
