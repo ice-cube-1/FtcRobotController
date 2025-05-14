@@ -59,22 +59,37 @@ abstract public class auto_new extends LinearOpMode {
     }
 
 
-    void rotate(double targetHeading, double gain, boolean recursive, double power) {
-        if (opModeIsActive()) {
-            while (opModeIsActive() && Math.abs(getHeading() - targetHeading) > 2) {
-                turnSpeed = getSteeringCorrection(targetHeading, gain);
-                moveRobot(0, 0, turnSpeed, power);
-            }
-            moveRobot(0, 0, 0, power);
-            rotation_deg = targetHeading;
-            if (recursive) {
-                sleep(100);
-                rotate(rotation_deg, gain / 2, false, power / 8);
-                moveRobot(0, 0, 0, power);
-            }
+    void rotate(double targetHeading) {
+        double headingError = getHeading() - targetHeading;
+        while (headingError > 180) headingError -= 360;
+        while (headingError <= -180) headingError += 360;
+
+        double integral = 0;
+        double lastError = headingError;
+        long lastTime = System.nanoTime();
+
+        while (opModeIsActive() && Math.abs(headingError) > 1.0) {
+            long now = System.nanoTime();
+            double deltaTime = (now - lastTime) / 1e9;  // in seconds
+            lastTime = now;
+
+            headingError = getHeading() - targetHeading;
+            while (headingError > 180) headingError -= 360;
+            while (headingError <= -180) headingError += 360;
+
+            integral += headingError * deltaTime;
+            double derivative = (headingError - lastError) / deltaTime;
+            lastError = headingError;
+
+            double turn = kP_turn * headingError + kI_turn * integral + kD_turn * derivative;
+            turn = clip(turn);
+            moveRobot(0, 0, turn, speed);
         }
 
+        moveRobot(0, 0, 0, speed);
+        rotation_deg = targetHeading;
     }
+
     private double clip(double val) {
         return Math.max(-1.0, Math.min(1.0, val));
     }
@@ -155,16 +170,29 @@ abstract public class auto_new extends LinearOpMode {
                 motor.drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             moveRobot(drive_x/distance, drive_y/distance, 0, speed);
+            double integralTurn = 0, lastErrorTurn = 0;
+            long lastTime = System.nanoTime();
             while (opModeIsActive() && (motors[0].drive.isBusy() || motors[1].drive.isBusy())) {
-                this.turnSpeed = getSteeringCorrection(rotation_deg, P_DRIVE_GAIN);
-                moveRobot(drive_x/distance,drive_y/distance, turnSpeed, speed);
+                double headingError = getHeading() - rotation_deg;
+                while (headingError > 180) headingError -= 360;
+                while (headingError <= -180) headingError += 360;
+
+                long now = System.nanoTime();
+                double deltaTime = (now - lastTime) / 1e9;
+                lastTime = now;
+                integralTurn += headingError * deltaTime;
+                double derivativeTurn = (headingError - lastErrorTurn) / deltaTime;
+                double pidTurn = kP_drive * headingError + kI_drive * integralTurn + kD_drive * derivativeTurn;
+                lastErrorTurn = headingError;
+                moveRobot(drive_x/distance, drive_y/distance, -pidTurn, speed);
             }
+
             for (Motor motor: motors) {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             moveRobot(0,0,0, speed);
             sleep(100);
-            rotate(rotation_deg,P_TURN_GAIN/2, false, speed/6);
+            rotate(rotation_deg);
             moveRobot(0,0,0, speed);
         }
     }
@@ -212,7 +240,7 @@ abstract public class auto_new extends LinearOpMode {
     double getHeading() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         yaw = orientation.getYaw(AngleUnit.DEGREES);
-        return orientation.getYaw(AngleUnit.DEGREES) + initial_rotation;
+        return yaw + initial_rotation;
     }
 
 }

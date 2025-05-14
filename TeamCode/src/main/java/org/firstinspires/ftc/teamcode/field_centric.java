@@ -49,7 +49,7 @@ public class field_centric extends LinearOpMode {
             if (max > 1.0) {
                 scaledPower /= max;
             }
-            motor.drive.setPower(scaledPower * 0.6);
+            motor.drive.setPower(scaledPower);
         }
 
         telemetry.addData("Heading", Math.toDegrees(heading));

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 public final class robot_constants {
     static final double P_TURN_GAIN = 0.015;
-    static final double P_DRIVE_GAIN = 0.07;
 
     static final double COUNTS_PER_MOTOR_REV = (double) (3249 * 28) / 121 ;
     static final double DRIVE_GEAR_REDUCTION = 1;
@@ -14,4 +13,12 @@ public final class robot_constants {
     static final double range_tolerance = 1.0;
     static final double strafe_tolerance = 1.0;
     static final double yaw_tolerance = 4.0;
+
+    static final double kI_drive = 0;
+    static final double kP_drive = 0.1;
+    static final double kD_drive = 0;
+
+    static final double kI_turn = 0;
+    static final double kP_turn = 0.1;
+    static final double kD_turn = 0;
 }
