@@ -83,10 +83,10 @@ abstract public class auto_new extends LinearOpMode {
 
             double turn = kP_turn * headingError + kI_turn * integral + kD_turn * derivative;
             turn = clip(turn);
-            moveRobot(0, 0, turn, speed);
+            moveRobot(0, 0, turn);
         }
 
-        moveRobot(0, 0, 0, speed);
+        moveRobot(0, 0, 0);
         rotation_deg = targetHeading;
     }
 
@@ -169,7 +169,7 @@ abstract public class auto_new extends LinearOpMode {
                 motor.drive.setTargetPosition(motor.target);
                 motor.drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
-            moveRobot(drive_x/distance, drive_y/distance, 0, speed);
+            moveRobot(drive_x/distance, drive_y/distance, 0);
             double integralTurn = 0, lastErrorTurn = 0;
             long lastTime = System.nanoTime();
             while (opModeIsActive() && (motors[0].drive.isBusy() || motors[1].drive.isBusy())) {
@@ -184,16 +184,16 @@ abstract public class auto_new extends LinearOpMode {
                 double derivativeTurn = (headingError - lastErrorTurn) / deltaTime;
                 double pidTurn = kP_drive * headingError + kI_drive * integralTurn + kD_drive * derivativeTurn;
                 lastErrorTurn = headingError;
-                moveRobot(drive_x/distance, drive_y/distance, -pidTurn, speed);
+                moveRobot(drive_x/distance, drive_y/distance, -pidTurn);
             }
 
             for (Motor motor: motors) {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            moveRobot(0,0,0, speed);
+            moveRobot(0,0,0);
             sleep(100);
             rotate(rotation_deg);
-            moveRobot(0,0,0, speed);
+            moveRobot(0,0,0);
         }
     }
 
@@ -209,23 +209,18 @@ abstract public class auto_new extends LinearOpMode {
         }
     }
 
-    void moveRobot(double drive_x, double drive_y, double turn, double power) {
+    
+
+    void moveRobot(double drive_x, double drive_y, double turn) {
         motors[0].speed = drive_y + drive_x + turn;
         motors[1].speed = drive_y - drive_x - turn;
         motors[2].speed = drive_y - drive_x + turn;
         motors[3].speed = drive_y + drive_x - turn;
         double max = Arrays.stream(motors).mapToDouble(motor -> motor.speed).max().getAsDouble();
         for (Motor motor: motors) {
-            motor.speed = motor.speed*power/max;
+            motor.speed = motor.speed * speed / max;
             motor.drive.setPower(motor.speed);
         }
-    }
-
-    double getSteeringCorrection(double desiredHeading, double proportionalGain) {
-        double headingError = getHeading() - desiredHeading;
-        while (headingError > 180)  headingError -= 360;
-        while (headingError <= -180) headingError += 360;
-        return clip(-headingError * proportionalGain);
     }
 
     IMU InitIMU() {

@@ -28,7 +28,6 @@ public class field_centric extends LinearOpMode {
     }
 
     void move_drivetrain() {
-        // Read joystick values
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
         double turn = gamepad1.right_stick_x;
@@ -36,8 +35,6 @@ public class field_centric extends LinearOpMode {
 
         double rotatedX = x * Math.cos(heading) - y * Math.sin(heading);
         double rotatedY = x * Math.sin(heading) + y * Math.cos(heading);
-        telemetry.addLine(heading + " "+ rotatedY + " "+rotatedX);
-        telemetry.update();
         motors[0].power = rotatedY - rotatedX - turn;
         motors[1].power = rotatedY + rotatedX + turn;
         motors[2].power = rotatedY + rotatedX - turn;
