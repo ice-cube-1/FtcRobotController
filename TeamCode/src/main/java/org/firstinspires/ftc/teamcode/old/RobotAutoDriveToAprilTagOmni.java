@@ -67,11 +67,11 @@ import java.util.concurrent.TimeUnit;
  * This sample assumes that the current game AprilTag Library (usually for the current season) is being loaded by default,
  * so you should choose to approach a valid tag ID.
  *
- * Under manual control, the left stick will move forward/back & left/right.  The right stick will rotate the robot.
+ * Under Manual control, the left stick will move forward/back & left/right.  The right stick will rotate the robot.
  * Manually drive the robot until it displays Target data on the Driver Station.
  *
  * Press and hold the *Left Bumper* to enable the automatic "Drive to target" mode.
- * Release the Left Bumper to return to manual driving mode.
+ * Release the Left Bumper to return to Manual driving mode.
  *
  * Under "Drive To Target" mode, the robot has three goals:
  * 1) Turn the robot to always keep the Tag centered on the camera frame. (Use the Target Bearing to turn the robot.)
@@ -203,7 +203,7 @@ public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
                 telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             } else {
 
-                // drive using manual POV Joystick mode.  Slow things down to make the robot more controlable.
+                // drive using Manual POV Joystick mode.  Slow things down to make the robot more controlable.
                 drive  = -gamepad1.left_stick_y  / 2.0;  // Reduce drive rate to 50%.
                 strafe = -gamepad1.left_stick_x  / 2.0;  // Reduce strafe rate to 50%.
                 turn   = -gamepad1.right_stick_x / 3.0;  // Reduce turn rate to 33%.

@@ -4,12 +4,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.Arrays;
 
 @TeleOp(name="Manual", group="Linear OpMode")
-public class manual extends LinearOpMode {
+public class Manual extends LinearOpMode {
 
     Motor[] motors;
 
