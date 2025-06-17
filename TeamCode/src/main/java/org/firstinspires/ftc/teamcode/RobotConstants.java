@@ -24,4 +24,7 @@ public final class RobotConstants {
     static final double kD_turn = 0;
 
     static final double encoder_tolerance = 4;
+
+    static final double pincer_in_pos = 158;
+    static final double pincer_out_pos = 100;
 }

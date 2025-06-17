@@ -14,7 +14,7 @@ import java.util.Locale;
 
 abstract public class Auto extends LinearOpMode {
     Motor[] drivetrain_motors;
-    Othermotors otherMotors;
+    OtherMotors otherMotors;
     Sensors sensors;
 
     protected double x;
