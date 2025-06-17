@@ -8,7 +8,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name="wheel test", group="Linear OpMode")
 public class wheelTest extends LinearOpMode {
-    private Motor[] motors = null;
+    private Motor motor = null;
+    private double speed = 0.2;
     class Motor {
         DcMotor drive;
         Motor(String name, DcMotorSimple.Direction direction) {
@@ -20,32 +21,14 @@ public class wheelTest extends LinearOpMode {
     }
     @Override
     public void runOpMode() {
-        motors = new Motor[]{new Motor("left_front_drive", DcMotor.Direction.FORWARD),
-                new Motor("right_front_drive", DcMotor.Direction.REVERSE),
-                new Motor("left_back_drive", DcMotor.Direction.FORWARD),
-                new Motor("right_back_drive", DcMotor.Direction.REVERSE)};
+        motor = new Motor("motor", DcMotor.Direction.FORWARD);
         waitForStart();
         while (opModeIsActive()) {
             if (gamepad1.dpad_up) {
-                motors[0].drive.setPower(0.2);
-            } else {
-                motors[0].drive.setPower(0);
-            }
-            if (gamepad1.dpad_down) {
-                motors[1].drive.setPower(0.2);
-            } else {
-                motors[1].drive.setPower(0);
-            }
-            if (gamepad1.dpad_left) {
-                motors[2].drive.setPower(0.2);
-            } else {
-                motors[2].drive.setPower(0);
-            }
-            if (gamepad1.dpad_right) {
-                motors[3].drive.setPower(0.2);
-            } else {
-                motors[3].drive.setPower(0);
-            }
+                motor.drive.setPower(speed);
+            } else if (gamepad1.dpad_down) {
+                motor.drive.setPower(-speed);
+            } else motor.drive.setPower(0);
         }
     }
 }

@@ -29,8 +29,8 @@ public class field_centric extends LinearOpMode {
 
     void move_drivetrain() {
         double y = -gamepad1.left_stick_y;
-        double x = gamepad1.left_stick_x;
-        double turn = gamepad1.right_stick_x;
+        double x = -gamepad1.left_stick_x;
+        double turn = -gamepad1.right_stick_x;
         double heading = getHeadingRadians();
 
         double rotatedX = x * Math.cos(heading) - y * Math.sin(heading);
@@ -55,10 +55,10 @@ public class field_centric extends LinearOpMode {
 
     void init_hardware() {
         motors = new Motor[]{
-                new Motor("left_front_drive", DcMotor.Direction.FORWARD),
-                new Motor("left_back_drive", DcMotor.Direction.FORWARD),
-                new Motor("right_front_drive", DcMotor.Direction.REVERSE),
-                new Motor("right_back_drive", DcMotor.Direction.REVERSE),
+                new Motor("left_front_drive", DcMotor.Direction.REVERSE),
+                new Motor("left_back_drive", DcMotor.Direction.REVERSE),
+                new Motor("right_front_drive", DcMotor.Direction.FORWARD),
+                new Motor("right_back_drive", DcMotor.Direction.FORWARD),
         };
     }
 
@@ -74,7 +74,7 @@ public class field_centric extends LinearOpMode {
 
     private double getHeadingRadians() {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-        return -orientation.getYaw(AngleUnit.RADIANS);
+        return orientation.getYaw(AngleUnit.RADIANS);
     }
 
     class Motor {

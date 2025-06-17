@@ -44,10 +44,10 @@ public class Manual extends LinearOpMode {
 
     void init_hardware() {
         motors = new Motor[]{
-                new Motor("left_front_drive", DcMotor.Direction.FORWARD),
-                new Motor("left_back_drive", DcMotor.Direction.FORWARD),
-                new Motor("right_front_drive", DcMotor.Direction.REVERSE),
-                new Motor("right_back_drive", DcMotor.Direction.REVERSE),
+                new Motor("left_front_drive", DcMotor.Direction.REVERSE),
+                new Motor("left_back_drive", DcMotor.Direction.REVERSE),
+                new Motor("right_front_drive", DcMotor.Direction.FORWARD),
+                new Motor("right_back_drive", DcMotor.Direction.FORWARD),
         };
     }
 

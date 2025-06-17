@@ -4,6 +4,8 @@ import static org.firstinspires.ftc.teamcode.RobotConstants.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.Arrays;
@@ -12,7 +14,7 @@ import java.util.Locale;
 
 abstract public class Auto extends LinearOpMode {
     Motor[] drivetrain_motors;
-    OtherMotors otherMotors;
+    Othermotors otherMotors;
     Sensors sensors;
 
     protected double x;
@@ -25,12 +27,12 @@ abstract public class Auto extends LinearOpMode {
         y = start_y;
         rotation_deg = initial_rotation;
         this.initial_rotation = initial_rotation;
-        drivetrain_motors = new Motor[] {new Motor("left_front_drive", DcMotor.Direction.FORWARD),
-                new Motor("right_front_drive", DcMotor.Direction.REVERSE),
-                new Motor("left_back_drive", DcMotor.Direction.FORWARD),
-                new Motor("right_back_drive", DcMotor.Direction.REVERSE)};
-        otherMotors = new OtherMotors();
-        sensors = new Sensors();
+        drivetrain_motors = new Motor[] {new Motor(hardwareMap, "left_front_drive", DcMotor.Direction.REVERSE),
+                new Motor(hardwareMap, "left_back_drive", DcMotor.Direction.REVERSE),
+                new Motor(hardwareMap, "right_front_drive", DcMotor.Direction.FORWARD),
+                new Motor(hardwareMap, "right_back_drive", DcMotor.Direction.FORWARD)};
+        otherMotors = new OtherMotors(hardwareMap);
+        sensors = new Sensors(hardwareMap);
         waitForStart();
         sensors.imu.resetYaw();
     }
@@ -136,10 +138,10 @@ abstract public class Auto extends LinearOpMode {
 
     void driveDistance(double drive_x, double drive_y, double distance) {
         if (opModeIsActive()) {
-            drivetrain_motors[0].target = drivetrain_motors[0].drive.getCurrentPosition() + (int)((drive_y + drive_x) * COUNTS_PER_INCH);
-            drivetrain_motors[1].target = drivetrain_motors[1].drive.getCurrentPosition() + (int)((drive_y - drive_x) * COUNTS_PER_INCH);
-            drivetrain_motors[2].target = drivetrain_motors[2].drive.getCurrentPosition() + (int)((drive_y - drive_x) * COUNTS_PER_INCH);
-            drivetrain_motors[3].target = drivetrain_motors[3].drive.getCurrentPosition() + (int)((drive_y + drive_x) * COUNTS_PER_INCH);
+            drivetrain_motors[0].target = drivetrain_motors[0].drive.getCurrentPosition() + (int)((drive_y - drive_x) * COUNTS_PER_INCH);
+            drivetrain_motors[1].target = drivetrain_motors[1].drive.getCurrentPosition() + (int)((drive_y + drive_x) * COUNTS_PER_INCH);
+            drivetrain_motors[2].target = drivetrain_motors[2].drive.getCurrentPosition() + (int)((drive_y + drive_x) * COUNTS_PER_INCH);
+            drivetrain_motors[3].target = drivetrain_motors[3].drive.getCurrentPosition() + (int)((drive_y - drive_x) * COUNTS_PER_INCH);
             for (Motor motor: drivetrain_motors) {
                 motor.drive.setTargetPosition(motor.target);
                 motor.drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -174,10 +176,16 @@ abstract public class Auto extends LinearOpMode {
 
     void moveRobot(double drive_x, double drive_y, double turn) {
         otherMotors.check_FSMs();
-        drivetrain_motors[0].speed = drive_y + drive_x + turn;
-        drivetrain_motors[1].speed = drive_y - drive_x - turn;
-        drivetrain_motors[2].speed = drive_y - drive_x + turn;
-        drivetrain_motors[3].speed = drive_y + drive_x - turn;
+        telemetry.addLine(drive_y+" "+ drive_x +" " + turn);
+        telemetry.addLine(String.valueOf(drivetrain_motors[0].drive.getCurrentPosition()));
+        telemetry.addLine(String.valueOf(drivetrain_motors[1].drive.getCurrentPosition()));
+        telemetry.addLine(String.valueOf(drivetrain_motors[2].drive.getCurrentPosition()));
+        telemetry.addLine(String.valueOf(drivetrain_motors[3].drive.getCurrentPosition()));
+        telemetry.update();
+        drivetrain_motors[0].speed = drive_y - drive_x - turn;
+        drivetrain_motors[1].speed = drive_y + drive_x + turn;
+        drivetrain_motors[2].speed = drive_y + drive_x - turn;
+        drivetrain_motors[3].speed = drive_y - drive_x + turn;
         double max = Arrays.stream(drivetrain_motors).mapToDouble(motor -> motor.speed).max().getAsDouble();
         for (Motor motor: drivetrain_motors) {
             motor.speed = motor.speed * speed / max;
