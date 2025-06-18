@@ -8,21 +8,19 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import java.time.LocalDateTime;
-
 public class OtherMotors {
-    private final FSM_motor<MotorState> elevator;
-    private final FSM_motor<MotorState> arm;
-    private final FSM_servo<MotorState> pincer_rotation;
-    private final FSM_CR_servo<MotorState> claw_rotation;
-    private final FSM_CR_servo<StarState> spinning_star_a;
-    private final CRServo spinning_star_b;
-    private ElapsedTime timer = new ElapsedTime();
+    final FSM_motor<MotorState> elevator;
+    final FSM_motor<MotorState> arm;
+    final FSM_servo<ServoState> pincer_rotation;
+    final FSM_CR_servo<MotorState> claw_rotation;
+    final FSM_CR_servo<StarState> spinning_star_a;
+    final CRServo spinning_star_b;
+    ElapsedTime timer = new ElapsedTime();
 
     OtherMotors(HardwareMap hardwareMap) {
         elevator = new FSM_motor<>(new Motor(hardwareMap, "elevator", DcMotorSimple.Direction.FORWARD), MotorState.IN);
         arm = new FSM_motor<>(new Motor(hardwareMap, "arm", DcMotorSimple.Direction.FORWARD), MotorState.IN);
-        pincer_rotation = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer_rotation"), MotorState.IN);
+        pincer_rotation = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer_rotation"), ServoState.DOWN);
         claw_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "claw_rotation"), MotorState.IN);
         spinning_star_a = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "spinning_star_a"), StarState.STOP);
         spinning_star_b = hardwareMap.get(CRServo.class, "spinning_star_b");
@@ -59,6 +57,7 @@ public class OtherMotors {
 
     public enum MotorState { GOING_OUT, OUT, GOING_IN, IN }
     public enum StarState { IN, OUT, STOP }
+    public enum ServoState { UP, DOWN }
 
     void check_FSMs() {
         switch (elevator.state) {
@@ -94,8 +93,8 @@ public class OtherMotors {
             }
         }
         switch (pincer_rotation.state) {
-            case GOING_IN -> pincer_rotation.servo.setPosition(pincer_in_pos/180.0);
-            case GOING_OUT -> pincer_rotation.servo.setPosition(pincer_out_pos/180.0);
+            case UP -> pincer_rotation.servo.setPosition(pincer_in_pos/180.0);
+            case DOWN -> pincer_rotation.servo.setPosition(pincer_out_pos/180.0);
         }
         switch (claw_rotation.state) {
             case IN, OUT -> claw_rotation.servo.setPower(0.0);

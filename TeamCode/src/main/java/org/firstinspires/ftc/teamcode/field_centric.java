@@ -15,6 +15,7 @@ import java.util.Arrays;
 public class field_centric extends LinearOpMode {
 
     Motor[] motors;
+    OtherMotors otherMotors;
     private IMU imu;
 
     @Override
@@ -60,6 +61,7 @@ public class field_centric extends LinearOpMode {
                 new Motor("right_front_drive", DcMotor.Direction.FORWARD),
                 new Motor("right_back_drive", DcMotor.Direction.FORWARD),
         };
+        otherMotors = new OtherMotors(hardwareMap);
     }
 
     private void initIMU() {

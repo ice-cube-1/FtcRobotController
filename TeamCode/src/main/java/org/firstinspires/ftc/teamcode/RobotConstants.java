@@ -27,4 +27,8 @@ public final class RobotConstants {
 
     static final double pincer_in_pos = 158;
     static final double pincer_out_pos = 100;
+
+    static final double elevator_base_position = 0;
+    static final double arm_base_position = 0;
+    static final double claw_rotation_time = 500;
 }
