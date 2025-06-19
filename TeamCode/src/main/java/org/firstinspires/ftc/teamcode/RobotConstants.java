@@ -9,7 +9,7 @@ public final class RobotConstants {
     static final double WHEEL_DIAMETER_INCHES = 7.5 / 2.54;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
 
-    public static double speed = 0.5;
+    public static double speed = 0.2;
 
     static final double camera_range_tolerance = 1.0;
     static final double camera_strafe_tolerance = 1.0;

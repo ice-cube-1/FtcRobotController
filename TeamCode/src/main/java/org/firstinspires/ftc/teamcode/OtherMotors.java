@@ -8,22 +8,24 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public class OtherMotors {
     final FSM_motor<MotorState> elevator;
-    final FSM_motor<MotorState> arm;
-    final FSM_servo<ServoState> pincer_rotation;
-    final FSM_CR_servo<MotorState> claw_rotation;
-    final FSM_CR_servo<StarState> spinning_star_a;
-    final CRServo spinning_star_b;
-    ElapsedTime timer = new ElapsedTime();
+    //final FSM_motor<MotorState> arm;
+    //final FSM_servo<ServoState> pincer_rotation;
+    //final FSM_CR_servo<MotorState> claw_rotation;
+    //final FSM_CR_servo<StarState> spinning_star_a;
+    //final CRServo spinning_star_b;
+    //ElapsedTime timer = new ElapsedTime();
 
     OtherMotors(HardwareMap hardwareMap) {
         elevator = new FSM_motor<>(new Motor(hardwareMap, "elevator", DcMotorSimple.Direction.FORWARD), MotorState.IN);
-        arm = new FSM_motor<>(new Motor(hardwareMap, "arm", DcMotorSimple.Direction.FORWARD), MotorState.IN);
-        pincer_rotation = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer_rotation"), ServoState.DOWN);
-        claw_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "claw_rotation"), MotorState.IN);
-        spinning_star_a = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "spinning_star_a"), StarState.STOP);
-        spinning_star_b = hardwareMap.get(CRServo.class, "spinning_star_b");
+        //arm = new FSM_motor<>(new Motor(hardwareMap, "arm", DcMotorSimple.Direction.FORWARD), MotorState.IN);
+        //pincer_rotation = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer_rotation"), ServoState.DOWN);
+        //claw_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "claw_rotation"), MotorState.IN);
+        //spinning_star_a = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "spinning_star_a"), StarState.STOP);
+        //spinning_star_b = hardwareMap.get(CRServo.class, "spinning_star_b");
     }
 
     static class FSM_servo<T extends Enum<T>> {
@@ -76,7 +78,17 @@ public class OtherMotors {
                 else elevator.motor.drive.setPower(-speed);
             }
             case IN -> elevator.motor.drive.setPower(0);
+
+            case OUT -> {
+                if (Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
+                    elevator.motor.drive.setPower(0);
+                } if (Math.abs(elevator.motor.drive.getCurrentPosition()) < elevator.motor.target) {
+                    elevator.motor.drive.setPower(0.01);
+                }
+            }
         }
+
+        /*
         switch(arm.state) {
             case IN, OUT -> arm.motor.drive.setPower(0);
             case GOING_OUT -> {
@@ -131,6 +143,7 @@ public class OtherMotors {
                 }
             }
         }
+        */
     }
 
 }
