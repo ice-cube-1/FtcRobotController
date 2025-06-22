@@ -8,17 +8,16 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 public class OtherMotors {
     final FSM_motor<MotorState> elevator;
     final FSM_motor<MotorState> arm;
     final FSM_CR_servo<MotorState> pincer_rotation;
-    final FSM_servo<StarState> pincer;
+    final FSM_servo<ServoState> pincer;
     final FSM_CR_servo<MotorState> claw_rotation;
     final FSM_CR_servo<StarState> spinning_star_a;
     final CRServo spinning_star_b;
     ElapsedTime timer = new ElapsedTime();
+    boolean auto = false;
 
     OtherMotors(HardwareMap hardwareMap) {
         elevator = new FSM_motor<>(new Motor(hardwareMap, "elevator", DcMotorSimple.Direction.FORWARD), MotorState.IN);
@@ -27,7 +26,7 @@ public class OtherMotors {
         claw_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "claw_rotation"), MotorState.IN);
         spinning_star_a = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "spinning_star_a"), StarState.STOP);
         spinning_star_b = hardwareMap.get(CRServo.class, "spinning_star_b");
-        pincer = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer"), StarState.STOP);
+        pincer = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer"), ServoState.OPEN);
     }
 
     static class FSM_servo<T extends Enum<T>> {
@@ -61,30 +60,32 @@ public class OtherMotors {
 
     public enum MotorState { GOING_OUT, OUT, GOING_IN, IN }
     public enum StarState { IN, OUT, STOP }
-    public enum ServoState { UP, DOWN }
+    public enum ServoState { OPEN, CLOSED }
 
     void check_FSMs() {
         switch (elevator.state) {
             case GOING_OUT -> {
-                if (Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
+                if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
                     elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     elevator.state = MotorState.OUT;
+                    break;
                 }
-                else elevator.motor.drive.setPower(speed);
+                elevator.motor.drive.setPower(speed);
             }
             case GOING_IN -> {
-                if (Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
+                if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
                     elevator.state = MotorState.IN;
                     elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                    break;
                 }
-                else elevator.motor.drive.setPower(-speed);
+                elevator.motor.drive.setPower(-speed);
             }
             case IN -> elevator.motor.drive.setPower(0);
 
             case OUT -> {
                 if (Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
                     elevator.motor.drive.setPower(0);
-                } if (Math.abs(elevator.motor.drive.getCurrentPosition()) < elevator.motor.target) {
+                } else if (Math.abs(elevator.motor.drive.getCurrentPosition()) < elevator.motor.target) {
                     elevator.motor.drive.setPower(0.01);
                 }
             }
@@ -93,16 +94,18 @@ public class OtherMotors {
         switch(arm.state) {
             case IN, OUT -> arm.motor.drive.setPower(0);
             case GOING_OUT -> {
-                if (Math.abs(arm.motor.drive.getCurrentPosition() - arm.motor.target) <= encoder_tolerance) {
+                if (auto && Math.abs(arm.motor.drive.getCurrentPosition() - arm.motor.target) <= encoder_tolerance) {
                     arm.state = MotorState.OUT;
+                    break;
                 }
-                else arm.motor.drive.setPower(speed);
+                arm.motor.drive.setPower(speed);
             }
             case GOING_IN -> {
-                if (Math.abs(arm.motor.drive.getCurrentPosition() - arm.motor.target) <= encoder_tolerance) {
+                if (auto && Math.abs(arm.motor.drive.getCurrentPosition() - arm.motor.target) <= encoder_tolerance) {
                     arm.state = MotorState.IN;
+                    break;
                 }
-                else arm.motor.drive.setPower(-speed);
+                arm.motor.drive.setPower(-speed);
             }
         }
         switch (pincer_rotation.state) {
@@ -113,16 +116,18 @@ public class OtherMotors {
         switch (claw_rotation.state) {
             case IN, OUT -> claw_rotation.servo.setPower(0.0);
             case GOING_IN -> {
-                //if (timer.milliseconds() > claw_rotation.target_time) {
-                //    claw_rotation.state = MotorState.IN;
-                //}
-                /*else*/ claw_rotation.servo.setPower(speed);
+                if (auto && timer.milliseconds() > claw_rotation.target_time) {
+                    claw_rotation.state = MotorState.IN;
+                    break;
+                }
+                claw_rotation.servo.setPower(speed);
             }
             case GOING_OUT -> {
-                //if (timer.milliseconds() > claw_rotation.target_time) {
-                //    claw_rotation.state = MotorState.OUT;
-                //}
-                /*else*/ claw_rotation.servo.setPower(-speed);
+                if (auto && timer.milliseconds() > claw_rotation.target_time) {
+                    claw_rotation.state = MotorState.OUT;
+                    break;
+                }
+                claw_rotation.servo.setPower(-speed);
             }
         }
         switch (spinning_star_a.state) {
@@ -131,24 +136,25 @@ public class OtherMotors {
                 spinning_star_b.setPower(0.0);
             }
             case IN -> {
-                if (timer.milliseconds() > spinning_star_a.target_time) {
+                if (auto && timer.milliseconds() > spinning_star_a.target_time) {
                     spinning_star_a.state = StarState.STOP;
+                    break;
                 }
                 spinning_star_a.servo.setPower(speed);
                 spinning_star_b.setPower(-speed);
             }
             case OUT -> {
+                if (auto && timer.milliseconds() > spinning_star_a.target_time) {
+                    spinning_star_a.state = StarState.STOP;
+                    break;
+                }
                 spinning_star_a.servo.setPower(-speed);
                 spinning_star_b.setPower(speed);
-                if (timer.milliseconds() > spinning_star_a.target_time) {
-                    spinning_star_a.state = StarState.STOP;
-                }
             }
         }
         switch (pincer.state) {
-            case IN -> pincer.servo.setPosition(pincer.servo.getPosition()+0.01);
-            case OUT -> pincer.servo.setPosition(pincer.servo.getPosition()-0.01);
+            case OPEN -> pincer.servo.setPosition(pincer_open_pos);
+            case CLOSED -> pincer.servo.setPosition(pincer_closed_pos);
         }
     }
-
 }

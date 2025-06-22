@@ -5,10 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name="non drivetrain only", group="Linear OpMode")
-public class ElevatorTest extends LinearOpMode {
+public class nonDrivetrainTest extends LinearOpMode {
 
     private OtherMotors otherMotors;
-
 
     @Override
     public void runOpMode() {
@@ -17,11 +16,9 @@ public class ElevatorTest extends LinearOpMode {
         while (opModeIsActive()) {
             if (gamepad1.dpad_up) {
                 telemetry.addLine("up");
-                otherMotors.elevator.motor.target = 600;
                 otherMotors.elevator.state = OtherMotors.MotorState.GOING_OUT;
             } else if (gamepad1.dpad_down) {
                 telemetry.addLine("down");
-                otherMotors.elevator.motor.target = 0;
                 otherMotors.elevator.state = OtherMotors.MotorState.GOING_IN;
             } else if (otherMotors.elevator.state != OtherMotors.MotorState.OUT) {
                 otherMotors.elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -29,10 +26,8 @@ public class ElevatorTest extends LinearOpMode {
                 otherMotors.elevator.state = OtherMotors.MotorState.OUT;
             }
             if (gamepad1.dpad_right) {
-                otherMotors.arm.motor.target = 1000;
                 otherMotors.arm.state = OtherMotors.MotorState.GOING_OUT;
             } else if (gamepad1.dpad_left) {
-                otherMotors.arm.motor.target = 0;
                 otherMotors.arm.state = OtherMotors.MotorState.GOING_IN;
             }  else if (otherMotors.arm.state != OtherMotors.MotorState.OUT) {
                 otherMotors.arm.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -60,9 +55,9 @@ public class ElevatorTest extends LinearOpMode {
                 otherMotors.spinning_star_a.state = OtherMotors.StarState.STOP;
             }
             if (gamepad1.x) {
-                otherMotors.pincer.state = OtherMotors.StarState.IN;
+                otherMotors.pincer.state = OtherMotors.ServoState.OPEN;
             } else if (gamepad1.y) {
-                otherMotors.pincer.state = OtherMotors.StarState.OUT;
+                otherMotors.pincer.state = OtherMotors.ServoState.CLOSED;
             }
             otherMotors.check_FSMs();
             telemetry.addLine(String.valueOf(otherMotors.elevator.motor.drive.getCurrentPosition()));
