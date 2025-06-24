@@ -40,6 +40,7 @@ public class nonDrivetrainTest extends LinearOpMode {
                 otherMotors.pincer_rotation.state = OtherMotors.MotorState.GOING_IN;
             }
             telemetry.addLine(String.valueOf(otherMotors.claw_rotation.state));
+            telemetry.addLine(String.valueOf(otherMotors.claw_rotation.servo.getPower()));
             if (gamepad1.left_bumper) {
                 otherMotors.claw_rotation.state = OtherMotors.MotorState.GOING_IN;
             } else if (gamepad1.right_bumper) {

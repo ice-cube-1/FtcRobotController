@@ -14,11 +14,11 @@ public class Auto_E extends Auto {
     @Override
     public void runOpMode() {
         init_stuff(0,0,0);
+        driveToPoint(0,20);
+        driveToPoint(0,0);
+        driveToPoint(20,0);
+        driveToPoint(0,0);
         rotate(45);
-        driveToPoint(0,10);
-        driveToPoint(0,0);
-        driveToPoint(10,0);
-        driveToPoint(0,0);
         rotate(0);
     }
 }

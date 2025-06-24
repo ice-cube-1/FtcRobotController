@@ -148,6 +148,8 @@ abstract public class Auto extends LinearOpMode {
                 integralTurn += headingError * deltaTime;
                 double derivativeTurn = (headingError - lastErrorTurn) / deltaTime;
                 double pidTurn = kP_drive * headingError + kI_drive * integralTurn + kD_drive * derivativeTurn;
+                telemetry.addLine(String.valueOf(headingError));
+                telemetry.update();
                 lastErrorTurn = headingError;
                 drivetrain.move(drive_x/distance, drive_y/distance, -pidTurn);
             }

@@ -22,11 +22,11 @@ public class OtherMotors {
     OtherMotors(HardwareMap hardwareMap) {
         elevator = new FSM_motor<>(new Motor(hardwareMap, "elevator", DcMotorSimple.Direction.FORWARD), MotorState.IN);
         arm = new FSM_motor<>(new Motor(hardwareMap, "arm", DcMotorSimple.Direction.FORWARD), MotorState.IN);
+        pincer = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer"), ServoState.OPEN);
         pincer_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "pincer_rotation"), MotorState.IN);
-        claw_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "claw_rotation"), MotorState.IN);
         spinning_star_a = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "spinning_star_a"), StarState.STOP);
         spinning_star_b = hardwareMap.get(CRServo.class, "spinning_star_b");
-        pincer = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer"), ServoState.OPEN);
+        claw_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "claw_rotation"), MotorState.IN);
     }
 
     static class FSM_servo<T extends Enum<T>> {
@@ -109,9 +109,9 @@ public class OtherMotors {
             }
         }
         switch (pincer_rotation.state) {
-            case IN, OUT -> claw_rotation.servo.setPower(0.0);
-            case GOING_IN -> claw_rotation.servo.setPower(speed);
-            case GOING_OUT -> claw_rotation.servo.setPower(-speed);
+            case IN, OUT -> pincer_rotation.servo.setPower(0.0);
+            case GOING_IN -> pincer_rotation.servo.setPower(speed);
+            case GOING_OUT -> pincer_rotation.servo.setPower(-speed);
         }
         switch (claw_rotation.state) {
             case IN, OUT -> claw_rotation.servo.setPower(0.0);

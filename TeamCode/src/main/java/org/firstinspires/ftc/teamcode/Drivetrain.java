@@ -24,6 +24,7 @@ public class Drivetrain {
         motors[2].speed = drive_y + drive_x - turn;
         motors[3].speed = drive_y - drive_x + turn;
         double max = Arrays.stream(motors).mapToDouble(motor -> motor.speed).max().getAsDouble();
+        if (max < 1) max = 1;
         for (Motor motor: motors) {
             motor.speed = motor.speed * speed / max;
             motor.drive.setPower(motor.speed);

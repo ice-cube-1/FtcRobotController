@@ -34,6 +34,8 @@ public class field_centric extends LinearOpMode {
         double y = -gamepad1.left_stick_y;
         double x = -gamepad1.left_stick_x;
         double turn = -gamepad1.right_stick_x;
+        telemetry.addLine(y + " - " + x + " - " + turn);
+        telemetry.update();
         double heading = getHeadingRadians();
         double rotatedX = x * Math.cos(heading) - y * Math.sin(heading);
         double rotatedY = x * Math.sin(heading) + y * Math.cos(heading);
