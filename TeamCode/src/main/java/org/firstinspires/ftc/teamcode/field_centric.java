@@ -33,7 +33,7 @@ public class field_centric extends LinearOpMode {
     void move_drivetrain() {
         double y = -gamepad1.left_stick_y;
         double x = -gamepad1.left_stick_x;
-        double turn = -gamepad1.right_stick_x;
+        double turn = gamepad1.right_stick_x;
         telemetry.addLine(y + " - " + x + " - " + turn);
         telemetry.update();
         double heading = getHeadingRadians();

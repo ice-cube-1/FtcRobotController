@@ -18,6 +18,7 @@ public class OtherMotors {
     final CRServo spinning_star_b;
     ElapsedTime timer = new ElapsedTime();
     boolean auto = false;
+    SampleFromClaw sampleFromClaw = SampleFromClaw.OFF;
 
     OtherMotors(HardwareMap hardwareMap) {
         elevator = new FSM_motor<>(new Motor(hardwareMap, "elevator", DcMotorSimple.Direction.FORWARD), MotorState.IN);
@@ -61,8 +62,33 @@ public class OtherMotors {
     public enum MotorState { GOING_OUT, OUT, GOING_IN, IN }
     public enum StarState { IN, OUT, STOP }
     public enum ServoState { OPEN, CLOSED }
+    public enum SampleFromClaw { START, PINCER_TO_POSITION, UP, OFF }
 
     void check_FSMs() {
+        switch (sampleFromClaw) {
+            case START -> {
+                auto = true;
+                if (pincer_rotation.state != MotorState.IN) pincer_rotation.target_time = timer.seconds()+pincer_rotation_time;
+                pincer_rotation.state = MotorState.GOING_OUT;
+                pincer.state = ServoState.OPEN;
+                sampleFromClaw = SampleFromClaw.PINCER_TO_POSITION;
+            }
+            case PINCER_TO_POSITION -> {
+                if (pincer_rotation.state == MotorState.OUT) {
+                    elevator.motor.target = elevator_up_position;
+                    elevator.state = MotorState.GOING_OUT;
+                    pincer_rotation.target_time = timer.seconds()+pincer_rotation_time;
+                    pincer_rotation.state = MotorState.GOING_IN;
+                    sampleFromClaw = SampleFromClaw.UP;
+                }
+            }
+            case UP -> {
+                if (pincer_rotation.state == MotorState.IN && elevator.state == MotorState.OUT) {
+                    sampleFromClaw = SampleFromClaw.OFF;
+                    auto = false;
+                }
+            }
+        }
         switch (elevator.state) {
             case GOING_OUT -> {
                 if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {

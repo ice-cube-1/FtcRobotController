@@ -15,12 +15,12 @@ public final class RobotConstants {
     static final double camera_strafe_tolerance = 1.0;
     static final double camera_yaw_tolerance = 4.0;
 
-    public static double kI_drive = 0;
-    public static double kP_drive = 0.2;
+    public static double kI_drive = -0.002;
+    public static double kP_drive = -0.4;
     public static double kD_drive = 0;
 
     public static double kI_turn = 0;
-    public static double kP_turn = 0.02;
+    public static double kP_turn = 0.04;
     public static double kD_turn = 0;
 
     static final double encoder_tolerance = 4;
@@ -28,7 +28,9 @@ public final class RobotConstants {
     static final double pincer_open_pos = 158;
     static final double pincer_closed_pos = 100;
 
-    static final double elevator_base_position = 0;
+    static final int elevator_base_position = 0;
+    static final int elevator_up_position = 0;
     static final double arm_base_position = 0;
     static final double claw_rotation_time = 500;
+    static final double pincer_rotation_time = 500;
 }
