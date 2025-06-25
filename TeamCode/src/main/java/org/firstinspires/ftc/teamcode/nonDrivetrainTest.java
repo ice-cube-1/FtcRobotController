@@ -14,6 +14,9 @@ public class nonDrivetrainTest extends LinearOpMode {
         otherMotors = new OtherMotors(hardwareMap);
         waitForStart();
         while (opModeIsActive()) {
+            if (gamepad2.right_bumper) {
+                otherMotors.sampleFromClaw = OtherMotors.SampleFromClaw.START;
+            }
             if (gamepad1.dpad_up) {
                 telemetry.addLine("up");
                 otherMotors.elevator.state = OtherMotors.MotorState.GOING_OUT;
@@ -39,8 +42,6 @@ public class nonDrivetrainTest extends LinearOpMode {
             } else if (gamepad1.b) {
                 otherMotors.pincer_rotation.state = OtherMotors.MotorState.GOING_IN;
             }
-            telemetry.addLine(String.valueOf(otherMotors.claw_rotation.state));
-            telemetry.addLine(String.valueOf(otherMotors.claw_rotation.servo.getPower()));
             if (gamepad1.left_bumper) {
                 otherMotors.claw_rotation.state = OtherMotors.MotorState.GOING_IN;
             } else if (gamepad1.right_bumper) {
@@ -61,8 +62,6 @@ public class nonDrivetrainTest extends LinearOpMode {
                 otherMotors.pincer.state = OtherMotors.ServoState.CLOSED;
             }
             otherMotors.check_FSMs();
-            telemetry.addLine(String.valueOf(otherMotors.elevator.motor.drive.getCurrentPosition()));
-            telemetry.update();
         }
     }
 }

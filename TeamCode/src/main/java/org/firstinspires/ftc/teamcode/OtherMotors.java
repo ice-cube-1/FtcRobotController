@@ -19,6 +19,7 @@ public class OtherMotors {
     ElapsedTime timer = new ElapsedTime();
     boolean auto = false;
     SampleFromClaw sampleFromClaw = SampleFromClaw.OFF;
+    SampleToClaw sampleToClaw = SampleToClaw.OFF;
 
     OtherMotors(HardwareMap hardwareMap) {
         elevator = new FSM_motor<>(new Motor(hardwareMap, "elevator", DcMotorSimple.Direction.FORWARD), MotorState.IN);
@@ -63,12 +64,15 @@ public class OtherMotors {
     public enum StarState { IN, OUT, STOP }
     public enum ServoState { OPEN, CLOSED }
     public enum SampleFromClaw { START, PINCER_TO_POSITION, UP, OFF }
+    public enum SampleToClaw { START, PICKUP, IN, OFF }
 
     void check_FSMs() {
         switch (sampleFromClaw) {
             case START -> {
                 auto = true;
-                if (pincer_rotation.state != MotorState.IN) pincer_rotation.target_time = timer.seconds()+pincer_rotation_time;
+                if (pincer_rotation.state == MotorState.IN)
+                    pincer_rotation.target_time = timer.milliseconds()+pincer_rotation_time;
+                else pincer_rotation.target_time = timer.milliseconds();
                 pincer_rotation.state = MotorState.GOING_OUT;
                 pincer.state = ServoState.OPEN;
                 sampleFromClaw = SampleFromClaw.PINCER_TO_POSITION;
@@ -77,7 +81,7 @@ public class OtherMotors {
                 if (pincer_rotation.state == MotorState.OUT) {
                     elevator.motor.target = elevator_up_position;
                     elevator.state = MotorState.GOING_OUT;
-                    pincer_rotation.target_time = timer.seconds()+pincer_rotation_time;
+                    pincer_rotation.target_time = timer.milliseconds()+pincer_rotation_time;
                     pincer_rotation.state = MotorState.GOING_IN;
                     sampleFromClaw = SampleFromClaw.UP;
                 }
@@ -89,21 +93,44 @@ public class OtherMotors {
                 }
             }
         }
+        switch (sampleToClaw) {
+            case START -> {
+                auto = true;
+                spinning_star_a.target_time = timer.milliseconds()+star_time;
+                spinning_star_a.state = StarState.IN;
+                sampleToClaw = SampleToClaw.PICKUP;
+            }
+            case PICKUP -> {
+                if (spinning_star_a.state == StarState.STOP) {
+                    arm.motor.target = arm_base_position;
+                    arm.state = MotorState.GOING_IN;
+                    claw_rotation.target_time = timer.milliseconds()+claw_rotation_time;
+                    claw_rotation.state = MotorState.GOING_IN;
+                    sampleToClaw = SampleToClaw.IN;
+                }
+            }
+            case IN -> {
+                if (claw_rotation.state == MotorState.IN && arm.state == MotorState.IN) {
+                    sampleToClaw = SampleToClaw.OFF;
+                    auto = false;
+                }
+            }
+        }
         switch (elevator.state) {
             case GOING_OUT -> {
-                if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
-                    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    elevator.state = MotorState.OUT;
-                    break;
-                }
+                //if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
+                //    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                //    elevator.state = MotorState.OUT;
+                //    break;
+                //}
                 elevator.motor.drive.setPower(speed);
             }
             case GOING_IN -> {
-                if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
-                    elevator.state = MotorState.IN;
-                    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                    break;
-                }
+                //if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
+                //    elevator.state = MotorState.IN;
+                //    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                //    break;
+                //}
                 elevator.motor.drive.setPower(-speed);
             }
             case IN -> elevator.motor.drive.setPower(0);
@@ -136,8 +163,19 @@ public class OtherMotors {
         }
         switch (pincer_rotation.state) {
             case IN, OUT -> pincer_rotation.servo.setPower(0.0);
-            case GOING_IN -> pincer_rotation.servo.setPower(speed);
-            case GOING_OUT -> pincer_rotation.servo.setPower(-speed);
+            case GOING_IN -> {
+                if (auto && timer.milliseconds() > pincer_rotation.target_time) {
+                    pincer_rotation.state = MotorState.IN;
+                    break;
+                }
+                pincer_rotation.servo.setPower(speed);
+            }
+            case GOING_OUT -> {
+                if (auto && timer.milliseconds() > pincer_rotation.target_time) {
+                    pincer_rotation.state = MotorState.OUT;
+                }
+                pincer_rotation.servo.setPower(-speed);
+            }
         }
         switch (claw_rotation.state) {
             case IN, OUT -> claw_rotation.servo.setPower(0.0);

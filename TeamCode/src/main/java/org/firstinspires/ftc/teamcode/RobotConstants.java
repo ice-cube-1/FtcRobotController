@@ -9,7 +9,7 @@ public final class RobotConstants {
     static final double WHEEL_DIAMETER_INCHES = 7.5 / 2.54;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * Math.PI);
 
-    public static double speed = 1;
+    public static double speed = 0.4;
 
     static final double camera_range_tolerance = 1.0;
     static final double camera_strafe_tolerance = 1.0;
@@ -30,7 +30,9 @@ public final class RobotConstants {
 
     static final int elevator_base_position = 0;
     static final int elevator_up_position = 0;
-    static final double arm_base_position = 0;
+    static final int arm_base_position = 0;
+    static final int arm_out_position = 0;
     static final double claw_rotation_time = 500;
     static final double pincer_rotation_time = 500;
+    static final double star_time = 500;
 }
