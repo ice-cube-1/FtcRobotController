@@ -1,13 +1,15 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.old;
 
-import static org.firstinspires.ftc.teamcode.Elevator.ElevatorState.*;
+import static org.firstinspires.ftc.teamcode.old.Elevator.ElevatorState.*;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name="elevator", group="Linear OpMode")
+@Disabled
 public class Elevator extends LinearOpMode {
 
     private Motor elevator;

@@ -25,14 +25,14 @@ public final class RobotConstants {
 
     static final double encoder_tolerance = 4;
 
-    static final double pincer_open_pos = 158;
-    static final double pincer_closed_pos = 100;
+    public static double pincer_open_pos = 158;
+    public static double pincer_closed_pos = 100;
 
-    static final int elevator_base_position = 0;
-    static final int elevator_up_position = 0;
-    static final int arm_base_position = 0;
-    static final int arm_out_position = 0;
-    static final double claw_rotation_time = 500;
-    static final double pincer_rotation_time = 500;
-    static final double star_time = 500;
+    public static int elevator_base_position = 0;
+    public static int elevator_up_position = 0;
+    public static int arm_base_position = 0;
+    public static int arm_out_position = 0;
+    public static double claw_rotation_time = 500;
+    public static double pincer_rotation_time = 500;
+    public static double star_time = 500;
 }

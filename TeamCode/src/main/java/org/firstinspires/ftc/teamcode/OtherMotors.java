@@ -118,19 +118,19 @@ public class OtherMotors {
         }
         switch (elevator.state) {
             case GOING_OUT -> {
-                //if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
-                //    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                //    elevator.state = MotorState.OUT;
-                //    break;
-                //}
+                if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
+                    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    elevator.state = MotorState.OUT;
+                    break;
+                }
                 elevator.motor.drive.setPower(speed);
             }
             case GOING_IN -> {
-                //if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
-                //    elevator.state = MotorState.IN;
-                //    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                //    break;
-                //}
+                if (auto && Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
+                    elevator.state = MotorState.IN;
+                    elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                    break;
+                }
                 elevator.motor.drive.setPower(-speed);
             }
             case IN -> elevator.motor.drive.setPower(0);
@@ -138,8 +138,10 @@ public class OtherMotors {
             case OUT -> {
                 if (Math.abs(elevator.motor.drive.getCurrentPosition() - elevator.motor.target) <= encoder_tolerance) {
                     elevator.motor.drive.setPower(0);
-                } else if (Math.abs(elevator.motor.drive.getCurrentPosition()) < elevator.motor.target) {
+                } else if (elevator.motor.drive.getCurrentPosition() < elevator.motor.target) {
                     elevator.motor.drive.setPower(0.01);
+                } else if (elevator.motor.drive.getCurrentPosition() > elevator.motor.target) {
+                    elevator.motor.drive.setPower(-0.01);
                 }
             }
         }

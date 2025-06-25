@@ -49,6 +49,8 @@ abstract public class Auto extends LinearOpMode {
             lastError = headingError;
 
             double turn = kP_turn * headingError + kI_turn * integral + kD_turn * derivative;
+            telemetry.addLine("turning"+Math.toDegrees(turn));
+            telemetry.update();
             turn = clip(turn);
             drivetrain.move(0, 0, turn);
         }
