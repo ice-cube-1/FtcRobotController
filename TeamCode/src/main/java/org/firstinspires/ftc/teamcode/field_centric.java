@@ -83,21 +83,26 @@ public class field_centric extends LinearOpMode {
             otherMotors.pincer_rotation.state = OtherMotors.MotorState.GOING_OUT;
         } else if (gamepad2.left_stick_x < -0.2) {
             otherMotors.pincer_rotation.state = OtherMotors.MotorState.GOING_IN;
+        } else {
+            otherMotors.pincer_rotation.state = OtherMotors.MotorState.IN;
         }
         if (gamepad2.b) {
             if (otherMotors.pincer.state == OtherMotors.ServoState.OPEN)
                 otherMotors.pincer.state = OtherMotors.ServoState.CLOSED;
             else otherMotors.pincer.state = OtherMotors.ServoState.OPEN;
         }
-        if (gamepad2.left_trigger > 0.2) {
+        if (gamepad2.left_trigger > 0.5) {
             otherMotors.elevator.state = OtherMotors.MotorState.GOING_OUT;
-        } else if (gamepad2.right_trigger > 0.2) {
+        } else if (gamepad2.right_trigger > 0.5) {
             otherMotors.elevator.state = OtherMotors.MotorState.GOING_IN;
         } else if (otherMotors.elevator.state != OtherMotors.MotorState.OUT) {
             otherMotors.elevator.motor.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            otherMotors.other_elevator.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             otherMotors.elevator.motor.target = otherMotors.elevator.motor.drive.getCurrentPosition();
-            otherMotors.elevator.state = OtherMotors.MotorState.OUT;
+            otherMotors.elevator.state = OtherMotors.MotorState.IN;
         }
         otherMotors.check_FSMs();
+        telemetry.addLine(otherMotors.elevator.motor.target+ " - "+ otherMotors.elevator.motor.drive.getCurrentPosition() + " - " + otherMotors.elevator.state);
+        telemetry.update();
     }
 }

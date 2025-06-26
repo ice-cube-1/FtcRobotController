@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name="wheel test", group="Linear OpMode")
 public class wheelTest extends LinearOpMode {
-    private Motor motor = null;
+
     private double speed = 0.2;
     class Motor {
         DcMotor drive;
@@ -21,14 +21,12 @@ public class wheelTest extends LinearOpMode {
     }
     @Override
     public void runOpMode() {
-        motor = new Motor("motor", DcMotor.Direction.FORWARD);
+        Motor elevator = new Motor("elevator", DcMotorSimple.Direction.REVERSE);
+        elevator.drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         waitForStart();
         while (opModeIsActive()) {
-            if (gamepad1.dpad_up) {
-                motor.drive.setPower(speed);
-            } else if (gamepad1.dpad_down) {
-                motor.drive.setPower(-speed);
-            } else motor.drive.setPower(0);
+            telemetry.addLine(String.valueOf(elevator.drive.getCurrentPosition()));
+            telemetry.update();
         }
     }
 }

@@ -53,6 +53,7 @@ abstract public class Auto extends LinearOpMode {
             telemetry.update();
             turn = clip(turn);
             drivetrain.move(0, 0, turn);
+            otherMotors.check_FSMs();
         }
 
         drivetrain.move(0, 0, 0);
@@ -137,6 +138,7 @@ abstract public class Auto extends LinearOpMode {
                 motor.drive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             drivetrain.move(drive_x/distance, drive_y/distance, 0);
+            otherMotors.check_FSMs();
             double integralTurn = 0, lastErrorTurn = 0;
             long lastTime = System.nanoTime();
             while (opModeIsActive() && (drivetrain.motors[0].drive.isBusy() || drivetrain.motors[1].drive.isBusy())) {
@@ -154,12 +156,14 @@ abstract public class Auto extends LinearOpMode {
                 telemetry.update();
                 lastErrorTurn = headingError;
                 drivetrain.move(drive_x/distance, drive_y/distance, -pidTurn);
+                otherMotors.check_FSMs();
             }
 
             for (Motor motor: drivetrain.motors) {
                 motor.drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             drivetrain.move(0,0,0);
+            otherMotors.check_FSMs();
             sleep(100);
             rotate(drivetrain.rotation_deg);
             drivetrain.move(0,0,0);
