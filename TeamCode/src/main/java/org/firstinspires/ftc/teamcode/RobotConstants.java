@@ -25,7 +25,7 @@ public final class RobotConstants {
 
     static final double encoder_tolerance = 4;
 
-    public static double pincer_open_pos = 94;
+    public static double pincer_open_pos = 94-15;
     public static double pincer_closed_pos = 113;
 
     public static int elevator_base_position = 0;

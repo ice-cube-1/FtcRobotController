@@ -26,7 +26,7 @@ public class OtherMotors {
         elevator = new FSM_motor<>(new Motor(hardwareMap, "elevator", DcMotorSimple.Direction.REVERSE), MotorState.IN);
         other_elevator = new Motor(hardwareMap, "elevator_2", DcMotorSimple.Direction.FORWARD);
         arm = new FSM_motor<>(new Motor(hardwareMap, "arm", DcMotorSimple.Direction.FORWARD), MotorState.IN);
-        pincer = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer"), ServoState.OPEN);
+        pincer = new FSM_servo<>(hardwareMap.get(Servo.class, "pincer"), ServoState.CLOSED);
         pincer_rotation = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "pincer_rotation"), MotorState.IN);
         spinning_star_a = new FSM_CR_servo<>(hardwareMap.get(CRServo.class, "spinning_star_a"), StarState.STOP);
         spinning_star_b = hardwareMap.get(CRServo.class, "spinning_star_b");
@@ -63,7 +63,7 @@ public class OtherMotors {
     }
 
     public enum MotorState { GOING_OUT, OUT, GOING_IN, IN }
-    public enum StarState { IN, OUT, STOP }
+    public enum StarState { IN, OUT, STOP, X_THING }
     public enum ServoState { OPEN, CLOSED }
     public enum SampleFromClaw { START, PINCER_TO_POSITION, UP, OFF }
     public enum SampleToClaw { START, PICKUP, IN, OFF }
@@ -228,6 +228,16 @@ public class OtherMotors {
                 }
                 spinning_star_a.servo.setPower(-cr_speed);
                 spinning_star_b.setPower(cr_speed);
+            }
+            case X_THING -> {
+                if (timer.milliseconds() < spinning_star_a.target_time) {
+                    spinning_star_a.servo.setPower(cr_speed);
+                } else if (timer.milliseconds() < spinning_star_a.target_time + 1500) {
+                    spinning_star_a.servo.setPower(cr_speed);
+                    spinning_star_b.setPower(-cr_speed);
+                } else {
+                    spinning_star_a.state = StarState.STOP;
+                }
             }
         }
         switch (pincer.state) {

@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
@@ -14,6 +16,7 @@ public class field_centric extends LinearOpMode {
     Drivetrain drivetrain;
     OtherMotors otherMotors;
     private IMU imu;
+    ElapsedTime timer = new ElapsedTime();
 
     @Override
     public void runOpMode() {
@@ -48,13 +51,11 @@ public class field_centric extends LinearOpMode {
     }
 
     void fsm_stuff() {
-        if (gamepad1.y) {
-            if (otherMotors.sampleFromClaw == OtherMotors.SampleFromClaw.OFF)
-                otherMotors.sampleFromClaw = OtherMotors.SampleFromClaw.START;
-        }
         if (gamepad1.x) {
-            if (otherMotors.sampleToClaw == OtherMotors.SampleToClaw.OFF)
-                otherMotors.sampleToClaw = OtherMotors.SampleToClaw.START;
+            if (otherMotors.spinning_star_a.state != OtherMotors.StarState.X_THING) {
+                otherMotors.spinning_star_a.target_time = timer.milliseconds()+500;
+                otherMotors.spinning_star_a.state = OtherMotors.StarState.X_THING;
+            }
         }
         if (gamepad1.left_trigger > 0.2) {
             otherMotors.arm.state = OtherMotors.MotorState.GOING_OUT;
@@ -65,9 +66,9 @@ public class field_centric extends LinearOpMode {
             otherMotors.arm.motor.target = otherMotors.arm.motor.drive.getCurrentPosition();
             otherMotors.arm.state = OtherMotors.MotorState.OUT;
         }
-        if (gamepad1.dpad_up) {
+        if (gamepad1.dpad_down) {
             otherMotors.claw_rotation.state = OtherMotors.MotorState.GOING_IN;
-        } else if (gamepad1.dpad_down) {
+        } else if (gamepad1.dpad_up) {
             otherMotors.claw_rotation.state = OtherMotors.MotorState.GOING_OUT;
         } else if (otherMotors.claw_rotation.state != OtherMotors.MotorState.OUT) {
             otherMotors.claw_rotation.state = OtherMotors.MotorState.OUT;
@@ -76,12 +77,12 @@ public class field_centric extends LinearOpMode {
             otherMotors.spinning_star_a.state = OtherMotors.StarState.IN;
         } else if (gamepad1.b) {
             otherMotors.spinning_star_a.state = OtherMotors.StarState.OUT;
-        } else {
+        } else if (otherMotors.spinning_star_a.state != OtherMotors.StarState.X_THING) {
             otherMotors.spinning_star_a.state = OtherMotors.StarState.STOP;
         }
-        if (gamepad2.left_stick_x > 0.2) {
+        if (gamepad2.left_stick_y > 0.2) {
             otherMotors.pincer_rotation.state = OtherMotors.MotorState.GOING_OUT;
-        } else if (gamepad2.left_stick_x < -0.2) {
+        } else if (gamepad2.left_stick_y < -0.2) {
             otherMotors.pincer_rotation.state = OtherMotors.MotorState.GOING_IN;
         } else {
             otherMotors.pincer_rotation.state = OtherMotors.MotorState.IN;
