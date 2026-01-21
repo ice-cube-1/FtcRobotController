@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode
 
-import Wheel
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
@@ -20,7 +19,8 @@ class DriveTrain (hardwareMap: HardwareMap) {
         Wheel("lf", hardwareMap, DcMotorSimple.Direction.FORWARD),
         Wheel("rf", hardwareMap, DcMotorSimple.Direction.REVERSE),
         Wheel("lb", hardwareMap, DcMotorSimple.Direction.FORWARD),
-        Wheel("rb", hardwareMap, DcMotorSimple.Direction.REVERSE))
+        Wheel("rb", hardwareMap, DcMotorSimple.Direction.REVERSE)
+    )
     private val imu = hardwareMap.get(IMU::class.java, "imu").apply {
         initialize(IMU.Parameters(RevHubOrientationOnRobot(
             RevHubOrientationOnRobot.LogoFacingDirection.UP,

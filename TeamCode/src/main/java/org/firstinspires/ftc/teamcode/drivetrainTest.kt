@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 
 @Autonomous
-class drivetrainTest : LinearOpMode() {
+class DrivetrainTest : LinearOpMode() {
     override fun runOpMode() {
         val drivetrain = DriveTrain(hardwareMap)
         waitForStart()

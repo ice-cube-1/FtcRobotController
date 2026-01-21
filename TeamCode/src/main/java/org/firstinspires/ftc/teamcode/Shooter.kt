@@ -19,13 +19,13 @@ import kotlin.math.min
 
 
 class Shooter (hardwareMap: HardwareMap) {
-    private val aprilTag = AprilTagProcessor.easyCreateWithDefaults();
-    private val visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag);
+    private val aprilTag = AprilTagProcessor.easyCreateWithDefaults()
+    private val visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag)
     private val turret = hardwareMap.get(DcMotor::class.java, "turret")
     private val hoodAngle = hardwareMap.get(Servo::class.java, "hood")
     private var lastDist = 0.0
     private var lastAngle = 0.0
-    private val motors =  arrayOf(initMotor("m1", DcMotorSimple.Direction.REVERSE), initMotor("m2", DcMotorSimple.Direction.FORWARD));
+    private val motors =  arrayOf(initMotor("m1", DcMotorSimple.Direction.REVERSE), initMotor("m2", DcMotorSimple.Direction.FORWARD))
     private var power = 0.0
     private var timer = ElapsedTime()
     var shooterOn = false
@@ -61,9 +61,9 @@ class Shooter (hardwareMap: HardwareMap) {
     }
     fun spin() {
         hoodAngle.position = getTargetAngle()
-        val error = getTargetV() - getVelocity();
-        power = max(0.0, min(1.0, power + KI_SPINNER * timer.seconds() * error));
-        timer.reset();
+        val error = getTargetV() - getVelocity()
+        power = max(0.0, min(1.0, power + KI_SPINNER * timer.seconds() * error))
+        timer.reset()
         if (shooterOn) { for (m in motors) { m.power = power; } }
         else {for (m in motors) {m.power = 0.0; } }
     }
