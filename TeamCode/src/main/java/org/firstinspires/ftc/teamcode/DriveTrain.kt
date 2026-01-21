@@ -1,25 +1,18 @@
 package org.firstinspires.ftc.teamcode
 
+import Wheel
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.PIDConstants.Companion.KD_HEADING
-import org.firstinspires.ftc.teamcode.PIDConstants.Companion.KD_TRANSLATION
-import org.firstinspires.ftc.teamcode.PIDConstants.Companion.KP_HEADING
-import org.firstinspires.ftc.teamcode.PIDConstants.Companion.KP_TRANSLATION
-
-
-class PIDConstants {
-    companion object {
-        const val KP_HEADING: Double = 1.0
-        const val KD_HEADING: Double = 0.001
-        const val KP_TRANSLATION: Double = 0.01
-        const val KD_TRANSLATION: Double = 0.001
-    }
-}
+import org.firstinspires.ftc.teamcode.Constants.Companion.KD_HEADING
+import org.firstinspires.ftc.teamcode.Constants.Companion.KP_HEADING
+import org.firstinspires.ftc.teamcode.Constants.Companion.X_TICKS_PER_INCH
+import org.firstinspires.ftc.teamcode.Constants.Companion.Y_TICKS_PER_INCH
+import java.lang.Math.toRadians
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 class DriveTrain (hardwareMap: HardwareMap) {
@@ -34,16 +27,28 @@ class DriveTrain (hardwareMap: HardwareMap) {
             RevHubOrientationOnRobot.UsbFacingDirection.LEFT
         )))
     }
-    private var targetAngle = 0.0
+    var targetAngle = 0.0
+    private var x = 0.0
+    private var y = 0.0
     private var lastHeadingError = 0.0
     private var lastHeadingTime = 0L
 
-    fun update() {
+    fun updateTargets(newX: Double, newY: Double) {
+        val deltaX = newX - x
+        val deltaY = newY - y
+        val xTransposed = (deltaX * cos(toRadians(targetAngle)) - deltaY * sin(toRadians(targetAngle))) * X_TICKS_PER_INCH
+        val yTransposed = (deltaY * cos(toRadians(targetAngle)) + deltaX * sin(toRadians((targetAngle)))) * Y_TICKS_PER_INCH
+        wheels[0].target += yTransposed + xTransposed
+        wheels[1].target += yTransposed - xTransposed
+        wheels[2].target += yTransposed - xTransposed
+        wheels[3].target += yTransposed + xTransposed
+        x = newX
+        y = newY
+    }
+
+    fun update(): Boolean {
         val turn = turnPower()
-        wheels[0].move(turn)
-        wheels[1].move(-turn)
-        wheels[2].move(turn)
-        wheels[3].move(-turn)
+        return wheels[0].move(turn) && wheels[1].move(-turn) && wheels[2].move(turn) && wheels[3].move(-turn)
     }
 
     private fun turnPower(): Double {
@@ -59,28 +64,5 @@ class DriveTrain (hardwareMap: HardwareMap) {
         lastHeadingError = error
         lastHeadingTime = currentTime
         return output
-    }
-}
-
-class Wheel(val name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Direction) {
-    val drive: DcMotor = hardwareMap.get(DcMotor::class.java, name).apply {
-        setDirection(direction)
-        mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        mode = DcMotor.RunMode.RUN_USING_ENCODER
-        zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-    }
-    private val target = 0.0
-    private var lastError = 0.0
-    private var lastTime = 0L
-
-    fun move(headingError: Double) {
-        val currentTime = System.nanoTime()
-        val error = target - drive.currentPosition.toDouble()
-        val deltaTime = (currentTime - lastTime) / 1e9
-        var derivative = 0.0
-        if (deltaTime > 0) { derivative = (error -  lastError) / deltaTime }
-        lastError = error
-        lastTime = currentTime
-        drive.power = (KP_TRANSLATION * error) + (KD_TRANSLATION * derivative) + headingError
     }
 }
