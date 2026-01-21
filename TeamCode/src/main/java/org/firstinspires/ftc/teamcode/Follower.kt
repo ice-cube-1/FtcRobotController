@@ -39,14 +39,14 @@ class DriveTrain (hardwareMap: HardwareMap) {
     private var lastHeadingTime = 0L
 
     fun update() {
-        turnPower()
-        wheels[0].move(lastHeadingError)
-        wheels[1].move(-lastHeadingError)
-        wheels[2].move(lastHeadingError)
-        wheels[3].move(-lastHeadingError)
+        val turn = turnPower()
+        wheels[0].move(turn)
+        wheels[1].move(-turn)
+        wheels[2].move(turn)
+        wheels[3].move(-turn)
     }
 
-    private fun turnPower() {
+    private fun turnPower(): Double {
         val currentAngle: Double = imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES)
         var error = targetAngle - currentAngle
         while (error > 180) error -= 360.0
@@ -58,6 +58,7 @@ class DriveTrain (hardwareMap: HardwareMap) {
         val output = (KP_HEADING * error) + (KD_HEADING * derivative)
         lastHeadingError = error
         lastHeadingTime = currentTime
+        return output
     }
 }
 
