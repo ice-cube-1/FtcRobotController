@@ -45,10 +45,18 @@ class DriveTrain (hardwareMap: HardwareMap) {
         x = newX
         y = newY
     }
-
+    fun driveManual(moveX: Float, moveY: Float, turn: Float) {
+        val theta = imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
+        val xTransposed = moveX * cos(theta) - moveY * sin(theta)
+        val yTransposed = moveY * cos(theta) + moveX * sin(theta)
+        wheels[0].setPower(yTransposed + xTransposed + turn)
+        wheels[1].setPower(yTransposed - xTransposed - turn)
+        wheels[2].setPower(yTransposed - xTransposed + turn)
+        wheels[3].setPower(yTransposed + xTransposed - turn)
+    }
     fun update(): Boolean {
         val turn = turnPower()
-        return wheels[0].move(turn) && wheels[1].move(-turn) && wheels[2].move(turn) && wheels[3].move(-turn)
+        return wheels[0].autoMove(turn) && wheels[1].autoMove(-turn) && wheels[2].autoMove(turn) && wheels[3].autoMove(-turn)
     }
 
     private fun turnPower(): Double {

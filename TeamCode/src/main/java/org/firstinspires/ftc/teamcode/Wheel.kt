@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.Constants.Companion.KD_TRANSLATION
 import org.firstinspires.ftc.teamcode.Constants.Companion.KP_TRANSLATION
+import org.firstinspires.ftc.teamcode.Constants.Companion.MANUAL_MULTIPLIER
+import kotlin.math.max
+import kotlin.math.min
 
 class Wheel(val name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Direction) {
     val drive: DcMotor = hardwareMap.get(DcMotor::class.java, name).apply {
@@ -16,8 +19,8 @@ class Wheel(val name: String, hardwareMap: HardwareMap, direction: DcMotorSimple
     var target = 0.0
     private var lastError = 0.0
     private var lastTime = 0L
-
-    fun move(headingError: Double): Boolean {
+    fun setPower(power: Double) { drive.power = max(min(power * MANUAL_MULTIPLIER,1.0),-1.0) }
+    fun autoMove(headingError: Double): Boolean {
         val currentTime = System.nanoTime()
         val error = target - drive.currentPosition.toDouble()
         val deltaTime = (currentTime - lastTime) / 1e9

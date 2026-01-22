@@ -14,5 +14,6 @@ class Constants {
         @JvmField var KI_SPINNER: Double = 0.04
         @JvmField var X_TICKS_PER_INCH: Double = ((3249 * 28).toDouble() / 121) / (7.5/2.54 * PI)
         @JvmField var Y_TICKS_PER_INCH: Double = ((3249 * 28).toDouble() / 121) / (7.5/2.54 * PI)
+        @JvmField var MANUAL_MULTIPLIER: Double = 0.2
     }
 }
