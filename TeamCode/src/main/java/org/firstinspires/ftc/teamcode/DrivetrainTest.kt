@@ -6,13 +6,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 @Autonomous
 class DrivetrainTest : LinearOpMode() {
     override fun runOpMode() {
-        val drivetrain = DriveTrain(hardwareMap)
+        val drivetrain = DriveTrain(hardwareMap,telemetry)
         waitForStart()
-        while (opModeIsActive()) {
-            drivetrain.updateTargets(2.0, 2.0)
-            while (!drivetrain.update()) {}
-            drivetrain.updateTargets(-2.0,-2.0)
-            while (!drivetrain.update()) {}
-        }
+        drivetrain.updateTargets(0.0, 0.0)
+        while (opModeIsActive()) { drivetrain.update() }
     }
 }

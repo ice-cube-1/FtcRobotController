@@ -4,28 +4,31 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.Constants.Companion.KD_HEADING
 import org.firstinspires.ftc.teamcode.Constants.Companion.KP_HEADING
 import org.firstinspires.ftc.teamcode.Constants.Companion.X_TICKS_PER_INCH
 import org.firstinspires.ftc.teamcode.Constants.Companion.Y_TICKS_PER_INCH
 import java.lang.Math.toRadians
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
 
-class DriveTrain (hardwareMap: HardwareMap) {
+class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
     private val wheels = arrayOf(
-        Wheel("lf", hardwareMap, DcMotorSimple.Direction.FORWARD),
-        Wheel("rf", hardwareMap, DcMotorSimple.Direction.REVERSE),
-        Wheel("lb", hardwareMap, DcMotorSimple.Direction.FORWARD),
-        Wheel("rb", hardwareMap, DcMotorSimple.Direction.REVERSE)
+        Wheel("lf", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry),
+        Wheel("rf", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry),
+        Wheel("lb", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry),
+        Wheel("rb", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry)
     )
     private val imu = hardwareMap.get(IMU::class.java, "imu").apply {
         initialize(IMU.Parameters(RevHubOrientationOnRobot(
             RevHubOrientationOnRobot.LogoFacingDirection.UP,
             RevHubOrientationOnRobot.UsbFacingDirection.LEFT
         )))
+        resetYaw()
     }
     var targetAngle = 0.0
     private var x = 0.0
@@ -46,7 +49,7 @@ class DriveTrain (hardwareMap: HardwareMap) {
         y = newY
     }
     fun driveManual(moveX: Float, moveY: Float, turn: Float) {
-        val theta = imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
+        val theta = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
         val xTransposed = moveX * cos(theta) - moveY * sin(theta)
         val yTransposed = moveY * cos(theta) + moveX * sin(theta)
         wheels[0].setPower(yTransposed + xTransposed + turn)
@@ -56,11 +59,17 @@ class DriveTrain (hardwareMap: HardwareMap) {
     }
     fun update(): Boolean {
         val turn = turnPower()
-        return wheels[0].autoMove(turn) && wheels[1].autoMove(-turn) && wheels[2].autoMove(turn) && wheels[3].autoMove(-turn)
+        telemetry.addData("turn",turn)
+        telemetry.update()
+        val currentTime = System.nanoTime()
+        return wheels[0].autoMove(turn, currentTime) &&
+                wheels[1].autoMove(-turn, currentTime) &&
+                wheels[2].autoMove(turn, currentTime) &&
+                wheels[3].autoMove(-turn, currentTime) && abs(turn) < 5
     }
 
     private fun turnPower(): Double {
-        val currentAngle: Double = imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES)
+        val currentAngle: Double = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES)
         var error = targetAngle - currentAngle
         while (error > 180) error -= 360.0
         while (error <= -180) error += 360.0
