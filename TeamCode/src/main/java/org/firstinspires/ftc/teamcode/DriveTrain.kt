@@ -47,6 +47,9 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
         wheels[1].target += yTransposed - xTransposed
         wheels[2].target += yTransposed - xTransposed
         wheels[3].target += yTransposed + xTransposed
+        telemetry.addData("y",yTransposed)
+        telemetry.addData("x",xTransposed)
+        telemetry.update()
         lastHeadingTime = System.nanoTime()
     }
     fun updateDrive(): Boolean { return updateRotation( true) }
@@ -73,10 +76,12 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
         val turn = (KP_HEADING * error) + (KD_HEADING * derivative)
         lastHeadingError = error
         lastHeadingTime = currentTime
-        return abs(error) < 5 && (
-            wheels[0].autoMove(turn, currentTime, toTarget) &&
-            wheels[1].autoMove(-turn, currentTime, toTarget) &&
-            wheels[2].autoMove(turn, currentTime, toTarget) &&
+        val result = abs(error) < 5 && (
+            wheels[0].autoMove(turn, currentTime, toTarget) ||
+            wheels[1].autoMove(-turn, currentTime, toTarget) ||
+            wheels[2].autoMove(turn, currentTime, toTarget) ||
             wheels[3].autoMove(-turn, currentTime, toTarget) || !toTarget)
+        telemetry.update()
+        return result
     }
 }
