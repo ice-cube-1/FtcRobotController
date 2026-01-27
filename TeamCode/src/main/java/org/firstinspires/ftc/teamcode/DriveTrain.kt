@@ -36,18 +36,21 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
     private var lastHeadingError = 0.0
     private var lastHeadingTime = 0L
 
-    fun updateTargets(newX: Double, newY: Double) {
+    fun startDrive(newX: Double, newY: Double) {
         val deltaX = newX - x
         val deltaY = newY - y
-        val xTransposed = (deltaX * cos(toRadians(targetAngle)) - deltaY * sin(toRadians(targetAngle))) * X_TICKS_PER_INCH
-        val yTransposed = (deltaY * cos(toRadians(targetAngle)) + deltaX * sin(toRadians((targetAngle)))) * Y_TICKS_PER_INCH
+        x = newX
+        y = newY
+        val xTransposed = ((deltaX * cos(toRadians(targetAngle)) - deltaY * sin(toRadians(targetAngle))) * X_TICKS_PER_INCH).toInt()
+        val yTransposed = ((deltaY * cos(toRadians(targetAngle)) + deltaX * sin(toRadians((targetAngle)))) * Y_TICKS_PER_INCH).toInt()
         wheels[0].target += yTransposed + xTransposed
         wheels[1].target += yTransposed - xTransposed
         wheels[2].target += yTransposed - xTransposed
         wheels[3].target += yTransposed + xTransposed
-        x = newX
-        y = newY
+        lastHeadingTime = System.nanoTime()
     }
+    fun updateDrive(): Boolean { return updateRotation( true) }
+    fun stop() { for (wheel in wheels) { wheel.setPower(0.0) } }
     fun driveManual(moveX: Float, moveY: Float, turn: Float) {
         val theta = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
         val xTransposed = moveX * cos(theta) - moveY * sin(theta)
@@ -57,18 +60,8 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
         wheels[2].setPower(yTransposed - xTransposed + turn)
         wheels[3].setPower(yTransposed + xTransposed - turn)
     }
-    fun update(): Boolean {
-        val turn = turnPower()
-        telemetry.addData("turn",turn)
-        telemetry.update()
-        val currentTime = System.nanoTime()
-        return wheels[0].autoMove(turn, currentTime) &&
-                wheels[1].autoMove(-turn, currentTime) &&
-                wheels[2].autoMove(turn, currentTime) &&
-                wheels[3].autoMove(-turn, currentTime) && abs(turn) < 5
-    }
 
-    private fun turnPower(): Double {
+    fun updateRotation(toTarget: Boolean = false): Boolean {
         val currentAngle: Double = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES)
         var error = targetAngle - currentAngle
         while (error > 180) error -= 360.0
@@ -77,9 +70,13 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
         val deltaTime: Double = (currentTime - lastHeadingTime) / 1e9
         var derivative = 0.0
         if (deltaTime > 0) { derivative = (error - lastHeadingError) / deltaTime }
-        val output = (KP_HEADING * error) + (KD_HEADING * derivative)
+        val turn = (KP_HEADING * error) + (KD_HEADING * derivative)
         lastHeadingError = error
         lastHeadingTime = currentTime
-        return output
+        return abs(error) < 5 && (
+            wheels[0].autoMove(turn, currentTime, toTarget) &&
+            wheels[1].autoMove(-turn, currentTime, toTarget) &&
+            wheels[2].autoMove(turn, currentTime, toTarget) &&
+            wheels[3].autoMove(-turn, currentTime, toTarget) || !toTarget)
     }
 }

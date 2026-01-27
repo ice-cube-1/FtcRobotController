@@ -8,7 +8,13 @@ class DrivetrainTest : LinearOpMode() {
     override fun runOpMode() {
         val drivetrain = DriveTrain(hardwareMap,telemetry)
         waitForStart()
-        drivetrain.updateTargets(0.0, 0.0)
-        while (opModeIsActive()) { drivetrain.update() }
+        while (opModeIsActive()) {
+            drivetrain.startDrive(10.0,0.0)
+            while (drivetrain.updateDrive()) {}
+            drivetrain.stop()
+            drivetrain.startDrive(0.0,0.0)
+            while (drivetrain.updateDrive()) {}
+            drivetrain.stop()
+        }
     }
 }
