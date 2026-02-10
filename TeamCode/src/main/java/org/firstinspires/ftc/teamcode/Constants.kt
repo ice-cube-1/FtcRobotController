@@ -17,7 +17,32 @@ class Constants {
         @JvmField var ENCODER_ERROR = 35
         @JvmField var TURRET_ENCODER_KP = 10
         @JvmField var TURRET_STEPS = 50
-        @JvmField var MIN_TURRET = -100
+        @JvmField var MIN_TURRET = 100;
         @JvmField var MAX_TURRET = 100
+        @JvmField var KICKARM_DOWN = 0.1
+        @JvmField var KICKARM_RELEASE = 0.5
+
+        enum class SpinPosition {
+            ZERO_IN  {
+                override fun value() = 0
+                override fun pos() = 1.0},
+            ZERO_OUT {
+                override fun value() = 0
+                override fun pos() = 1.0},
+            ONE_IN   {
+                override fun value() = 1
+                override fun pos() = 1.0},
+            ONE_OUT  {
+                override fun value() = 1
+                override fun pos() = 1.0},
+            TWO_IN   {
+                override fun value() = 2
+                override fun pos() = 1.0},
+            TWO_OUT  {
+                override fun value() = 2
+                override fun pos() = 1.0};
+            abstract fun value(): Int
+            abstract fun pos(): Double
+        }
     }
 }

@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.Constants.Companion.KI_SPINNER
+import org.firstinspires.ftc.teamcode.Constants.Companion.MAX_TURRET
+import org.firstinspires.ftc.teamcode.Constants.Companion.MIN_TURRET
 import org.firstinspires.ftc.teamcode.Constants.Companion.TURRET_ENCODER_KP
 import org.firstinspires.ftc.teamcode.Constants.Companion.TURRET_STEPS
 import org.firstinspires.ftc.vision.VisionPortal
