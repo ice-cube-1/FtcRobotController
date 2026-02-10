@@ -21,8 +21,8 @@ class ColorSensorTest : OpMode() {
     private lateinit var visionPortal: VisionPortal
 
     override fun init() {
-        aprilTag = AprilTagProcessor.Builder().setTagLibrary(AprilTagGameDatabase.getCurrentGameTagLibrary())
-            .build()
+        aprilTag = AprilTagProcessor.Builder()
+            .setTagLibrary(AprilTagGameDatabase.getDecodeTagLibrary()).build()
         visionPortal = VisionPortal.Builder()
            .setCamera(hardwareMap.get(WebcamName::class.java, "Webcam 1"))
             .addProcessor(aprilTag)
@@ -35,10 +35,13 @@ class ColorSensorTest : OpMode() {
     private fun lookForTag(): Boolean {
         val currentDetections = aprilTag.detections
         for (detection in currentDetections) {
-            telemetry.addData("apriltag", detection.id)
-            val (range, bearing) = aprilTagPoseFromCorners(detection.corners, 822.317, 319.495)
-            telemetry.addData("range_inch", range)
-            telemetry.addData("bearing",bearing)
+            if (detection.id == 20 && detection.metadata != null) {
+                telemetry.addData("apriltag", detection.id)
+                telemetry.addData("name", detection.metadata)
+                telemetry.addData("range", detection.ftcPose.range)
+                telemetry.addData("bearing", detection.ftcPose.bearing)
+                return true
+            }
         }
         return false
     }
@@ -55,16 +58,4 @@ class ColorSensorTest : OpMode() {
 
         telemetry.update()
     }
-}
-
-fun aprilTagPoseFromCorners(corners: Array<Point>, fx: Double, cx: Double): Pair<Double, Double> {
-    val centerX = corners.sumOf {it.x / 4.0}
-    val widthPx = hypot(corners[0].x - corners[1].x, corners[0].y - corners[1].y)
-    val heightPx = hypot(corners[0].x - corners[3].x, corners[0].y - corners[3].y)
-    val avgPx = (widthPx + heightPx) / 2.0
-    val tagSizeInches = 10.0 / 2.54
-    val rangeInches = fx * tagSizeInches / avgPx
-    val bearingRad = atan2(centerX - cx, fx)
-    val bearingDeg = Math.toDegrees(bearingRad)
-    return Pair(rangeInches, bearingDeg)
 }
