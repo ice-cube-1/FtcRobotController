@@ -15,12 +15,15 @@ enum class Detected {
     abstract fun opposite(): Detected
 }
 
-class Spindexer (hardwareMap: HardwareMap) {
-    private val colorSensor: RevColorSensorV3 = hardwareMap.get(RevColorSensorV3::class.java, "color_sensor");
+class Spindexer (hardwareMap: HardwareMap, sensing: Boolean = false) {
+    private lateinit var colorSensor: RevColorSensorV3
     private val positions = arrayOf(Detected.NONE, Detected.NONE, Detected.NONE)
     private val spindex = hardwareMap.get(Servo::class.java, "spindex")
     private val kickarm = hardwareMap.get(Servo::class.java, "kickarm")
     private var currentPos = Constants.Companion.SpinPosition.ZERO_IN
+    init {
+        if (sensing) { colorSensor = hardwareMap.get(RevColorSensorV3::class.java, "color_sensor"); }
+    }
     fun detect() {
         val colors = colorSensor.normalizedColors
         if (colors.red > 200.0 && colors.blue > 200.0 && colors.green < 200.0) { positions[currentPos.value()] = Detected.PURPLE }
@@ -39,11 +42,17 @@ class Spindexer (hardwareMap: HardwareMap) {
         }
         spindex.position = currentPos.pos()
         sleep(200)
+        kick()
+        return true
+    }
+    fun kick() {
         kickarm.position = KICKARM_RELEASE
         sleep(200)
         kickarm.position = KICKARM_DOWN
         sleep(200)
-        return true
+    }
+    fun manualRotate(delta: Float) {
+        spindex.position += delta
     }
     fun emptyIntake(): Boolean {
         val gotoPos = when (Detected.NONE) {

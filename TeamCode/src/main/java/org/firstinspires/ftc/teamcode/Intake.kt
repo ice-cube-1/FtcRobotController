@@ -1,0 +1,16 @@
+package org.firstinspires.ftc.teamcode
+
+import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.teamcode.Constants.Companion.INTAKE_POWER
+
+class Intake (hardwareMap: HardwareMap) {
+    private val intake = hardwareMap.get(DcMotor::class.java, "intake")
+    public var on: Boolean = false
+    fun run() {
+        intake.power = when {
+            on -> INTAKE_POWER
+            else -> 0.0
+        }
+    }
+}

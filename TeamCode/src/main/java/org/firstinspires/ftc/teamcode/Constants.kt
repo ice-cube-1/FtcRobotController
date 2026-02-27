@@ -13,7 +13,7 @@ class Constants {
         @JvmField var KI_SPINNER = 0.04
         @JvmField var X_TICKS_PER_INCH = ((3249 * 28).toDouble() / 121) / (7.5/2.54 * PI)
         @JvmField var Y_TICKS_PER_INCH = ((3249 * 28).toDouble() / 121) / (7.5/2.54 * PI)
-        @JvmField var MANUAL_MULTIPLIER = 0.8
+        @JvmField var MANUAL_MULTIPLIER = 0.8F
         @JvmField var ENCODER_ERROR = 35
         @JvmField var TURRET_ENCODER_KP = 10
         @JvmField var TURRET_STEPS = 50
@@ -21,6 +21,7 @@ class Constants {
         @JvmField var MAX_TURRET = 100
         @JvmField var KICKARM_DOWN = 0.1
         @JvmField var KICKARM_RELEASE = 0.5
+        @JvmField var INTAKE_POWER = 0.2
 
         enum class SpinPosition {
             ZERO_IN  {

@@ -8,13 +8,10 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
-import org.opencv.core.Point
-import kotlin.math.atan2
-import kotlin.math.hypot
 
 
 @TeleOp(name = "Color Sensor Test", group = "Test")
-class ColorSensorTest : OpMode() {
+class ColorVisionTests : OpMode() {
 
     private lateinit var colorSensor: RevColorSensorV3
     private lateinit var aprilTag: AprilTagProcessor
@@ -29,7 +26,7 @@ class ColorSensorTest : OpMode() {
             .build()
         colorSensor = hardwareMap.get(RevColorSensorV3::class.java, "color_sensor")
         colorSensor.enableLed(false)
-        FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0);
+        FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
     }
 
     private fun lookForTag(): Boolean {

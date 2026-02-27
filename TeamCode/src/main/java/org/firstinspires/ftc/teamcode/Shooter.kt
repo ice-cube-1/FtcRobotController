@@ -20,9 +20,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-class Shooter (hardwareMap: HardwareMap) {
+class Shooter (hardwareMap: HardwareMap, vision: Boolean = false) {
     private val aprilTag = AprilTagProcessor.easyCreateWithDefaults()
-    private val visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag)
+    private lateinit var visionPortal: VisionPortal
     private val turret = hardwareMap.get(DcMotor::class.java, "turret")
     private val hoodAngle = hardwareMap.get(Servo::class.java, "hood")
     private var lastDist = 0.0
@@ -34,8 +34,10 @@ class Shooter (hardwareMap: HardwareMap) {
     private var power = 0.0
     private var timer = ElapsedTime()
     var shooterOn = false
-    init { FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0); }
-
+    init { if (vision) {
+        FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0);
+        visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag)
+    } }
     private fun lookForTag(): Boolean {
         val currentDetections = aprilTag.detections
         for (detection in currentDetections) {
@@ -70,7 +72,7 @@ class Shooter (hardwareMap: HardwareMap) {
         turret.targetPosition += TURRET_STEPS
         checkWraparound()
     }
-    fun checkWraparound() {
+    private fun checkWraparound() {
         if (turret.targetPosition > MAX_TURRET) {
             turret.targetPosition = MIN_TURRET
         } else if (turret.targetPosition < MIN_TURRET) {
@@ -89,5 +91,10 @@ class Shooter (hardwareMap: HardwareMap) {
         var ans = 0.0
         for (motor in motors) { ans += motor.getVelocity() }
         return ans / 2
+    }
+    fun manual(turretRotation: Double, back: Float, shooterOn: Boolean) {
+        if (shooterOn) { spin() }
+        turret.power = turretRotation
+        hoodAngle.position += back
     }
 }

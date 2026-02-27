@@ -24,6 +24,7 @@ class shootertest : LinearOpMode() {
             init_motor("m2", DcMotorSimple.Direction.REVERSE)
         )
         val s = hardwareMap.get(CRServo::class.java, "s")
+        val slowMotor = init_motor("slow",DcMotorSimple.Direction.FORWARD)
         var speed = 0.1
         waitForStart()
         while (opModeIsActive()) {
@@ -45,6 +46,7 @@ class shootertest : LinearOpMode() {
             if (gamepad1.dpad_up) { s.power = -0.2
             } else if (gamepad1.dpad_down) { s.power = 0.2
             } else { s.power = 0.0 }
+            slowMotor.power = (gamepad1.left_trigger - gamepad1.right_trigger)*0.1
             telemetry.addLine(speed.toString())
             for (motor in motors) { telemetry.addLine(motor.velocity.toString()) }
             telemetry.update()
