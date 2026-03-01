@@ -1,17 +1,47 @@
 package org.firstinspires.ftc.teamcode
 
+import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.util.ElapsedTime
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
+import org.firstinspires.ftc.vision.VisionPortal
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import kotlin.math.max
 import kotlin.math.min
 
 @TeleOp
 class ShooterVelocityTest : LinearOpMode() {
+    @JvmField var endVelocity = 0
+    @JvmField var KP_SHOOTER = 0.04
     private lateinit var motors: Array<Wheel>
+    private lateinit var aprilTag: AprilTagProcessor
+    private lateinit var visionPortal: VisionPortal
+
+    private fun lookForTag(): Boolean {
+        val currentDetections = aprilTag.detections
+        for (detection in currentDetections) {
+            if (detection.id == 20 && detection.metadata != null) {
+                telemetry.addData("apriltag", detection.id)
+                telemetry.addData("name", detection.metadata.name)
+                telemetry.addData("range", detection.ftcPose.range)
+                telemetry.addData("bearing", detection.ftcPose.bearing)
+                return true
+            }
+        }
+        return false
+    }
     override fun runOpMode() {
+        aprilTag = AprilTagProcessor.Builder()
+            .setTagLibrary(AprilTagGameDatabase.getDecodeTagLibrary()).build()
+        visionPortal = VisionPortal.Builder()
+            .setCamera(hardwareMap.get(WebcamName::class.java, "Webcam 1"))
+            .addProcessor(aprilTag)
+            .build()
+        FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
         val turret = Wheel("slow",hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
         val hoodAngle = hardwareMap.get(CRServo::class.java, "s")
         motors =  arrayOf(
@@ -24,18 +54,22 @@ class ShooterVelocityTest : LinearOpMode() {
         var shooterOn = false
         var targetV = 0
         while (opModeIsActive()) {
-            if (gamepad1.x) { shooterOn = !shooterOn; sleep(200) }
-            if (gamepad1.left_bumper) { targetV += 20; sleep(200) }
-            if (gamepad1.right_bumper) { targetV -= 20; sleep(200) }
+            if (gamepad1.x) {
+                shooterOn = !shooterOn
+                sleep(200)
+                targetV = 0
+            }
+            if (shooterOn) { targetV = min(targetV + 1, endVelocity) }
             turret.setPower((gamepad1.left_trigger - gamepad1.right_trigger)*0.1)
             if (gamepad1.dpad_up) { hoodAngle.power = -0.2 }
             else if (gamepad1.dpad_down) { hoodAngle.power = 0.2 }
             else { hoodAngle.power = 0.0 }
-            val error = targetV - motors.sumOf { it.getVelocity() / 2 }
-            power = max(0.0, min(1.0, power + 0.04 * timer.seconds() * error))
+            val error = targetV - motors.map { it.getVelocity() }.average()
+            power = max(0.0, min(1.0, power + KP_SHOOTER * timer.seconds() * error))
             timer.reset()
             if (shooterOn) { for (m in motors) { m.setPower(power) } }
             else { for (m in motors) { m.setPower(0.0) } }
+            lookForTag()
             telemetry.addData("power", power)
             telemetry.addData("gotoV", targetV)
             telemetry.update()

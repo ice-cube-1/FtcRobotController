@@ -50,9 +50,6 @@ class ColorVisionTests : OpMode() {
         telemetry.addData("Green",colorSensor.green().toFloat())
         telemetry.addData("Blue", "%.5f", colorSensor.blue().toFloat())
         telemetry.addData("Alpha", "%.5f", colorSensor.alpha().toFloat())
-
-        telemetry.addLine("Move colored objects in front of the sensor!")
-
         telemetry.update()
     }
 }
