@@ -1,22 +1,25 @@
 package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
+import org.firstinspires.ftc.teamcode.Constants.Companion.KP_SHOOTER
+import org.firstinspires.ftc.teamcode.Constants.Companion.VELOCITY_DELTA
+import org.firstinspires.ftc.teamcode.Constants.Companion.endVelocity
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import kotlin.math.max
 import kotlin.math.min
 
-@TeleOp
+@TeleOp(name = "shooter velocity test", group = "Linear OpMode")
+@Config
 class ShooterVelocityTest : LinearOpMode() {
-    @JvmField var endVelocity = 0
-    @JvmField var KP_SHOOTER = 0.04
     private lateinit var motors: Array<Wheel>
     private lateinit var aprilTag: AprilTagProcessor
     private lateinit var visionPortal: VisionPortal
@@ -43,7 +46,7 @@ class ShooterVelocityTest : LinearOpMode() {
             .build()
         FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
         val turret = Wheel("slow",hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
-        val hoodAngle = hardwareMap.get(CRServo::class.java, "s")
+        val hoodAngle = hardwareMap.get(Servo::class.java, "s")
         motors =  arrayOf(
             Wheel("m1", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry),
             Wheel("m2", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry)
@@ -59,11 +62,10 @@ class ShooterVelocityTest : LinearOpMode() {
                 sleep(200)
                 targetV = 0
             }
-            if (shooterOn) { targetV = min(targetV + 1, endVelocity) }
+            if (shooterOn) { targetV = min(targetV + VELOCITY_DELTA, endVelocity) }
             turret.setPower((gamepad1.left_trigger - gamepad1.right_trigger)*0.1)
-            if (gamepad1.dpad_up) { hoodAngle.power = -0.2 }
-            else if (gamepad1.dpad_down) { hoodAngle.power = 0.2 }
-            else { hoodAngle.power = 0.0 }
+            if (gamepad1.dpad_up) { hoodAngle.position += 0.005 }
+            else if (gamepad1.dpad_down) { hoodAngle.position-=0.005 }
             val error = targetV - motors.map { it.getVelocity() }.average()
             power = max(0.0, min(1.0, power + KP_SHOOTER * timer.seconds() * error))
             timer.reset()
@@ -72,6 +74,8 @@ class ShooterVelocityTest : LinearOpMode() {
             lookForTag()
             telemetry.addData("power", power)
             telemetry.addData("gotoV", targetV)
+            telemetry.addData("shooter on", shooterOn)
+            telemetry.addData("servo pos", hoodAngle.position)
             telemetry.update()
         }
     }

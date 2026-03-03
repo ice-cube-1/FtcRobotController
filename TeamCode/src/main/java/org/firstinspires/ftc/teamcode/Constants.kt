@@ -22,6 +22,9 @@ class Constants {
         @JvmField var KICKARM_DOWN = 0.1
         @JvmField var KICKARM_RELEASE = 0.5
         @JvmField var INTAKE_POWER = 0.2
+        @JvmField var endVelocity = 0
+        @JvmField var KP_SHOOTER = 0.0005
+        @JvmField var VELOCITY_DELTA = 2
 
         enum class SpinPosition {
             ZERO_IN  {
