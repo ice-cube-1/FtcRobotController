@@ -53,11 +53,8 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false) {
     fun canShoot(): Boolean { /** TODO add range check */
         return abs(lastAngle) < 2
     }
-    private fun getTargetV(): Double {
-        return 0.0 /** TODO once calibrated */
-    }
-    private fun getTargetAngle(): Double {
-        return 0.0 /** TODO once calibrated */
+    private fun getTargetV_Angle(): Pair<Double, Double> {
+        return Pair(0.0, 0.0) /** TODO once calibrated */
     }
     fun centerOnTag(): Boolean {
         if (lookForTag()) {
@@ -79,9 +76,10 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false) {
             turret.targetPosition = MAX_TURRET
         }
     }
-    fun spin() {
-        hoodAngle.position = getTargetAngle()
-        val error = getTargetV() - getVelocity()
+    private fun spin() {
+        val values = getTargetV_Angle()
+        hoodAngle.position = values.second
+        val error = values.first - getVelocity()
         power = max(0.0, min(1.0, power + KI_SPINNER * timer.seconds() * error))
         timer.reset()
         if (shooterOn) { for (m in motors) { m.setPower(power) } }

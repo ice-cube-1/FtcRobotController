@@ -1,39 +1,45 @@
 package org.firstinspires.ftc.teamcode
 
-import com.qualcomm.hardware.rev.RevColorSensorV3
+import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.util.ElapsedTime
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.teamcode.Constants.Companion.KICKARM_DOWN
 import org.firstinspires.ftc.teamcode.Constants.Companion.KICKARM_RELEASE
 import java.lang.Thread.sleep
 
-
-enum class Detected {
-    NONE { override fun opposite() = NONE },
-    GREEN { override fun opposite() = PURPLE },
-    PURPLE { override fun opposite() = GREEN };
-    abstract fun opposite(): Detected
-}
-
 class Spindexer (hardwareMap: HardwareMap, sensing: Boolean = false) {
-    private lateinit var colorSensor: RevColorSensorV3
-    private val positions = arrayOf(Detected.NONE, Detected.NONE, Detected.NONE)
+    private lateinit var distanceSensor: DistanceSensor
+    private val positions = arrayOf(false, false, false)
     private val spindex = hardwareMap.get(Servo::class.java, "spindex")
     private val kickarm = hardwareMap.get(Servo::class.java, "kickarm")
     private var currentPos = Constants.Companion.SpinPosition.ZERO_IN
+    private var hasDetected = false
+    private val detectionTime = ElapsedTime()
     init {
-        if (sensing) { colorSensor = hardwareMap.get(RevColorSensorV3::class.java, "color_sensor"); }
+        if (sensing) { distanceSensor = hardwareMap.get(DistanceSensor::class.java, "distance_sensor"); }
     }
-    fun detect() {
-        val colors = colorSensor.normalizedColors
-        if (colors.red > 200.0 && colors.blue > 200.0 && colors.green < 200.0) { positions[currentPos.value()] = Detected.PURPLE }
-        if (colors.green > 200.0 && colors.blue < 200.0 && colors.red < 200.0) { positions[currentPos.value()] = Detected.GREEN }
+    fun detect(): Boolean {
+        val distance = distanceSensor.getDistance(DistanceUnit.MM)
+        if (hasDetected) {
+            if (distance > 10) { hasDetected = false }
+            else if (detectionTime.milliseconds() > 10) {
+                positions[currentPos.value()] = true
+                return true
+            }
+        } else {
+            if (distance < 10) {
+                hasDetected = true
+                detectionTime.reset()
+            }
+        }
+        return false
     }
-    fun release(nextColor: Detected): Boolean {
-        val gotoPos = if (nextColor in positions) {
-            positions.indexOf(nextColor)
-        } else if (nextColor.opposite() in positions)  {
-            positions.indexOf(nextColor)
+
+    fun release(): Boolean {
+        val gotoPos = if (true in positions) {
+            positions.indexOf(true)
         } else { return false }
         currentPos = when (gotoPos) {
             0 -> Constants.Companion.SpinPosition.ZERO_OUT
@@ -55,8 +61,8 @@ class Spindexer (hardwareMap: HardwareMap, sensing: Boolean = false) {
         spindex.position += delta
     }
     fun emptyIntake(): Boolean {
-        val gotoPos = when (Detected.NONE) {
-            in positions -> { positions.indexOf(Detected.NONE) }
+        val gotoPos = when (false) {
+            in positions -> { positions.indexOf(false) }
             else -> { return false }
         }
         currentPos = when (gotoPos) {
