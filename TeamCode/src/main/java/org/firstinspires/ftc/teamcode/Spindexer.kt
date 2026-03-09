@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
-import org.firstinspires.ftc.teamcode.Constants.Companion.KICKARM_DOWN
-import org.firstinspires.ftc.teamcode.Constants.Companion.KICKARM_RELEASE
+import org.firstinspires.ftc.teamcode.Constants.KICKARM_DOWN
+import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 import java.lang.Thread.sleep
 
 class Spindexer (hardwareMap: HardwareMap, sensing: Boolean = false) {
@@ -14,7 +14,7 @@ class Spindexer (hardwareMap: HardwareMap, sensing: Boolean = false) {
     private val positions = arrayOf(false, false, false)
     private val spindex = hardwareMap.get(Servo::class.java, "spindex")
     private val kickarm = hardwareMap.get(Servo::class.java, "kickarm")
-    private var currentPos = Constants.Companion.SpinPosition.ZERO_IN
+    private var currentPos = Constants.SpinPosition.ZERO_IN
     private var hasDetected = false
     private val detectionTime = ElapsedTime()
     init {
@@ -42,9 +42,9 @@ class Spindexer (hardwareMap: HardwareMap, sensing: Boolean = false) {
             positions.indexOf(true)
         } else { return false }
         currentPos = when (gotoPos) {
-            0 -> Constants.Companion.SpinPosition.ZERO_OUT
-            1 -> Constants.Companion.SpinPosition.ONE_OUT
-            else -> Constants.Companion.SpinPosition.TWO_OUT
+            0 -> Constants.SpinPosition.ZERO_OUT
+            1 -> Constants.SpinPosition.ONE_OUT
+            else -> Constants.SpinPosition.TWO_OUT
         }
         spindex.position = currentPos.pos()
         sleep(200)
@@ -66,9 +66,9 @@ class Spindexer (hardwareMap: HardwareMap, sensing: Boolean = false) {
             else -> { return false }
         }
         currentPos = when (gotoPos) {
-            0 -> Constants.Companion.SpinPosition.ZERO_IN
-            1 -> Constants.Companion.SpinPosition.ONE_IN
-            else -> Constants.Companion.SpinPosition.TWO_IN
+            0 -> Constants.SpinPosition.ZERO_IN
+            1 -> Constants.SpinPosition.ONE_IN
+            else -> Constants.SpinPosition.TWO_IN
         }
         spindex.position = currentPos.pos()
         sleep(200)

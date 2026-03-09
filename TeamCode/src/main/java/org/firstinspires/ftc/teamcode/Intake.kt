@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.teamcode.Constants.Companion.INTAKE_POWER
+import org.firstinspires.ftc.teamcode.Constants.INTAKE_POWER
 
 class Intake (hardwareMap: HardwareMap) {
     private val intake = hardwareMap.get(DcMotor::class.java, "intake")

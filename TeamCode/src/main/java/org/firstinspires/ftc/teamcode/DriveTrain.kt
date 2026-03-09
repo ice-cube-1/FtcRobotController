@@ -6,10 +6,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.Constants.Companion.KD_HEADING
-import org.firstinspires.ftc.teamcode.Constants.Companion.KP_HEADING
-import org.firstinspires.ftc.teamcode.Constants.Companion.X_TICKS_PER_INCH
-import org.firstinspires.ftc.teamcode.Constants.Companion.Y_TICKS_PER_INCH
+import org.firstinspires.ftc.teamcode.Constants.KD_HEADING
+import org.firstinspires.ftc.teamcode.Constants.KP_HEADING
+import org.firstinspires.ftc.teamcode.Constants.X_TICKS_PER_INCH
+import org.firstinspires.ftc.teamcode.Constants.Y_TICKS_PER_INCH
 import java.lang.Math.toRadians
 import kotlin.math.abs
 import kotlin.math.cos

@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.firstinspires.ftc.teamcode.Constants.Companion.ENCODER_ERROR
-import org.firstinspires.ftc.teamcode.Constants.Companion.KD_TRANSLATION
-import org.firstinspires.ftc.teamcode.Constants.Companion.KP_TRANSLATION
+import org.firstinspires.ftc.teamcode.Constants.ENCODER_ERROR
+import org.firstinspires.ftc.teamcode.Constants.KD_TRANSLATION
+import org.firstinspires.ftc.teamcode.Constants.KP_TRANSLATION
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

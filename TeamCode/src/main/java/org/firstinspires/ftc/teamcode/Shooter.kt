@@ -1,29 +1,30 @@
 package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.dashboard.FtcDashboard
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
-import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.firstinspires.ftc.teamcode.Constants.Companion.KI_SPINNER
-import org.firstinspires.ftc.teamcode.Constants.Companion.MAX_TURRET
-import org.firstinspires.ftc.teamcode.Constants.Companion.MIN_TURRET
-import org.firstinspires.ftc.teamcode.Constants.Companion.TURRET_ENCODER_KP
-import org.firstinspires.ftc.teamcode.Constants.Companion.TURRET_STEPS
+import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
+import org.firstinspires.ftc.teamcode.Constants.MAX_TURRET
+import org.firstinspires.ftc.teamcode.Constants.MIN_TURRET
+import org.firstinspires.ftc.teamcode.Constants.TURRET_ENCODER_KP
+import org.firstinspires.ftc.teamcode.Constants.TURRET_STEPS
+import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
+enum class TurretState {SCANNING, MAYBE_FOUND, FOUND_CONFIRMED, MATCH_LOST}
 
-class Shooter (hardwareMap: HardwareMap, vision: Boolean = false) {
+class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Telemetry) {
     private val aprilTag = AprilTagProcessor.easyCreateWithDefaults()
     private lateinit var visionPortal: VisionPortal
-    private val turret = hardwareMap.get(DcMotor::class.java, "turret")
+    private val turret = Wheel("turret", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
     private val hoodAngle = hardwareMap.get(Servo::class.java, "hood")
     private var lastDist = 0.0
     private var lastAngle = 0.0
@@ -32,11 +33,14 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false) {
         Wheel("m2", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
     )
     private var power = 0.0
-    private var timer = ElapsedTime()
-    var shooterOn = false
+    private var spinnerTimer = ElapsedTime()
+    private var cameraStateTimer = ElapsedTime()
+    private var turretState = TurretState.SCANNING
+    private var shooterOn = false
+    private var targetV = 0
     init { if (vision) {
-        FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0);
         visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag)
+        FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
     } }
     private fun lookForTag(): Boolean {
         val currentDetections = aprilTag.detections
@@ -53,46 +57,62 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false) {
     fun canShoot(): Boolean { /** TODO add range check */
         return abs(lastAngle) < 2
     }
-    private fun getTargetV_Angle(): Pair<Double, Double> {
-        return Pair(0.0, 0.0) /** TODO once calibrated */
+    private fun getTargetVelocityAngle(): Pair<Int, Double> {
+        return Pair(0, 0.0) /** TODO once calibrated */
     }
-    fun centerOnTag(): Boolean {
-        if (lookForTag()) {
-            turret.targetPosition += (lastAngle * TURRET_ENCODER_KP).toInt()
-            checkWraparound()
-            return true
-        } else {
-            return false
-        }
-    }
-    fun scan() {
-        turret.targetPosition += TURRET_STEPS
-        checkWraparound()
-    }
+    private fun centerOnTag() { turret.target += (lastAngle * TURRET_ENCODER_KP).toInt(); checkWraparound() }
+    private fun scan() { turret.target += TURRET_STEPS; checkWraparound() }
     private fun checkWraparound() {
-        if (turret.targetPosition > MAX_TURRET) {
-            turret.targetPosition = MIN_TURRET
-        } else if (turret.targetPosition < MIN_TURRET) {
-            turret.targetPosition = MAX_TURRET
+        if (turret.target > MAX_TURRET) {
+            turret.target = MIN_TURRET.toDouble()
+        } else if (turret.target < MIN_TURRET) {
+            turret.target = MAX_TURRET.toDouble()
         }
     }
-    private fun spin() {
-        val values = getTargetV_Angle()
+    fun moveTurret() {
+        if (lookForTag()) {
+            when (turretState) {
+                TurretState.SCANNING -> {
+                    turretState = TurretState.MAYBE_FOUND
+                    cameraStateTimer.reset()
+                }
+                TurretState.MAYBE_FOUND -> {
+                    if (cameraStateTimer.milliseconds() > 50) turretState = TurretState.FOUND_CONFIRMED
+                    else centerOnTag()
+                }
+                TurretState.FOUND_CONFIRMED -> centerOnTag()
+                TurretState.MATCH_LOST -> turretState = TurretState.FOUND_CONFIRMED
+            }
+        } else {
+            when (turretState) {
+                TurretState.SCANNING -> scan()
+                TurretState.MAYBE_FOUND -> turretState = TurretState.SCANNING
+                TurretState.FOUND_CONFIRMED -> {
+                    turretState = TurretState.MATCH_LOST
+                    cameraStateTimer.reset()
+                }
+                TurretState.MATCH_LOST -> {
+                    if (cameraStateTimer.milliseconds() > 50) turretState = TurretState.MATCH_LOST
+                    else scan()
+                }
+            }
+        }
+    }
+    private fun turnOnShooter() {
+        val values = getTargetVelocityAngle()
         hoodAngle.position = values.second
-        val error = values.first - getVelocity()
-        power = max(0.0, min(1.0, power + KI_SPINNER * timer.seconds() * error))
-        timer.reset()
+        targetV = 0
+        shooterOn = true
+    }
+
+    private fun spin() {
+        val values = getTargetVelocityAngle()
+        hoodAngle.position = values.second
+        val error = targetV - motors.map { it.getVelocity() }.average()
+        power = max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() * error))
+        if (shooterOn) { targetV = min(targetV + VELOCITY_DELTA, values.first) }
         if (shooterOn) { for (m in motors) { m.setPower(power) } }
         else {for (m in motors) {m.setPower(0.0) } }
-    }
-    private fun getVelocity(): Double {
-        var ans = 0.0
-        for (motor in motors) { ans += motor.getVelocity() }
-        return ans / 2
-    }
-    fun manual(turretRotation: Double, back: Float, shooterOn: Boolean) {
-        if (shooterOn) { spin() }
-        turret.power = turretRotation
-        hoodAngle.position += back
+        spinnerTimer.reset()
     }
 }

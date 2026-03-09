@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.Constants.Companion.MANUAL_MULTIPLIER
+import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
 
 @TeleOp
 class BaseManual : LinearOpMode() {
@@ -12,7 +12,7 @@ class BaseManual : LinearOpMode() {
         val drivetrain = DriveTrain(hardwareMap,telemetry)
         /**
         val spindexer = Spindexer(hardwareMap)
-        val shooter = Shooter(hardwareMap)
+        val shooter = Shooter(hardwareMap, telemetry)
         **/
         while (opModeIsActive()) {
             /** expected field centric control **/
