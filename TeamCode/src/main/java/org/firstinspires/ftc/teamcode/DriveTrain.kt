@@ -16,7 +16,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
+class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
+                  private var x: Double, private var y: Double, var targetAngle: Double) {
     private val wheels = arrayOf(
         Wheel("lf", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry),
         Wheel("rf", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry),
@@ -30,9 +31,6 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry) {
         )))
         resetYaw()
     }
-    var targetAngle = 0.0
-    private var x = 0.0
-    private var y = 0.0
     private var lastHeadingError = 0.0
     private var lastHeadingTime = 0L
 

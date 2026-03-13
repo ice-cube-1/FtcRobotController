@@ -37,4 +37,5 @@ class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Dir
         else { setPower(headingError) }
         return abs(error) < ENCODER_ERROR
     }
+    fun getPosition(): Int { return drive.currentPosition }
 }

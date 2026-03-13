@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 @Autonomous
 class DrivetrainTest : LinearOpMode() {
     override fun runOpMode() {
-        val drivetrain = DriveTrain(hardwareMap,telemetry)
+        val drivetrain = DriveTrain(hardwareMap,telemetry,0.0,0.0,0.0)
         waitForStart()
         while (opModeIsActive()) {
             drivetrain.targetAngle += gamepad1.left_stick_x

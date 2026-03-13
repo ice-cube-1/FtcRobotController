@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
 import org.firstinspires.ftc.teamcode.Constants.MAX_TURRET
 import org.firstinspires.ftc.teamcode.Constants.MIN_TURRET
 import org.firstinspires.ftc.teamcode.Constants.TURRET_ENCODER_KP
-import org.firstinspires.ftc.teamcode.Constants.TURRET_STEPS
+import org.firstinspires.ftc.teamcode.Constants.TURRET_SPEED
 import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
@@ -35,7 +35,8 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
     private var power = 0.0
     private var spinnerTimer = ElapsedTime()
     private var cameraStateTimer = ElapsedTime()
-    private var turretState = TurretState.SCANNING
+    var turretState = TurretState.SCANNING
+    private var turretDirection = 1
     private var shooterOn = false
     private var targetV = 0
     init { if (vision) {
@@ -53,21 +54,33 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
         }
         return false
     }
-
+    fun getMotifID(): Int {
+        val currentDetections = aprilTag.detections
+        for (detection in currentDetections) {
+            if (detection.id in 21..23) {return getMotifID()}
+        }
+        return -1
+    }
+    fun setTurretManual(position: Double) {
+        turret.target = MIN_TURRET + (MAX_TURRET- MIN_TURRET)*(position + 180)/360
+        while (abs(turret.target - turret.getPosition()) > 5) {
+            turret.setPower(TURRET_ENCODER_KP * (turret.target - turret.getPosition()))
+        }
+    }
     fun canShoot(): Boolean { /** TODO add range check */
         return abs(lastAngle) < 2
     }
     private fun getTargetVelocityAngle(): Pair<Int, Double> {
         return Pair(0, 0.0) /** TODO once calibrated */
     }
-    private fun centerOnTag() { turret.target += (lastAngle * TURRET_ENCODER_KP).toInt(); checkWraparound() }
-    private fun scan() { turret.target += TURRET_STEPS; checkWraparound() }
-    private fun checkWraparound() {
-        if (turret.target > MAX_TURRET) {
-            turret.target = MIN_TURRET.toDouble()
-        } else if (turret.target < MIN_TURRET) {
-            turret.target = MAX_TURRET.toDouble()
+    private fun centerOnTag() {
+        if (!(turret.getPosition() > MAX_TURRET || turret.getPosition() < MIN_TURRET)) {
+            turret.setPower(lastAngle * TURRET_ENCODER_KP)
         }
+    }
+    private fun scan() {
+        if (turret.getPosition() > MAX_TURRET || turret.getPosition() < MIN_TURRET) { turretDirection *= -1 }
+        turret.setPower(TURRET_SPEED * turretDirection)
     }
     fun moveTurret() {
         if (lookForTag()) {
@@ -98,14 +111,15 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
             }
         }
     }
-    private fun turnOnShooter() {
+    fun turnOnShooter() {
         val values = getTargetVelocityAngle()
         hoodAngle.position = values.second
         targetV = 0
         shooterOn = true
     }
+    fun turnOffShooter() { shooterOn = false }
 
-    private fun spin() {
+    fun spin(): Boolean {
         val values = getTargetVelocityAngle()
         hoodAngle.position = values.second
         val error = targetV - motors.map { it.getVelocity() }.average()
@@ -114,5 +128,6 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
         if (shooterOn) { for (m in motors) { m.setPower(power) } }
         else {for (m in motors) {m.setPower(0.0) } }
         spinnerTimer.reset()
+        return abs(error) < 100 && abs(targetV - values.first) < 100
     }
 }
