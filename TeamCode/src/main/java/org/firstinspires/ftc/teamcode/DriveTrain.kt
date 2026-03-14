@@ -51,7 +51,8 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
         telemetry.update()
         lastHeadingTime = System.nanoTime()
     }
-    fun updateDrive(): Boolean { return updateRotation( true) }
+    fun updateDrive(): Boolean { return update( true) }
+    fun updateRotation(): Boolean { return update(false) }
     fun stop() { for (wheel in wheels) { wheel.setPower(0.0) } }
     fun driveManual(moveX: Float, moveY: Float, turn: Float) {
         val theta = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS) + toRadians(startAngle)
@@ -63,7 +64,8 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
         wheels[3].setPower(yTransposed + xTransposed - turn)
     }
 
-    fun updateRotation(toTarget: Boolean = false): Boolean {
+    fun update(toTarget: Boolean): Boolean {
+        telemetry.addData("to target",toTarget)
         val currentAngle: Double = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES) + startAngle
         var error = targetAngle - currentAngle
         while (error > 180) error -= 360.0
@@ -75,11 +77,14 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
         val turn = (KP_HEADING * error) + (KD_HEADING * derivative)
         lastHeadingError = error
         lastHeadingTime = currentTime
-        val result = abs(error) < 5 && (
-            wheels[0].autoMove(turn, currentTime, toTarget) ||
-            wheels[1].autoMove(-turn, currentTime, toTarget) ||
-            wheels[2].autoMove(turn, currentTime, toTarget) ||
-            wheels[3].autoMove(-turn, currentTime, toTarget) || !toTarget)
+        val move = booleanArrayOf(
+            wheels[0].autoMove(turn, currentTime, toTarget),
+            wheels[1].autoMove(-turn, currentTime, toTarget),
+            wheels[2].autoMove(turn, currentTime, toTarget),
+            wheels[3].autoMove(-turn, currentTime, toTarget)
+        )
+        val result = abs(error) < 5 && (move.any{ it } || !toTarget)
+        telemetry.addLine(move[0].toString()+" "+move[1].toString() + move[2].toString() + move[3].toString())
         telemetry.update()
         return result
     }

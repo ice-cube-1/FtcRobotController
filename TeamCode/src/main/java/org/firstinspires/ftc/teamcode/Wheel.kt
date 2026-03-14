@@ -22,7 +22,7 @@ class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Dir
     private var target = 0.0
     private var lastError = 0.0
     private var lastTime = 0L
-    private var moving = true
+    private var moving = false
     fun setPower(power: Double) { drive.power = max(min(power,1.0),-1.0) }
     fun getVelocity(): Double { return drive.velocity }
     fun autoMove(headingError: Double, currentTime: Long, toTarget: Boolean): Boolean {
@@ -34,13 +34,15 @@ class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Dir
         lastTime = currentTime
         telemetry.addData("error", error)
         telemetry.addData("target",target)
+        telemetry.addData("toTarget", toTarget)
+        telemetry.addData("power",(KP_TRANSLATION * error) + (KD_TRANSLATION * derivative) + headingError)
         if (toTarget) { setPower((KP_TRANSLATION * error) + (KD_TRANSLATION * derivative) + headingError) }
         else { setPower(headingError) }
         return abs(error) < ENCODER_ERROR && moving
     }
     fun setTarget(t: Double) {
         moving = abs(t) > 2
-        target += t
+        target = t + drive.currentPosition
     }
     fun getTarget(): Double { return target }
     fun getPosition(): Int { return drive.currentPosition }
