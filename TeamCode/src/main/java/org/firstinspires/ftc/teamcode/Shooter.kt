@@ -62,9 +62,9 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
         return -1
     }
     fun setTurretManual(position: Double) {
-        turret.target = MIN_TURRET + (MAX_TURRET- MIN_TURRET)*(position + 180)/360
-        while (abs(turret.target - turret.getPosition()) > 5) {
-            turret.setPower(TURRET_ENCODER_KP * (turret.target - turret.getPosition()))
+        turret.setTarget(MIN_TURRET + (MAX_TURRET- MIN_TURRET)*(position + 180)/360)
+        while (abs(turret.getTarget() - turret.getPosition()) > 5) {
+            turret.setPower(TURRET_ENCODER_KP * (turret.getTarget() - turret.getPosition()))
         }
     }
     fun canShoot(): Boolean { /** TODO add range check */

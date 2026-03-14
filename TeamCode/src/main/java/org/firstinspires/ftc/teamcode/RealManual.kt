@@ -36,8 +36,9 @@ class RealManual : LinearOpMode() {
         while (opModeIsActive()) {
             /** expected field centric control **/
             driveTrain.driveManual(gamepad1.left_stick_x * MANUAL_MULTIPLIER,
-                -gamepad1.left_stick_y * MANUAL_MULTIPLIER, -gamepad1.right_stick_x)
+                -gamepad1.left_stick_y * MANUAL_MULTIPLIER, gamepad1.right_stick_x)
             if (gamepad1.dpad_left && robotState == RobotState.IDLE) {
+                timeToEnd = timer.milliseconds()+500
                 spindexer.emptyIntake()
                 robotState = RobotState.INTAKE
             }
@@ -46,25 +47,48 @@ class RealManual : LinearOpMode() {
                 timeToEnd = timer.milliseconds()+500
                 robotState = RobotState.IDLE
             }
-            intake.on = robotState == RobotState.INTAKE && timer.milliseconds() > timeToEnd && (gamepad1.left_trigger > 0.5 || gamepad1.right_trigger > 0.5)
+            intake.on = robotState == RobotState.INTAKE && (gamepad1.left_trigger > 0.5 || gamepad1.right_trigger > 0.5)
+            intake.run()
+            if (robotState == RobotState.INTAKE && spindexer.detect() && timer.milliseconds() > timeToEnd) {
+                timeToEnd = timer.milliseconds()+1000
+                if (!spindexer.emptyIntake()) {
+                    spindexer.release()
+                    robotState = RobotState.IDLE
+                }
+            }
             if (gamepad1.b && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_ON
                 /** TODO: TURN ON SHOOTER **/
-                timeToEnd = timer.milliseconds()+1000
+                timeToEnd = timer.milliseconds()+2000
             }
             /** TODO: Add shooter ready check **/
             if (gamepad1.x && timer.milliseconds() > timeToEnd && robotState == RobotState.SHOOTER_ON) {
                 release()
+                spindexer.removeItem()
+                timeToEnd = timer.milliseconds()+500
+                spindexer.release()
             }
+            getTelemetry()
         }
     }
     private fun release() {
         /** blocking as robot should not move during release process **/
+        while (timer.milliseconds() < timeToEnd && opModeIsActive()) {}
         spindexer.kickarm.position = KICKARM_RELEASE
         timeToEnd = timer.milliseconds()+800
         while (timer.milliseconds() < timeToEnd && opModeIsActive()) {}
         spindexer.kickarm.position = KICKARM_DOWN
         timeToEnd = timer.milliseconds()+1000
         while (timer.milliseconds() < timeToEnd && opModeIsActive()) {}
+    }
+    private fun getTelemetry() {
+        telemetry.addData("current state", robotState)
+        telemetry.addLine("-----DRIVETRAIN-----")
+        telemetry.addLine(driveTrain.getData())
+        telemetry.addLine("-----SPINDEXER-----")
+        telemetry.addLine(spindexer.getData())
+        telemetry.addLine("-----INTAKE-----")
+        telemetry.addLine(intake.getData())
+        telemetry.update()
     }
 }

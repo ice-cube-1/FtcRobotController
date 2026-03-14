@@ -17,4 +17,8 @@ class Intake (hardwareMap: HardwareMap) {
             else -> 0.0
         }
     }
+
+    fun getData(): String {
+        return on.toString()
+    }
 }

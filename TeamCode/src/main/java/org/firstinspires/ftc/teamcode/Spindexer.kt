@@ -2,13 +2,17 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 
 class Spindexer (hardwareMap: HardwareMap) {
     private val positions = arrayOf(false, false, false)
-    private val spindex = hardwareMap.get(Servo::class.java, "spindex")
+    private val spindex = hardwareMap.get(ServoImplEx::class.java, "spindex").apply {
+        pwmRange = PwmControl.PwmRange(500.0, 2500.0)
+    }
     val kickarm: Servo = hardwareMap.get(Servo::class.java, "kickarm")
     private var currentPos = Constants.SpinPosition.ZERO_IN
     private var hasDetected = false
@@ -17,13 +21,14 @@ class Spindexer (hardwareMap: HardwareMap) {
     fun detect(): Boolean {
         val distance = distanceSensor.getDistance(DistanceUnit.MM)
         if (hasDetected) {
-            if (distance > 10) { hasDetected = false }
-            else if (detectionTime.milliseconds() > 50) {
+            if (distance > 120) { hasDetected = false }
+            else if (detectionTime.milliseconds() > 200) {
                 positions[currentPos.value()] = true
+                hasDetected = false
                 return true
             }
         } else {
-            if (distance < 10) {
+            if (distance < 120) {
                 hasDetected = true
                 detectionTime.reset()
             }
@@ -44,8 +49,6 @@ class Spindexer (hardwareMap: HardwareMap) {
         return true
     }
     fun removeItem() { positions[currentPos.value()] = false }
-    /** testing purposes only **/
-    fun manualRotate(delta: Float) { spindex.position += delta }
     /** get ready to intake **/
     fun emptyIntake(): Boolean {
         val gotoPos = when (false) {
@@ -59,5 +62,9 @@ class Spindexer (hardwareMap: HardwareMap) {
         }
         spindex.position = currentPos.pos()
         return true
+    }
+
+    fun getData(): String {
+        return currentPos.toString() + hasDetected +"\n" + distanceSensor.getDistance(DistanceUnit.MM)+"\n"+positions
     }
 }

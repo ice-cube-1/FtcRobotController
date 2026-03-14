@@ -9,9 +9,33 @@ class DrivetrainTest : LinearOpMode() {
         val drivetrain = DriveTrain(hardwareMap,telemetry,0.0,0.0,0.0)
         waitForStart()
         while (opModeIsActive()) {
-            drivetrain.targetAngle += gamepad1.left_stick_x
-            telemetry.addData("angle",drivetrain.targetAngle)
             drivetrain.updateRotation()
+
+            if (gamepad1.a) {
+                drivetrain.startDrive(36.0,0.0)
+                while (!drivetrain.updateDrive()) {}
+                drivetrain.stop()
+                drivetrain.targetAngle = 90.0
+                while (!drivetrain.updateRotation()) {}
+                drivetrain.stop()
+                drivetrain.startDrive(36.0,36.0)
+                while (!drivetrain.updateDrive()) {}
+                drivetrain.stop()
+                drivetrain.targetAngle = 45.0
+                while (!drivetrain.updateRotation()) {}
+                drivetrain.stop()
+                drivetrain.startDrive(0.0,36.0)
+                while (!drivetrain.updateDrive()) {}
+                drivetrain.stop()
+                drivetrain.targetAngle = 0.0
+                while (!drivetrain.updateRotation()) {}
+                drivetrain.stop()
+                drivetrain.startDrive(0.0,0.0)
+                while (!drivetrain.updateDrive()) {}
+                drivetrain.stop()
+                while (!drivetrain.updateRotation()) {}
+                drivetrain.stop()
+            }
         }
     }
 }

@@ -2,22 +2,30 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.util.ElapsedTime
 
-@TeleOp(name="test motor encoder",group="test")
+
+@TeleOp
 class TestMotorEncoder : LinearOpMode() {
+    private val timer = ElapsedTime()
+    private lateinit var driveTrain: DriveTrain
+    private var timeToEnd = 0.0
     override fun runOpMode() {
-        val m = hardwareMap.get(DcMotor::class.java, "m")
+        driveTrain = DriveTrain(hardwareMap,telemetry,0.0,0.0,0.0)
         waitForStart()
-        var power = 0.2
+        timer.reset()
         while (opModeIsActive()) {
-            telemetry.addData("position",m.currentPosition)
-            telemetry.addData("power", power)
-            telemetry.update()
-            m.power = gamepad1.left_stick_x * power
-            if (gamepad1.left_bumper) {power+=0.01}
-            if (gamepad1.right_bumper) {power-=0.01}
-
+            if (gamepad1.dpad_up) {driveTrain.driveManual(0.0F,0.2F,0.0F)}
+            else if (gamepad1.dpad_down) {driveTrain.driveManual(0.0F,-0.2F,0.0F)}
+            else if (gamepad1.dpad_left) {driveTrain.driveManual(0.2F,0.0F,0.0F)}
+            else if (gamepad1.dpad_right) {driveTrain.driveManual(-0.2F,0.0F,0.0F)}
+            else {driveTrain.driveManual(0.0F,0.0F,0.0F)}
+            getTelemetry()
         }
+    }
+    private fun getTelemetry() {
+        telemetry.addLine("-----DRIVETRAIN-----")
+        telemetry.addLine(driveTrain.getData())
+        telemetry.update()
     }
 }

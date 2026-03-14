@@ -53,6 +53,7 @@ class Auto3Artefact : LinearOpMode() {
             while (timer.milliseconds() < 800 && opModeIsActive()) shooter.spin()
             spindexer.kickarm.position = KICKARM_DOWN
             while (timer.milliseconds() < 1800 && opModeIsActive()) shooter.spin()
+            spindexer.removeItem()
         }
     }
 }
