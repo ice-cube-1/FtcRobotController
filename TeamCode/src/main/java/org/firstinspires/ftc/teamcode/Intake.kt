@@ -9,16 +9,7 @@ class Intake (hardwareMap: HardwareMap) {
     private val intake = hardwareMap.get(DcMotor::class.java, "intake").apply {
         direction = DcMotorSimple.Direction.REVERSE
     }
-    public var on: Boolean = false
-
-    fun run() {
-        intake.power = when {
-            on -> INTAKE_POWER
-            else -> 0.0
-        }
-    }
-
-    fun getData(): String {
-        return on.toString()
-    }
+    var on: Boolean = false
+    fun run() { intake.power = if (on) INTAKE_POWER else 0.0 }
+    fun getData(): String { return "Intake on: $on" }
 }

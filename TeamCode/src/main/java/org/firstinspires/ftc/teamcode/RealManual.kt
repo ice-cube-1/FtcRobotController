@@ -25,30 +25,33 @@ class RealManual : LinearOpMode() {
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
     private lateinit var driveTrain: DriveTrain
+    private lateinit var shooter: Shooter
     private var timeToEnd = 0.0
     private var robotState = RobotState.IDLE
     override fun runOpMode() {
         intake = Intake(hardwareMap)
         spindexer = Spindexer(hardwareMap)
-        driveTrain = DriveTrain(hardwareMap,telemetry,0.0,0.0,0.0)
+        shooter = Shooter(hardwareMap)
+        driveTrain = DriveTrain(hardwareMap,0.0,0.0,0.0)
         waitForStart()
         timer.reset()
         while (opModeIsActive()) {
             /** expected field centric control **/
             driveTrain.driveManual(gamepad1.left_stick_x * MANUAL_MULTIPLIER,
                 -gamepad1.left_stick_y * MANUAL_MULTIPLIER, gamepad1.right_stick_x)
-            if (gamepad1.dpad_left && robotState == RobotState.IDLE) {
+            if (gamepad1.dpad_left && robotState != RobotState.INTAKE) {
                 timeToEnd = timer.milliseconds()+500
                 spindexer.emptyIntake()
+                shooter.turnOffShooter()
                 robotState = RobotState.INTAKE
             }
             if (gamepad1.dpad_right) {
                 spindexer.release()
+                shooter.turnOffShooter()
                 timeToEnd = timer.milliseconds()+500
                 robotState = RobotState.IDLE
             }
             intake.on = robotState == RobotState.INTAKE && (gamepad1.left_trigger > 0.5 || gamepad1.right_trigger > 0.5)
-            intake.run()
             if (robotState == RobotState.INTAKE && spindexer.detect() && timer.milliseconds() > timeToEnd) {
                 timeToEnd = timer.milliseconds()+1000
                 if (!spindexer.emptyIntake()) {
@@ -58,37 +61,44 @@ class RealManual : LinearOpMode() {
             }
             if (gamepad1.b && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_ON
-                /** TODO: TURN ON SHOOTER **/
+                shooter.turnOnShooter()
                 timeToEnd = timer.milliseconds()+2000
             }
-            /** TODO: Add shooter ready check **/
-            if (gamepad1.x && timer.milliseconds() > timeToEnd && robotState == RobotState.SHOOTER_ON) {
+            if (gamepad1.x && timer.milliseconds() > timeToEnd && robotState == RobotState.SHOOTER_ON && shooter.canShoot()) {
                 release()
                 spindexer.removeItem()
                 timeToEnd = timer.milliseconds()+500
                 spindexer.release()
             }
-            getTelemetry()
+            update()
         }
+    }
+    private fun update() {
+        shooter.moveTurret(driveTrain.getOrientationDeg())
+        shooter.spin()
+        intake.run()
+        getTelemetry()
     }
     private fun release() {
         /** blocking as robot should not move during release process **/
-        while (timer.milliseconds() < timeToEnd && opModeIsActive()) {}
+        while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
         spindexer.kickarm.position = KICKARM_RELEASE
         timeToEnd = timer.milliseconds()+800
-        while (timer.milliseconds() < timeToEnd && opModeIsActive()) {}
+        while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
         spindexer.kickarm.position = KICKARM_DOWN
         timeToEnd = timer.milliseconds()+1000
-        while (timer.milliseconds() < timeToEnd && opModeIsActive()) {}
+        while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
     }
     private fun getTelemetry() {
         telemetry.addData("current state", robotState)
         telemetry.addLine("-----DRIVETRAIN-----")
         telemetry.addLine(driveTrain.getData())
-        telemetry.addLine("-----SPINDEXER-----")
+        telemetry.addLine("-----SPINDEXER------")
         telemetry.addLine(spindexer.getData())
-        telemetry.addLine("-----INTAKE-----")
+        telemetry.addLine("-------INTAKE-------")
         telemetry.addLine(intake.getData())
+        telemetry.addLine("-------SHOOTER------")
+        telemetry.addLine(shooter.getData())
         telemetry.update()
     }
 }

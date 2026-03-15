@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.oldtests
 
-import android.util.Size
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
@@ -14,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
 import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
 import org.firstinspires.ftc.teamcode.Constants.endVelocity
+import org.firstinspires.ftc.teamcode.Wheel
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
@@ -51,8 +51,8 @@ class ShooterVelocityTest : LinearOpMode() {
         //val turret = Wheel("slow",hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
         val hoodAngle = hardwareMap.get(Servo::class.java, "s")
         motors =  arrayOf(
-            Wheel("m1", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry),
-            Wheel("m2", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry)
+            Wheel("m1", hardwareMap, DcMotorSimple.Direction.FORWARD),
+            Wheel("m2", hardwareMap, DcMotorSimple.Direction.REVERSE)
         )
         val kickarm = hardwareMap.get(Servo::class.java, "kickArm")
         var power = 0.0

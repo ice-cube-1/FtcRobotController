@@ -4,7 +4,6 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
-import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.Constants.KD_HEADING
 import org.firstinspires.ftc.teamcode.Constants.KP_HEADING
@@ -16,13 +15,12 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
-                  private var x: Double, private var y: Double, private val startAngle: Double) {
+class DriveTrain (hardwareMap: HardwareMap, private var x: Double, private var y: Double, private val startAngle: Double) {
     private val wheels = arrayOf(
-        Wheel("lf", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry),
-        Wheel("rf", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry),
-        Wheel("lb", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry),
-        Wheel("rb", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
+        Wheel("lf", hardwareMap, DcMotorSimple.Direction.REVERSE),
+        Wheel("rf", hardwareMap, DcMotorSimple.Direction.FORWARD),
+        Wheel("lb", hardwareMap, DcMotorSimple.Direction.REVERSE),
+        Wheel("rb", hardwareMap, DcMotorSimple.Direction.FORWARD)
     )
     private val imu = hardwareMap.get(IMU::class.java, "imu").apply {
         initialize(IMU.Parameters(RevHubOrientationOnRobot(
@@ -46,16 +44,13 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
         wheels[1].setTarget(yTransposed - xTransposed)
         wheels[2].setTarget(yTransposed - xTransposed)
         wheels[3].setTarget(yTransposed + xTransposed)
-        telemetry.addData("y",yTransposed)
-        telemetry.addData("x",xTransposed)
-        telemetry.update()
         lastHeadingTime = System.nanoTime()
     }
     fun updateDrive(): Boolean { return update( true) }
     fun updateRotation(): Boolean { return update(false) }
     fun stop() { for (wheel in wheels) { wheel.setPower(0.0) } }
     fun driveManual(moveX: Float, moveY: Float, turn: Float) {
-        val theta = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS) + toRadians(startAngle)
+        val theta = toRadians(getOrientationDeg())
         val xTransposed = moveX * cos(theta) - moveY * sin(theta)
         val yTransposed = moveY * cos(theta) + moveX * sin(theta)
         wheels[0].setPower(yTransposed + xTransposed + turn)
@@ -65,9 +60,7 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
     }
 
     private fun update(toTarget: Boolean): Boolean {
-        telemetry.addData("to target",toTarget)
-        val currentAngle: Double = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES) + startAngle
-        var error = targetAngle - currentAngle
+        var error = targetAngle - getOrientationDeg()
         while (error > 180) error -= 360.0
         while (error <= -180) error += 360.0
         val currentTime = System.nanoTime()
@@ -84,16 +77,19 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
             wheels[3].autoMove(-turn, currentTime, toTarget)
         )
         val result = abs(error) < 5 && (move.any{ it } || !toTarget)
-        telemetry.addLine(move[0].toString()+" "+move[1].toString() + move[2].toString() + move[3].toString())
-        telemetry.update()
         return result
     }
 
     fun getData(): String {
         var out = ""
-        for (i in wheels) {
-            out += i.getPosition().toString() + "\n"
-        }
+        for (i in wheels) { out += i.getPosition().toString() + "\n" }
+        out += "X:$x - Y:$y"
         return out
+    }
+    fun getOrientationDeg(): Double {
+        var theta = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES) + startAngle
+        while (theta < -180.0) theta += 360.0
+        while (theta > 180.0) theta -= 360.0
+        return theta
     }
 }

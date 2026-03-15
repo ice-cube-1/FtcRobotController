@@ -1,17 +1,18 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.oldtests
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import org.firstinspires.ftc.teamcode.Wheel
 
 @TeleOp(name = "wheel test", group = "Linear OpMode")
 class WheelTest : LinearOpMode() {
     override fun runOpMode() {
         val wheels = arrayOf(
-            Wheel("lf", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry),
-            Wheel("rf", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry),
-            Wheel("lb", hardwareMap, DcMotorSimple.Direction.REVERSE, telemetry),
-            Wheel("rb", hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
+            Wheel("lf", hardwareMap, DcMotorSimple.Direction.REVERSE),
+            Wheel("rf", hardwareMap, DcMotorSimple.Direction.FORWARD),
+            Wheel("lb", hardwareMap, DcMotorSimple.Direction.REVERSE),
+            Wheel("rb", hardwareMap, DcMotorSimple.Direction.FORWARD)
         )
         waitForStart()
         while (opModeIsActive()) {

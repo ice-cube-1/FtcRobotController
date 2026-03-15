@@ -1,12 +1,13 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.oldtests
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import org.firstinspires.ftc.teamcode.DriveTrain
 
 @Autonomous
 class DrivetrainTest : LinearOpMode() {
     override fun runOpMode() {
-        val drivetrain = DriveTrain(hardwareMap,telemetry,0.0,0.0,0.0)
+        val drivetrain = DriveTrain(hardwareMap,0.0,0.0,0.0)
         waitForStart()
         while (opModeIsActive()) {
             drivetrain.updateRotation()

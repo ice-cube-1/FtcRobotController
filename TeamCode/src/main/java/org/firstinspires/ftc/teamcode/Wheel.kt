@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.Constants.ENCODER_ERROR
 import org.firstinspires.ftc.teamcode.Constants.KD_TRANSLATION
 import org.firstinspires.ftc.teamcode.Constants.KP_TRANSLATION
@@ -12,7 +11,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Direction, private val telemetry: Telemetry) {
+class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Direction) {
     private val drive: DcMotorEx = hardwareMap.get(DcMotorEx::class.java, name).apply {
         setDirection(direction)
         mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -32,10 +31,6 @@ class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Dir
         if (deltaTime > 0) { derivative = (error -  lastError) / deltaTime }
         lastError = error
         lastTime = currentTime
-        telemetry.addData("error", error)
-        telemetry.addData("target",target)
-        telemetry.addData("toTarget", toTarget)
-        telemetry.addData("power",(KP_TRANSLATION * error) + (KD_TRANSLATION * derivative) + headingError)
         if (toTarget) { setPower((KP_TRANSLATION * error) + (KD_TRANSLATION * derivative) + headingError) }
         else { setPower(headingError) }
         return abs(error) < ENCODER_ERROR && moving

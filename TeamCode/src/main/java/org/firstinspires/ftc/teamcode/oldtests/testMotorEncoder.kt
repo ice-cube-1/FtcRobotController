@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.oldtests
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
+import org.firstinspires.ftc.teamcode.DriveTrain
 
 
 @TeleOp
@@ -11,7 +12,7 @@ class TestMotorEncoder : LinearOpMode() {
     private lateinit var driveTrain: DriveTrain
     private var timeToEnd = 0.0
     override fun runOpMode() {
-        driveTrain = DriveTrain(hardwareMap,telemetry,0.0,0.0,0.0)
+        driveTrain = DriveTrain(hardwareMap,0.0,0.0,0.0)
         waitForStart()
         timer.reset()
         while (opModeIsActive()) {
