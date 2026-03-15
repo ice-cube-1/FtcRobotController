@@ -7,9 +7,9 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
+import org.firstinspires.ftc.teamcode.Constants.CCW_TURRET
+import org.firstinspires.ftc.teamcode.Constants.CW_TURRET
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
-import org.firstinspires.ftc.teamcode.Constants.MAX_TURRET
-import org.firstinspires.ftc.teamcode.Constants.MIN_TURRET
 import org.firstinspires.ftc.teamcode.Constants.TURRET_ENCODER_KP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_SPEED
 import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
@@ -62,7 +62,7 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
         return -1
     }
     fun setTurretManual(position: Double) {
-        turret.setTarget(MIN_TURRET + (MAX_TURRET- MIN_TURRET)*(position + 180)/360)
+        turret.setTarget(CW_TURRET + (CCW_TURRET- CW_TURRET)*(position + 180)/360)
         while (abs(turret.getTarget() - turret.getPosition()) > 5) {
             turret.setPower(TURRET_ENCODER_KP * (turret.getTarget() - turret.getPosition()))
         }
@@ -78,12 +78,12 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
         return Pair(0, 0.0) /** TODO once calibrated */
     }
     private fun centerOnTag() {
-        if (!(turret.getPosition() > MAX_TURRET || turret.getPosition() < MIN_TURRET)) {
+        if (!(turret.getPosition() > CCW_TURRET || turret.getPosition() < CW_TURRET)) {
             turret.setPower(lastAngle * TURRET_ENCODER_KP)
         }
     }
     private fun scan() {
-        if (turret.getPosition() > MAX_TURRET || turret.getPosition() < MIN_TURRET) { turretDirection *= -1 }
+        if (turret.getPosition() > CCW_TURRET || turret.getPosition() < CW_TURRET) { turretDirection *= -1 }
         turret.setPower(TURRET_SPEED * turretDirection)
     }
     fun moveTurret() {
