@@ -4,10 +4,10 @@ import com.acmerobotics.dashboard.config.Config
 
 @Config
 object Constants {
-    @JvmField var KP_HEADING = 0.07
-    @JvmField var KD_HEADING = 0.002
-    @JvmField var KP_TRANSLATION = 0.0006
-    @JvmField var KD_TRANSLATION = 0.00003
+    @JvmField var KP_HEADING = 0.04
+    @JvmField var KD_HEADING = 0.003
+    @JvmField var KP_TRANSLATION = 0.001
+    @JvmField var KD_TRANSLATION = 0.0002
     @JvmField var X_TICKS_PER_INCH = 6453.0/ (223.0/2.54)
     @JvmField var Y_TICKS_PER_INCH = 5793.25 / (223.0/2.54)
     @JvmField var MANUAL_MULTIPLIER = 1.0F

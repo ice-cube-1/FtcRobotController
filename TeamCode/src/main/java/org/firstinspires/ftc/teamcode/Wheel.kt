@@ -46,4 +46,8 @@ class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Dir
     }
     fun getTarget(): Double { return target }
     fun getPosition(): Int { return drive.currentPosition }
+    fun resetEncoder() {
+        drive.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        drive.mode = DcMotor.RunMode.RUN_USING_ENCODER
+    }
 }

@@ -64,7 +64,7 @@ class DriveTrain (hardwareMap: HardwareMap, private val telemetry: Telemetry,
         wheels[3].setPower(yTransposed + xTransposed - turn)
     }
 
-    fun update(toTarget: Boolean): Boolean {
+    private fun update(toTarget: Boolean): Boolean {
         telemetry.addData("to target",toTarget)
         val currentAngle: Double = -imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES) + startAngle
         var error = targetAngle - currentAngle

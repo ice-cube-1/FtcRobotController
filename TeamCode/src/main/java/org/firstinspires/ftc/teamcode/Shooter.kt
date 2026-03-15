@@ -67,6 +67,10 @@ class Shooter (hardwareMap: HardwareMap, vision: Boolean = false, telemetry: Tel
             turret.setPower(TURRET_ENCODER_KP * (turret.getTarget() - turret.getPosition()))
         }
     }
+    fun reset() {
+        turnOffShooter()
+        turret.resetEncoder()
+    }
     fun canShoot(): Boolean { /** TODO add range check */
         return abs(lastAngle) < 2
     }
