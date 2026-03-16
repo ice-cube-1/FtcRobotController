@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.oldtests
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.hardware.rev.RevColorSensorV3
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
 
 @TeleOp(name = "Color Sensor Test", group = "Test")
+@Disabled
 class ColorVisionTests : OpMode() {
 
     private lateinit var colorSensor: RevColorSensorV3

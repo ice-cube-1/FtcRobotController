@@ -19,9 +19,10 @@ object Constants {
     @JvmField var KICKARM_DOWN = 0.43
     @JvmField var KICKARM_RELEASE = 0.71
     @JvmField var INTAKE_POWER = 1.0
-    @JvmField var endVelocity = 0
     @JvmField var KP_SHOOTER = 0.0005
     @JvmField var VELOCITY_DELTA = 2
+    @JvmField var endVelocity = 0
+    @JvmField var shootAngle = 0.5
 
     enum class SpinPosition {
         ONE_IN  {

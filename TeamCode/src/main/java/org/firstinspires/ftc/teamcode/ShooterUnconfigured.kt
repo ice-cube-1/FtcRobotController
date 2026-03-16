@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
 import org.firstinspires.ftc.teamcode.Constants.TURRET_ENCODER_KP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_SPEED
 import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
+import org.firstinspires.ftc.teamcode.Constants.endVelocity
+import org.firstinspires.ftc.teamcode.Constants.shootAngle
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import java.lang.Thread.sleep
@@ -20,9 +22,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-enum class TurretState {SCANNING, DETECTED, WRAPPING}
-
-class Shooter(hardwareMap: HardwareMap, private val boundOffset: Double) {
+class ShooterUnconfigured(hardwareMap: HardwareMap, private val boundOffset: Double) {
     private val aprilTag = AprilTagProcessor.easyCreateWithDefaults()
     private var visionPortal: VisionPortal =
         VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag)
@@ -38,7 +38,7 @@ class Shooter(hardwareMap: HardwareMap, private val boundOffset: Double) {
     private var spinnerTimer = ElapsedTime()
     private var mostRecent = 0.0
     private var timer = ElapsedTime()
-    var turretState = TurretState.SCANNING
+    private var turretState = TurretState.SCANNING
     private var shooterOn = false
     private var targetV = 0
     private var scanMin = 0.0
@@ -78,7 +78,7 @@ class Shooter(hardwareMap: HardwareMap, private val boundOffset: Double) {
         return abs(lastAngle) < 3
     }
     private fun getTargetVelocityAngle(): Pair<Int, Double> {
-        return Pair(0, 0.0) /** TODO once calibrated */
+        return Pair(endVelocity, shootAngle)
     }
     private fun centerOnTag() { turret.setPower(-lastAngle * TURRET_ENCODER_KP) }
     private fun scan() {
@@ -156,7 +156,7 @@ class Shooter(hardwareMap: HardwareMap, private val boundOffset: Double) {
     fun getData() : String {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
                 "Shooter target: $targetV, aiming for ${getTargetVelocityAngle().first}\n" +
-                "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() * 
+                "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() *
                         targetV - motors.map { it.getVelocity() }.average()))}"
     }
 }

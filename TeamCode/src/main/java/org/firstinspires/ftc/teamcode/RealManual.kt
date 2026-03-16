@@ -25,7 +25,7 @@ class RealManual : LinearOpMode() {
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
     private lateinit var driveTrain: DriveTrain
-    private lateinit var shooter: Shooter
+    private lateinit var shooter: ShooterUnconfigured
     private var timeToEnd = 0.0
     private var robotState = RobotState.IDLE
     override fun runOpMode() {
@@ -35,13 +35,13 @@ class RealManual : LinearOpMode() {
         while (!initialised && opModeInInit()) {
             if (gamepad1.dpad_left) { /** BLUE !!! **/
                 driveTrain = DriveTrain(hardwareMap,0.0,0.0,-90.0)
-                shooter = Shooter(hardwareMap, 45.0)
+                shooter = ShooterUnconfigured(hardwareMap, 45.0)
                 initialised = true
                 telemetry.addLine("BLUE ALLIANCE")
             }
             if (gamepad1.dpad_right) { /** RED !!! **/
                 driveTrain = DriveTrain(hardwareMap,0.0,0.0,90.0)
-                shooter = Shooter(hardwareMap, -45.0)
+                shooter = ShooterUnconfigured(hardwareMap, -45.0)
                 initialised = true
                 telemetry.addLine("RED ALLIANCE")
             }

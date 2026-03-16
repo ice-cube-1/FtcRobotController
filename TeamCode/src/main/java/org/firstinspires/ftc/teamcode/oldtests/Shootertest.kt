@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.oldtests
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.CRServo
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 
 @TeleOp(name = "shooter test", group = "Linear OpMode")
+@Disabled
 class shootertest : LinearOpMode() {
     fun init_motor(name: String?, direction: DcMotorSimple.Direction?): DcMotorEx {
         val out = hardwareMap.get(DcMotorEx::class.java, name)

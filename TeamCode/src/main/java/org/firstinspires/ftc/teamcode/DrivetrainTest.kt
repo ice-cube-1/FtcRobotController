@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode.oldtests
+package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import org.firstinspires.ftc.teamcode.DriveTrain
 
 @Autonomous
 class DrivetrainTest : LinearOpMode() {

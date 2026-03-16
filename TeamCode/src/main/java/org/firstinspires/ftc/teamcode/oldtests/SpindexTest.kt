@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.oldtests
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -11,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 
 @TeleOp(name = "spindex test", group = "Linear OpMode")
+@Disabled
 class SpindexTest : LinearOpMode() {
     override fun runOpMode() {
         val distanceSensor = hardwareMap.get(DistanceSensor::class.java, "distance_sensor")

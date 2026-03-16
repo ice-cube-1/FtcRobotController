@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.oldtests
+package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
 import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
 import org.firstinspires.ftc.teamcode.Constants.endVelocity
-import org.firstinspires.ftc.teamcode.Wheel
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
@@ -21,7 +20,6 @@ import kotlin.math.max
 import kotlin.math.min
 
 @TeleOp(name = "shooter velocity test", group = "Linear OpMode")
-@Config
 class ShooterVelocityTest : LinearOpMode() {
     private lateinit var motors: Array<Wheel>
     private lateinit var aprilTag: AprilTagProcessor
@@ -48,7 +46,6 @@ class ShooterVelocityTest : LinearOpMode() {
             .addProcessor(aprilTag)
             .build()
         FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
-        //val turret = Wheel("slow",hardwareMap, DcMotorSimple.Direction.FORWARD, telemetry)
         val hoodAngle = hardwareMap.get(Servo::class.java, "s")
         motors =  arrayOf(
             Wheel("m1", hardwareMap, DcMotorSimple.Direction.FORWARD),
@@ -67,7 +64,6 @@ class ShooterVelocityTest : LinearOpMode() {
                 targetV = 0
             }
             if (shooterOn) { targetV = min(targetV + VELOCITY_DELTA, endVelocity) }
-            //turret.setPower((gamepad1.left_trigger - gamepad1.right_trigger)*0.1)
             if (gamepad1.dpad_up) { hoodAngle.position += 0.0005 }
             else if (gamepad1.dpad_down) { hoodAngle.position-=0.0005 }
             if (gamepad1.a) { kickarm.position = KICKARM_DOWN }
