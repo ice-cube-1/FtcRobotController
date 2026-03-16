@@ -22,7 +22,7 @@ import kotlin.math.min
 
 enum class TurretState {SCANNING, DETECTED, WRAPPING}
 
-class Shooter (hardwareMap: HardwareMap) {
+class Shooter(hardwareMap: HardwareMap, private val boundOffset: Double) {
     private val aprilTag = AprilTagProcessor.easyCreateWithDefaults()
     private var visionPortal: VisionPortal =
         VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag)
@@ -92,7 +92,7 @@ class Shooter (hardwareMap: HardwareMap) {
     }
     fun moveTurret(orientation: Double) {
         lookForTag()
-        setScanBounds(orientation, orientation+90.0)
+        setScanBounds(orientation-45.0 + boundOffset, orientation+45.0 + boundOffset)
         checkWraparound()
         when (turretState) {
             TurretState.SCANNING -> {
