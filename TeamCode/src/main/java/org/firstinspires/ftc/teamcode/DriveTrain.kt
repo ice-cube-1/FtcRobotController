@@ -15,7 +15,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class DriveTrain (hardwareMap: HardwareMap, private var x: Double, private var y: Double, private val startAngle: Double) {
+class DriveTrain (hardwareMap: HardwareMap) {
     private val wheels = arrayOf(
         Wheel("lf", hardwareMap, DcMotorSimple.Direction.REVERSE),
         Wheel("rf", hardwareMap, DcMotorSimple.Direction.FORWARD),
@@ -31,7 +31,17 @@ class DriveTrain (hardwareMap: HardwareMap, private var x: Double, private var y
     }
     private var lastHeadingError = 0.0
     private var lastHeadingTime = 0L
-    var targetAngle = startAngle
+    private var targetAngle = 0.0
+    private var x = 0.0
+    private var y = 0.0
+    private var startAngle = 0.0
+
+    fun setStart(x: Double, y: Double, startAngle: Double) {
+        this.x = x
+        this.y = y
+        this.startAngle = startAngle
+        this.targetAngle = startAngle
+    }
 
     fun startDrive(newX: Double, newY: Double) {
         val deltaX = newX - x

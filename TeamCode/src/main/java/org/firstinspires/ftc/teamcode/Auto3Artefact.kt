@@ -32,8 +32,10 @@ class Auto3Artefact : LinearOpMode() {
             }
             telemetry.update()
         }
-        shooter = Shooter(hardwareMap, if (alliance == Alliance.BLUE) 45.0 else -45.0)
-        drivetrain = DriveTrain(hardwareMap, if (alliance == Alliance.BLUE) 54.0 else 90.0, 135.0,0.0)
+        shooter = Shooter(hardwareMap)
+        shooter.setStart(if (alliance == Alliance.BLUE) 45.0 else -45.0)
+        drivetrain = DriveTrain(hardwareMap)
+        drivetrain.setStart(if (alliance == Alliance.BLUE) 54.0 else 90.0, 135.0,0.0)
         spindexer = Spindexer(hardwareMap)
         waitForStart()
         drivetrain.startDrive(if (alliance == Alliance.BLUE) 54.0 else 90.0,102.0)

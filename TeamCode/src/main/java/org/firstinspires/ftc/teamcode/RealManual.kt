@@ -32,16 +32,18 @@ class RealManual : LinearOpMode() {
         var initialised = false
         telemetry.addLine("Dpad LEFT for BLUE alliance, RIGHT for RED")
         telemetry.update()
+        driveTrain = DriveTrain(hardwareMap)
+        shooter = ShooterUnconfigured(hardwareMap)
         while (!initialised && opModeInInit()) {
             if (gamepad1.dpad_left) { /** BLUE !!! **/
-                driveTrain = DriveTrain(hardwareMap,0.0,0.0,-90.0)
-                shooter = ShooterUnconfigured(hardwareMap, 45.0)
+                driveTrain.setStart(0.0,0.0,-90.0)
+                shooter.setStart(45.0)
                 initialised = true
                 telemetry.addLine("BLUE ALLIANCE")
             }
             if (gamepad1.dpad_right) { /** RED !!! **/
-                driveTrain = DriveTrain(hardwareMap,0.0,0.0,90.0)
-                shooter = ShooterUnconfigured(hardwareMap, -45.0)
+                driveTrain.setStart(0.0,0.0,90.0)
+                shooter.setStart(-45.0)
                 initialised = true
                 telemetry.addLine("RED ALLIANCE")
             }

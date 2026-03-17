@@ -22,7 +22,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class ShooterUnconfigured(hardwareMap: HardwareMap, private val boundOffset: Double) {
+class ShooterUnconfigured(hardwareMap: HardwareMap) {
     private val aprilTag = AprilTagProcessor.easyCreateWithDefaults()
     private var visionPortal: VisionPortal =
         VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName::class.java, "Webcam 1"), aprilTag)
@@ -38,16 +38,16 @@ class ShooterUnconfigured(hardwareMap: HardwareMap, private val boundOffset: Dou
     private var spinnerTimer = ElapsedTime()
     private var mostRecent = 0.0
     private var timer = ElapsedTime()
-    private var turretState = TurretState.SCANNING
+    var turretState = TurretState.SCANNING
     private var shooterOn = false
     private var targetV = 0
     private var scanMin = 0.0
     private var scanMax = 0.0
     private var toScanMin = true
     private var goto = CCW_TURRET
-    init {
-        FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
-    }
+    private var boundOffset = 0.0
+    init { FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0) }
+    fun setStart(boundOffset: Double) { this.boundOffset = boundOffset }
     private fun lookForTag() {
         val currentDetections = aprilTag.detections
         for (detection in currentDetections) {
