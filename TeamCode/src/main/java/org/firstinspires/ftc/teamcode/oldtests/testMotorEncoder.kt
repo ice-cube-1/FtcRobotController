@@ -14,7 +14,7 @@ class TestMotorEncoder : LinearOpMode() {
     private lateinit var driveTrain: DriveTrain
     private var timeToEnd = 0.0
     override fun runOpMode() {
-        driveTrain = DriveTrain(hardwareMap,0.0,0.0,0.0)
+        driveTrain = DriveTrain(hardwareMap)
         waitForStart()
         timer.reset()
         while (opModeIsActive()) {

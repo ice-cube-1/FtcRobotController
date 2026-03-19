@@ -7,9 +7,6 @@ import org.firstinspires.ftc.teamcode.Constants.KICKARM_DOWN
 import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
 
-enum class RobotState {INTAKE, IDLE, SHOOTER_ON, OVERRIDDEN}
-enum class DoubleTap {OFF, FIRST_ON, MED_OFF, FINAL_ON}
-
 /**
  * CONTROLS:
  * LEFT / RIGHT joystick -> movement
@@ -28,12 +25,11 @@ enum class DoubleTap {OFF, FIRST_ON, MED_OFF, FINAL_ON}
  **/
 
 @TeleOp
-class RealManual : LinearOpMode() {
+class ManualNoShooter : LinearOpMode() {
     private val timer = ElapsedTime()
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
     private lateinit var driveTrain: DriveTrain
-    private lateinit var shooter: ShooterUnconfigured
     private var timeToEnd = 0.0
     private var robotState = RobotState.IDLE
     private var doubleTapButton = DoubleTap.OFF
@@ -43,17 +39,14 @@ class RealManual : LinearOpMode() {
         telemetry.addLine("Dpad LEFT for BLUE alliance, RIGHT for RED")
         telemetry.update()
         driveTrain = DriveTrain(hardwareMap)
-        shooter = ShooterUnconfigured(hardwareMap)
         while (!initialised && opModeInInit()) {
             if (gamepad1.dpad_left) { /** BLUE !!! **/
                 driveTrain.setStart(0.0,0.0,90.0)
-                shooter.setStart(45.0)
                 initialised = true
                 telemetry.addLine("BLUE ALLIANCE")
             }
             if (gamepad1.dpad_right) { /** RED !!! **/
                 driveTrain.setStart(0.0,0.0,-90.0)
-                shooter.setStart(-45.0)
                 initialised = true
                 telemetry.addLine("RED ALLIANCE")
             }
@@ -70,12 +63,10 @@ class RealManual : LinearOpMode() {
             if (gamepad1.dpad_left && robotState != RobotState.INTAKE && robotState != RobotState.OVERRIDDEN) {
                 timeToEnd = timer.milliseconds()+500
                 spindexer.emptyIntake()
-                shooter.turnOffShooter()
                 robotState = RobotState.INTAKE
             }
             if (gamepad1.dpad_right && robotState != RobotState.OVERRIDDEN) {
                 spindexer.release()
-                shooter.turnOffShooter()
                 timeToEnd = timer.milliseconds()+500
                 robotState = RobotState.IDLE
             }
@@ -93,10 +84,9 @@ class RealManual : LinearOpMode() {
             }
             if (gamepad1.b && timer.milliseconds() > timeToEnd && robotState == RobotState.IDLE) {
                 robotState = RobotState.SHOOTER_ON
-                shooter.turnOnShooter()
                 timeToEnd = timer.milliseconds()+2000
             }
-            if (gamepad1.x && timer.milliseconds() > timeToEnd && robotState == RobotState.SHOOTER_ON && shooter.canShoot()) {
+            if (gamepad1.x && timer.milliseconds() > timeToEnd && robotState == RobotState.SHOOTER_ON) {
                 release()
                 spindexer.removeItem()
                 timeToEnd = timer.milliseconds()+500
@@ -150,8 +140,6 @@ class RealManual : LinearOpMode() {
         }
     }
     private fun update() {
-        shooter.moveTurret(driveTrain.getOrientationDeg())
-        shooter.spin()
         intake.run()
         getTelemetry()
     }
@@ -173,8 +161,6 @@ class RealManual : LinearOpMode() {
         telemetry.addLine(spindexer.getData())
         telemetry.addLine("-------INTAKE-------")
         telemetry.addLine(intake.getData())
-        telemetry.addLine("-------SHOOTER------")
-        telemetry.addLine(shooter.getData())
         telemetry.update()
     }
 }

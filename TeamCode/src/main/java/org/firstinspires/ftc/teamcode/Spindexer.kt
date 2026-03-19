@@ -63,6 +63,8 @@ class Spindexer (hardwareMap: HardwareMap) {
         spindex.position = currentPos.pos()
         return true
     }
+    fun moveKickarm(position: Double) { kickarm.position = position }
+    fun rotateSpindexer(distance: Double) {spindex.position += distance}
     fun getData(): String {
         return currentPos.toString() + hasDetected +"\n" + distanceSensor.getDistance(DistanceUnit.MM)+"\n"+positions
     }

@@ -13,7 +13,7 @@ class BaseManual : LinearOpMode() {
     override fun runOpMode() {
         waitForStart()
         val intake = Intake(hardwareMap)
-        val drivetrain = DriveTrain(hardwareMap,0.0,0.0,180.0)
+        val drivetrain = DriveTrain(hardwareMap)
         while (opModeIsActive()) {
             /** expected field centric control **/
             drivetrain.driveManual(gamepad1.left_stick_x * MANUAL_MULTIPLIER,
