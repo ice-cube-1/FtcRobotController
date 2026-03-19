@@ -157,6 +157,7 @@ class ShooterUnconfigured(hardwareMap: HardwareMap) {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
                 "Shooter target: $targetV, aiming for ${getTargetVelocityAngle().first}\n" +
                 "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() *
-                        targetV - motors.map { it.getVelocity() }.average()))}"
+                        targetV - motors.map { it.getVelocity() }.average()))}\n" +
+                "can shoot: ${canShoot()}"
     }
 }

@@ -45,5 +45,10 @@ object Constants {
             override fun pos() = 0.8};
         abstract fun value(): Int
         abstract fun pos(): Double
+        companion object {
+            fun fromPos(pos: Double, tolerance: Double = 0.05): SpinPosition {
+                return entries.find { kotlin.math.abs(it.pos() - pos) <= tolerance } !!
+            }
+        }
     }
 }
