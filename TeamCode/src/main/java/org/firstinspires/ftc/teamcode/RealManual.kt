@@ -79,11 +79,10 @@ class RealManual : LinearOpMode() {
                 timeToEnd = timer.milliseconds()+500
                 robotState = RobotState.IDLE
             }
-            if (robotState == RobotState.INTAKE || robotState == RobotState.OVERRIDDEN &&
-                (gamepad1.left_trigger > 0.5 || gamepad1.right_trigger > 0.5)) {
+            if (gamepad1.left_trigger > 0.5 || gamepad1.right_trigger > 0.5) {
                 intake.on = true
                 intake.reversed = gamepad1.right_trigger > 0.5
-            }
+            } else intake.on = false
             if (robotState == RobotState.INTAKE && spindexer.detect() && timer.milliseconds() > timeToEnd) {
                 timeToEnd = timer.milliseconds()+1000
                 if (!spindexer.emptyIntake()) {
