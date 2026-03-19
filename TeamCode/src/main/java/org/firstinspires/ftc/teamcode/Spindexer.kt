@@ -63,9 +63,11 @@ class Spindexer (hardwareMap: HardwareMap) {
         spindex.position = currentPos.pos()
         return true
     }
+    fun setALl(to: Boolean) { positions[0] = to; positions[1] = to; positions[2] = to }
     fun moveKickarm(position: Double) { kickarm.position = position }
     fun rotateSpindexer(distance: Double) {spindex.position += distance}
     fun getData(): String {
-        return currentPos.toString() + hasDetected +"\n" + distanceSensor.getDistance(DistanceUnit.MM)+"\n"+positions +" "+ spindex.position
+        return currentPos.toString() + hasDetected +"\n" + distanceSensor.getDistance(DistanceUnit.MM)+"\n"+positions +" "+ spindex.position +
+                "\n" + "Number of aftefacts detected:" +positions.count { it }
     }
 }

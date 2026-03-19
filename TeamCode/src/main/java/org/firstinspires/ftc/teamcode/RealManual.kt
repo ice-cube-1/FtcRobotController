@@ -113,6 +113,7 @@ class RealManual : LinearOpMode() {
                 if (doubleTapButton == DoubleTap.FINAL_ON) {
                     robotState = RobotState.OVERRIDDEN
                     doubleTapButton = DoubleTap.OFF
+                    spindexer.setALl(true)
                 }
             }
             if (robotState == RobotState.OVERRIDDEN) {
@@ -158,7 +159,7 @@ class RealManual : LinearOpMode() {
         /** blocking as robot should not move during release process **/
         while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
         spindexer.kickarm.position = KICKARM_RELEASE
-        timeToEnd = timer.milliseconds()+800
+        timeToEnd = timer.milliseconds()+3000
         while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
         spindexer.kickarm.position = KICKARM_DOWN
         timeToEnd = timer.milliseconds()+1000

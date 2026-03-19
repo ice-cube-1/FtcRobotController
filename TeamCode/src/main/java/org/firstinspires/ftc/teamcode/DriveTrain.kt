@@ -92,8 +92,8 @@ class DriveTrain (hardwareMap: HardwareMap) {
 
     fun getData(): String {
         var out = ""
-        for (i in wheels) { out += i.getPosition().toString() + "\n" }
-        out += "X:$x - Y:$y"
+        /** for (i in wheels) { out += i.getPosition().toString() + "\n" }
+        out += "X:$x - Y:$y" **/
         return out
     }
     fun getOrientationDeg(): Double {

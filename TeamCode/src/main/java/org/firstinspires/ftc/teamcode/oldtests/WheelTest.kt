@@ -7,21 +7,16 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import org.firstinspires.ftc.teamcode.Wheel
 
 @TeleOp(name = "wheel test", group = "Linear OpMode")
-@Disabled
 class WheelTest : LinearOpMode() {
     override fun runOpMode() {
         val wheels = arrayOf(
-            Wheel("lf", hardwareMap, DcMotorSimple.Direction.REVERSE),
-            Wheel("rf", hardwareMap, DcMotorSimple.Direction.FORWARD),
-            Wheel("lb", hardwareMap, DcMotorSimple.Direction.REVERSE),
-            Wheel("rb", hardwareMap, DcMotorSimple.Direction.FORWARD)
+            Wheel("m1", hardwareMap, DcMotorSimple.Direction.REVERSE),
+            Wheel("m2", hardwareMap, DcMotorSimple.Direction.FORWARD),
         )
         waitForStart()
         while (opModeIsActive()) {
-            wheels[0].setPower(gamepad1.left_trigger * 0.2)
-            wheels[1].setPower(gamepad1.right_trigger * 0.2)
-            wheels[2].setPower(if (gamepad1.left_bumper) 0.2 else 0.0)
-            wheels[3].setPower(if (gamepad1.right_bumper) 0.2 else 0.0)
+            wheels[0].setPower(gamepad1.left_trigger * 0.1)
+            wheels[1].setPower(gamepad1.right_trigger * 0.1)
             for (i in wheels) {
                 telemetry.addData("position",i.getPosition())
             }

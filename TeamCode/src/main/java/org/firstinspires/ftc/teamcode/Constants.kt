@@ -16,11 +16,11 @@ object Constants {
     @JvmField var TURRET_SPEED = 0.1
     @JvmField var CCW_TURRET = 1107
     @JvmField var CW_TURRET = -1107
-    @JvmField var KICKARM_DOWN = 0.43
-    @JvmField var KICKARM_RELEASE = 0.7
+    @JvmField var KICKARM_DOWN = 0.49
+    @JvmField var KICKARM_RELEASE = 0.74
     @JvmField var INTAKE_POWER = 1.0
     @JvmField var KP_SHOOTER = 0.0005
-    @JvmField var VELOCITY_DELTA = 2
+    @JvmField var VELOCITY_DELTA = 8
     @JvmField var endVelocity = 0
     @JvmField var shootAngle = 0.5
 
