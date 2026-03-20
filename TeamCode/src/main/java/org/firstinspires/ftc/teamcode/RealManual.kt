@@ -33,7 +33,7 @@ class RealManual : LinearOpMode() {
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
     private lateinit var driveTrain: DriveTrain
-    private lateinit var shooter: ShooterUnconfigured
+    private lateinit var shooter: Shooter
     private var timeToEnd = 0.0
     private var robotState = RobotState.IDLE
     private var doubleTapButton = DoubleTap.OFF
@@ -43,17 +43,17 @@ class RealManual : LinearOpMode() {
         telemetry.addLine("Dpad LEFT for BLUE alliance, RIGHT for RED")
         telemetry.update()
         driveTrain = DriveTrain(hardwareMap)
-        shooter = ShooterUnconfigured(hardwareMap)
+        shooter = Shooter(hardwareMap)
         while (!initialised && opModeInInit()) {
             if (gamepad1.dpad_left) { /** BLUE !!! **/
                 driveTrain.setStart(0.0,0.0,90.0)
-                shooter.setStart(45.0)
+                shooter.setStart(45.0,0)
                 initialised = true
                 telemetry.addLine("BLUE ALLIANCE")
             }
             if (gamepad1.dpad_right) { /** RED !!! **/
                 driveTrain.setStart(0.0,0.0,-90.0)
-                shooter.setStart(-45.0)
+                shooter.setStart(-45.0,0)
                 initialised = true
                 telemetry.addLine("RED ALLIANCE")
             }

@@ -71,19 +71,22 @@ class MoreManual : LinearOpMode() {
                 spindexer.emptyIntake()
                 shooter.turnOffShooter()
                 robotState = RobotStateNew.INTAKE
+                spindexer.setIO(true)
             }
             if (gamepad1.right_bumper) {
                 spindexer.release()
+                shooter.turnOffShooter()
                 robotState = RobotStateNew.CAN_SHOOT
+                spindexer.setIO(false)
             }
             /** manually rotate spindexer -> can do anytime **/
             if (gamepad1.dpad_left && timeToEnd < timer.milliseconds()) {
                 spindexer.rotateSpindexer(-0.4)
-                timeToEnd = timer.milliseconds() + 400
+                timeToEnd = timer.milliseconds() + 200
             }
             if (gamepad1.dpad_right && timeToEnd < timer.milliseconds()) {
                 spindexer.rotateSpindexer(0.4)
-                timeToEnd = timer.milliseconds() + 400
+                timeToEnd = timer.milliseconds() + 200
             }
             /** intake & detection **/
             if (robotState == RobotStateNew.INTAKE) {
@@ -100,10 +103,10 @@ class MoreManual : LinearOpMode() {
             }
             /** shooting logic **/
             if (robotState == RobotStateNew.CAN_SHOOT) {
-                if (gamepad1.dpad_up) spindexer.moveKickarm(KICKARM_RELEASE)
-                if (gamepad1.dpad_down) spindexer.moveKickarm(KICKARM_DOWN)
+                if (gamepad1.y) spindexer.moveKickarm(KICKARM_RELEASE)
+                if (gamepad1.a) spindexer.moveKickarm(KICKARM_DOWN)
                 if (gamepad1.b) shooter.turnOnShooter()
-                if (gamepad1.a) shooter.turnOffShooter()
+                if (gamepad1.x) shooter.turnOffShooter()
             }
             shooter.moveTurret(driveTrain.getOrientationDeg())
             shooter.spin()

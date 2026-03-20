@@ -13,38 +13,45 @@ object Constants {
     @JvmField var MANUAL_MULTIPLIER = 1.0F
     @JvmField var ENCODER_ERROR = 35
     @JvmField var TURRET_ENCODER_KP = 0.005
-    @JvmField var TURRET_SPEED = 0.1
-    @JvmField var CCW_TURRET = 1107
-    @JvmField var CW_TURRET = -1107
-    @JvmField var KICKARM_DOWN = 0.49
-    @JvmField var KICKARM_RELEASE = 0.79
+    @JvmField var TURRET_SPEED = 0.4
+    @JvmField var CCW_TURRET = 1520
+    @JvmField var CW_TURRET = -1520
+    @JvmField var KICKARM_DOWN = 0.6
+    @JvmField var KICKARM_RELEASE = 0.42
     @JvmField var INTAKE_POWER = 1.0
     @JvmField var KP_SHOOTER = 0.0005
     @JvmField var VELOCITY_DELTA = 8
     @JvmField var endVelocity = 0
-    @JvmField var shootAngle = 0.5
+    @JvmField var HOOD_ANGLE = 0.5
 
     enum class SpinPosition {
         ONE_IN  {
             override fun value() = 1
-            override fun pos() = 0.6},
+            override fun pos() = 0.0
+            override fun atIntake() = true},
         ONE_OUT {
             override fun value() = 1
-            override fun pos() = 0.0},
+            override fun pos() = 0.6
+            override fun atIntake() = false},
         ZERO_IN   {
             override fun value() = 0
-            override fun pos() = 1.0},
+            override fun pos() = 0.4
+            override fun atIntake() = true},
         ZERO_OUT  {
             override fun value() = 0
-            override fun pos() = 0.4},
+            override fun pos() = 1.0
+            override fun atIntake() = false},
         TWO_IN   {
             override fun value() = 2
-            override fun pos() = 0.2},
+            override fun pos() = 0.8
+            override fun atIntake() = true},
         TWO_OUT  {
             override fun value() = 2
-            override fun pos() = 0.8};
+            override fun pos() = 0.2
+            override fun atIntake() = false};
         abstract fun value(): Int
         abstract fun pos(): Double
+        abstract fun atIntake(): Boolean
         companion object {
             fun fromPos(pos: Double, tolerance: Double = 0.05): SpinPosition {
                 return entries.find { kotlin.math.abs(it.pos() - pos) <= tolerance } !!

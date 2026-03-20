@@ -65,6 +65,15 @@ class Spindexer (hardwareMap: HardwareMap) {
     }
     fun setALl(to: Boolean) { positions[0] = to; positions[1] = to; positions[2] = to }
     fun moveKickarm(position: Double) { kickarm.position = position }
+    fun setSpindexPos(position: Constants.SpinPosition) {
+        currentPos = position
+        spindex.position = currentPos.pos()
+    }
+    fun setIO(toIntake: Boolean) {
+        if (currentPos.atIntake() != toIntake) {
+            rotateSpindexer(0.2)
+        }
+    }
     fun rotateSpindexer(distance: Double) {
         var newPos = spindex.position + distance
         if (newPos < 0) newPos += 1.2

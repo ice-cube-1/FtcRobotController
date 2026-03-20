@@ -33,7 +33,7 @@ class Auto3Artefact : LinearOpMode() {
             telemetry.update()
         }
         shooter = Shooter(hardwareMap)
-        shooter.setStart(if (alliance == Alliance.BLUE) 45.0 else -45.0)
+        shooter.setStart(if (alliance == Alliance.BLUE) 45.0 else -45.0, if (alliance ==  Alliance.BLUE) 20 else 24)
         drivetrain = DriveTrain(hardwareMap)
         drivetrain.setStart(if (alliance == Alliance.BLUE) 54.0 else 90.0, 135.0,0.0)
         spindexer = Spindexer(hardwareMap)
@@ -42,7 +42,9 @@ class Auto3Artefact : LinearOpMode() {
         while (drivetrain.updateDrive() && opModeIsActive()) {}
         drivetrain.stop()
         shooter.setTurretManual(if (alliance == Alliance.BLUE) -45.0 else 45.0)
-        val motif = shooter.getMotifID()
+        timer.reset()
+        var motif = -1
+        while (motif == -1 && timer.milliseconds() < 500) { motif = shooter.getMotifID() }
         shooter.setTurretManual(if (alliance == Alliance.BLUE) 45.0 else -45.0)
         shooter.turnOnShooter()
         timer.reset()
@@ -50,12 +52,12 @@ class Auto3Artefact : LinearOpMode() {
             shooter.moveTurret(drivetrain.getOrientationDeg())
             shooter.spin()
         }
-        /** green is pre loaded into in position 1 **/
+        /** green is pre loaded into in position 0 **/
         if (shooter.turretState == TurretState.DETECTED && shooter.canShoot()) {
             when (motif) {
-                21 -> release(arrayOf(1, 0, 2))
-                22 -> release(arrayOf(0, 1, 2))
-                else -> release(arrayOf(1, 0, 2))
+                21 -> release(arrayOf(0, 1, 2))
+                22 -> release(arrayOf(1, 0, 2))
+                else -> release(arrayOf(1, 2, 0))
             }
         }
         shooter.turnOffShooter()
@@ -74,12 +76,12 @@ class Auto3Artefact : LinearOpMode() {
                 shooter.moveTurret(drivetrain.getOrientationDeg())
             }
             spindexer.kickarm.position = KICKARM_RELEASE
-            while (timer.milliseconds() < 800 && opModeIsActive()) {
+            while (timer.milliseconds() < 3400 && opModeIsActive()) {
                 shooter.spin()
                 shooter.moveTurret(drivetrain.getOrientationDeg())
             }
             spindexer.kickarm.position = KICKARM_DOWN
-            while (timer.milliseconds() < 1800 && opModeIsActive()) {
+            while (timer.milliseconds() < 4400 && opModeIsActive()) {
                 shooter.spin()
                 shooter.moveTurret(drivetrain.getOrientationDeg())
             }
