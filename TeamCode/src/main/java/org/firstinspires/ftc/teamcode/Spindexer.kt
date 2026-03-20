@@ -66,10 +66,13 @@ class Spindexer (hardwareMap: HardwareMap) {
     fun setALl(to: Boolean) { positions[0] = to; positions[1] = to; positions[2] = to }
     fun moveKickarm(position: Double) { kickarm.position = position }
     fun rotateSpindexer(distance: Double) {
-        spindex.position += distance
+        var newPos = spindex.position + distance
+        if (newPos < 0) newPos += 1.2
+        if (newPos > 1) newPos -= 1.2
+        spindex.position = newPos
         currentPos = Constants.SpinPosition.fromPos(spindex.position)
     }
     fun getData(): String {
-        return "Current position: ${currentPos}\n ${positions.count{it}} artefacts\n Positions $positions"
+        return "Current position: ${currentPos}\n ${positions.count{it}} artefacts\n Positions $positions\n${spindex.position}"
     }
 }

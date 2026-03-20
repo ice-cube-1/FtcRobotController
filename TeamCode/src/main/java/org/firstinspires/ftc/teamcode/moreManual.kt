@@ -26,7 +26,7 @@ class MoreManual : LinearOpMode() {
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
     private lateinit var driveTrain: DriveTrain
-    private lateinit var shooter: ShooterUnconfigured
+    private lateinit var shooter: Shooter
     private var timeToEnd = 0.0
     private var robotState = RobotStateNew.INTAKE
     override fun runOpMode() {
@@ -34,19 +34,19 @@ class MoreManual : LinearOpMode() {
         telemetry.addLine("Dpad LEFT for BLUE alliance, RIGHT for RED")
         telemetry.update()
         driveTrain = DriveTrain(hardwareMap)
-        shooter = ShooterUnconfigured(hardwareMap)
+        shooter = Shooter(hardwareMap)
         while (!initialised && opModeInInit()) {
             if (gamepad1.dpad_left) {
                 /** BLUE !!! **/
                 driveTrain.setStart(0.0, 0.0, 90.0)
-                shooter.setStart(45.0)
+                shooter.setStart(45.0, 20)
                 initialised = true
                 telemetry.addLine("BLUE ALLIANCE")
             }
             if (gamepad1.dpad_right) {
                 /** RED !!! **/
                 driveTrain.setStart(0.0, 0.0, -90.0)
-                shooter.setStart(-45.0)
+                shooter.setStart(-45.0, 24)
                 initialised = true
                 telemetry.addLine("RED ALLIANCE")
             }
@@ -56,6 +56,8 @@ class MoreManual : LinearOpMode() {
         spindexer = Spindexer(hardwareMap)
         waitForStart()
         timer.reset()
+        timeToEnd = timer.milliseconds() + 500
+        spindexer.emptyIntake()
         while (opModeIsActive()) {
             /** expected field centric control **/
             driveTrain.driveManual(
@@ -71,16 +73,17 @@ class MoreManual : LinearOpMode() {
                 robotState = RobotStateNew.INTAKE
             }
             if (gamepad1.right_bumper) {
+                spindexer.release()
                 robotState = RobotStateNew.CAN_SHOOT
             }
             /** manually rotate spindexer -> can do anytime **/
             if (gamepad1.dpad_left && timeToEnd < timer.milliseconds()) {
-                spindexer.rotateSpindexer(-0.2)
-                timeToEnd = timer.milliseconds() + 200
+                spindexer.rotateSpindexer(-0.4)
+                timeToEnd = timer.milliseconds() + 400
             }
             if (gamepad1.dpad_right && timeToEnd < timer.milliseconds()) {
-                spindexer.rotateSpindexer(0.2)
-                timeToEnd = timer.milliseconds() + 200
+                spindexer.rotateSpindexer(0.4)
+                timeToEnd = timer.milliseconds() + 400
             }
             /** intake & detection **/
             if (robotState == RobotStateNew.INTAKE) {

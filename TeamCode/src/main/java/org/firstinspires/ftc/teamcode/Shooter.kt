@@ -46,12 +46,16 @@ class Shooter(hardwareMap: HardwareMap) {
     private var toScanMin = true
     private var goto = CCW_TURRET
     private var boundOffset = 0.0
+    private var tagID = 20
     init { FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0) }
-    fun setStart(boundOffset: Double) { this.boundOffset = boundOffset }
+    fun setStart(boundOffset: Double, tagID: Int) {
+        this.boundOffset = boundOffset
+        this.tagID = tagID
+    }
     private fun lookForTag() {
         val currentDetections = aprilTag.detections
         for (detection in currentDetections) {
-            if (detection.id == 20 && detection.metadata != null) {
+            if (detection.id == tagID && detection.metadata != null) {
                 lastDist = detection.ftcPose.range
                 lastAngle = detection.ftcPose.bearing
                 mostRecent = timer.milliseconds()
@@ -75,10 +79,10 @@ class Shooter(hardwareMap: HardwareMap) {
     }
 
     fun canShoot(): Boolean { /** TODO add range check */
-        return abs(lastAngle) < 3
+        return abs(lastAngle) < 3 && lastDist < 120.0
     }
     private fun getTargetVelocityAngle(): Pair<Int, Double> {
-        return Pair(0, 0.0) /** TODO once calibrated */
+        return Pair((lastDist * 5.9976 + 1022.8).toInt(), 0.5) /** TODO once calibrated */
     }
     private fun centerOnTag() { turret.setPower(-lastAngle * TURRET_ENCODER_KP) }
     private fun scan() {
