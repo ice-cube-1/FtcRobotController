@@ -1,11 +1,19 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.oldtests
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.Constants.KICKARM_DOWN
 import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
+import org.firstinspires.ftc.teamcode.DriveTrain
+import org.firstinspires.ftc.teamcode.Intake
+import org.firstinspires.ftc.teamcode.Shooter
+import org.firstinspires.ftc.teamcode.Spindexer
+
+enum class RobotState {INTAKE, IDLE, SHOOTER_ON, OVERRIDDEN}
+enum class DoubleTap {OFF, FIRST_ON, MED_OFF, FINAL_ON}
 
 /**
  * CONTROLS:
@@ -25,11 +33,13 @@ import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
  **/
 
 @TeleOp
-class ManualNoShooter : LinearOpMode() {
+@Disabled
+class RealManual : LinearOpMode() {
     private val timer = ElapsedTime()
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
     private lateinit var driveTrain: DriveTrain
+    private lateinit var shooter: Shooter
     private var timeToEnd = 0.0
     private var robotState = RobotState.IDLE
     private var doubleTapButton = DoubleTap.OFF
@@ -39,14 +49,17 @@ class ManualNoShooter : LinearOpMode() {
         telemetry.addLine("Dpad LEFT for BLUE alliance, RIGHT for RED")
         telemetry.update()
         driveTrain = DriveTrain(hardwareMap)
+        shooter = Shooter(hardwareMap)
         while (!initialised && opModeInInit()) {
             if (gamepad1.dpad_left) { /** BLUE !!! **/
                 driveTrain.setStart(0.0,0.0,90.0)
+                shooter.setStart(45.0,0)
                 initialised = true
                 telemetry.addLine("BLUE ALLIANCE")
             }
             if (gamepad1.dpad_right) { /** RED !!! **/
                 driveTrain.setStart(0.0,0.0,-90.0)
+                shooter.setStart(-45.0,0)
                 initialised = true
                 telemetry.addLine("RED ALLIANCE")
             }
@@ -63,10 +76,12 @@ class ManualNoShooter : LinearOpMode() {
             if (gamepad1.dpad_left && robotState != RobotState.INTAKE && robotState != RobotState.OVERRIDDEN) {
                 timeToEnd = timer.milliseconds()+500
                 spindexer.emptyIntake()
+                shooter.turnOffShooter()
                 robotState = RobotState.INTAKE
             }
             if (gamepad1.dpad_right && robotState != RobotState.OVERRIDDEN) {
                 spindexer.release()
+                shooter.turnOffShooter()
                 timeToEnd = timer.milliseconds()+500
                 robotState = RobotState.IDLE
             }
@@ -83,9 +98,10 @@ class ManualNoShooter : LinearOpMode() {
             }
             if (gamepad1.b && timer.milliseconds() > timeToEnd && robotState == RobotState.IDLE) {
                 robotState = RobotState.SHOOTER_ON
+                shooter.turnOnShooter()
                 timeToEnd = timer.milliseconds()+2000
             }
-            if (gamepad1.x && timer.milliseconds() > timeToEnd && robotState == RobotState.SHOOTER_ON) {
+            if (gamepad1.x && timer.milliseconds() > timeToEnd && robotState == RobotState.SHOOTER_ON && shooter.canShoot()) {
                 release()
                 spindexer.removeItem()
                 timeToEnd = timer.milliseconds()+500
@@ -107,14 +123,8 @@ class ManualNoShooter : LinearOpMode() {
                 }
             }
             if (robotState == RobotState.OVERRIDDEN) {
-                if (gamepad1.dpad_left && timeToEnd < timer.milliseconds()) {
-                    spindexer.rotateSpindexer(-0.2)
-                    timeToEnd = timer.milliseconds() + 200
-                }
-                if (gamepad1.dpad_right && timeToEnd < timer.milliseconds()) {
-                    spindexer.rotateSpindexer(0.2)
-                    timeToEnd = timer.milliseconds() + 200
-                }
+                if (gamepad1.dpad_left) spindexer.rotateSpindexer(-0.2)
+                if (gamepad1.dpad_right) spindexer.rotateSpindexer(0.2)
                 if (gamepad1.dpad_up) spindexer.moveKickarm(KICKARM_RELEASE)
                 if (gamepad1.dpad_down) spindexer.moveKickarm(KICKARM_DOWN)
             }
@@ -127,25 +137,37 @@ class ManualNoShooter : LinearOpMode() {
             DoubleTap.OFF -> {
                 if (value) {
                     DoubleTap.FIRST_ON
-                } else { DoubleTap.OFF }
+                } else {
+                    DoubleTap.OFF
+                }
             }
             DoubleTap.FIRST_ON -> {
                 if (!value) {
                     doubleTapTimer.reset()
                     DoubleTap.MED_OFF
-                } else { DoubleTap.FIRST_ON }
+                } else {
+                    DoubleTap.FIRST_ON
+                }
             }
             DoubleTap.MED_OFF -> {
                 when {
-                    value && doubleTapTimer.milliseconds() < 250 -> { DoubleTap.FINAL_ON }
-                    doubleTapTimer.milliseconds() >= 250 -> { DoubleTap.OFF }
-                    else -> { DoubleTap.MED_OFF }
+                    value && doubleTapTimer.milliseconds() < 250 -> {
+                        DoubleTap.FINAL_ON
+                    }
+                    doubleTapTimer.milliseconds() >= 250 -> {
+                        DoubleTap.OFF
+                    }
+                    else -> {
+                        DoubleTap.MED_OFF
+                    }
                 }
             }
             DoubleTap.FINAL_ON -> DoubleTap.OFF
         }
     }
     private fun update() {
+        shooter.moveTurret(driveTrain.getOrientationDeg())
+        shooter.spin()
         intake.run()
         getTelemetry()
     }
@@ -153,7 +175,7 @@ class ManualNoShooter : LinearOpMode() {
         /** blocking as robot should not move during release process **/
         while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
         spindexer.kickarm.position = KICKARM_RELEASE
-        timeToEnd = timer.milliseconds()+800
+        timeToEnd = timer.milliseconds()+3000
         while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
         spindexer.kickarm.position = KICKARM_DOWN
         timeToEnd = timer.milliseconds()+1000
@@ -167,6 +189,8 @@ class ManualNoShooter : LinearOpMode() {
         telemetry.addLine(spindexer.getData())
         telemetry.addLine("-------INTAKE-------")
         telemetry.addLine(intake.getData())
+        telemetry.addLine("-------SHOOTER------")
+        telemetry.addLine(shooter.getData())
         telemetry.update()
     }
 }

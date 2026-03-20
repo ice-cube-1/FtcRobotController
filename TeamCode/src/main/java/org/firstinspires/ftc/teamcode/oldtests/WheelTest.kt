@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import org.firstinspires.ftc.teamcode.Wheel
 
 @TeleOp(name = "wheel test", group = "Linear OpMode")
+@Disabled
 class WheelTest : LinearOpMode() {
     override fun runOpMode() {
         val wheels = arrayOf(

@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.oldtests
 
 import com.acmerobotics.dashboard.FtcDashboard
-import com.acmerobotics.dashboard.config.Config
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
 import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
 import org.firstinspires.ftc.teamcode.Constants.endVelocity
+import org.firstinspires.ftc.teamcode.Wheel
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
@@ -20,6 +21,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @TeleOp(name = "shooter velocity test", group = "Linear OpMode")
+@Disabled
 class ShooterVelocityTest : LinearOpMode() {
     private lateinit var motors: Array<Wheel>
     private lateinit var aprilTag: AprilTagProcessor
