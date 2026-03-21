@@ -7,21 +7,19 @@ import org.firstinspires.ftc.teamcode.Constants.KICKARM_DOWN
 import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
 
-enum class RobotStateNew {INTAKE, CAN_SHOOT}
-
 /**
  * CONTROLS:
  * LEFT / RIGHT joystick -> movement
  * LEFT BUMPER to enter INTAKE mode
  * RIGHT BUMPER to enter CAN_SHOOT mode
- * A/B -> shooter ON/OFF
+ * B/X -> shooter ON/OFF
  * DPAD LEFT/RIGHT -> SPIN
- * DPAD UP/DOWN -> Kickarm
+ * Y/A -> Kickarm
  * Triggers -> intake (forwards / back)
  **/
 
 @TeleOp
-class MoreManual : LinearOpMode() {
+class ManualBlue : LinearOpMode() {
     private val timer = ElapsedTime()
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
@@ -30,28 +28,10 @@ class MoreManual : LinearOpMode() {
     private var timeToEnd = 0.0
     private var robotState = RobotStateNew.INTAKE
     override fun runOpMode() {
-        var initialised = false
-        telemetry.addLine("Dpad LEFT for BLUE alliance, RIGHT for RED")
-        telemetry.update()
         driveTrain = DriveTrain(hardwareMap)
         shooter = Shooter(hardwareMap)
-        while (!initialised && opModeInInit()) {
-            if (gamepad1.dpad_left) {
-                /** BLUE !!! **/
-                driveTrain.setStart(0.0, 0.0, 90.0)
-                shooter.setStart(45.0, 20)
-                initialised = true
-                telemetry.addLine("BLUE ALLIANCE")
-            }
-            if (gamepad1.dpad_right) {
-                /** RED !!! **/
-                driveTrain.setStart(0.0, 0.0, -90.0)
-                shooter.setStart(-45.0, 24)
-                initialised = true
-                telemetry.addLine("RED ALLIANCE")
-            }
-            telemetry.update()
-        }
+        driveTrain.setStart(0.0, 0.0, 90.0)
+        shooter.setStart(20)
         intake = Intake(hardwareMap)
         spindexer = Spindexer(hardwareMap)
         waitForStart()
@@ -108,7 +88,7 @@ class MoreManual : LinearOpMode() {
                 if (gamepad1.b) shooter.turnOnShooter()
                 if (gamepad1.x) shooter.turnOffShooter()
             }
-            shooter.moveTurret(driveTrain.getOrientationDeg())
+            shooter.moveTurret()
             shooter.spin()
             intake.run()
             telemetry.addData("current state", robotState)

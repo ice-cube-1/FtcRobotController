@@ -53,13 +53,13 @@ class RealManual : LinearOpMode() {
         while (!initialised && opModeInInit()) {
             if (gamepad1.dpad_left) { /** BLUE !!! **/
                 driveTrain.setStart(0.0,0.0,90.0)
-                shooter.setStart(45.0,0)
+                shooter.setStart(0)
                 initialised = true
                 telemetry.addLine("BLUE ALLIANCE")
             }
             if (gamepad1.dpad_right) { /** RED !!! **/
                 driveTrain.setStart(0.0,0.0,-90.0)
-                shooter.setStart(-45.0,0)
+                shooter.setStart(0)
                 initialised = true
                 telemetry.addLine("RED ALLIANCE")
             }
@@ -166,7 +166,7 @@ class RealManual : LinearOpMode() {
         }
     }
     private fun update() {
-        shooter.moveTurret(driveTrain.getOrientationDeg())
+        shooter.moveTurret()
         shooter.spin()
         intake.run()
         getTelemetry()

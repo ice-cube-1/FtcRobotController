@@ -43,20 +43,13 @@ class Shooter(hardwareMap: HardwareMap) {
     var turretState = TurretState.WRAPPING
     private var shooterOn = false
     private var targetV = 0
-    private var scanMin = 0.0
-    private var scanMax = 0.0
-    private var toScanMin = true
     private var goto = CCW_TURRET
-    private var boundOffset = 0.0
     private var tagID = 20
     init {
         FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
         hoodAngle.position = HOOD_ANGLE
     }
-    fun setStart(boundOffset: Double, tagID: Int) {
-        this.boundOffset = boundOffset
-        this.tagID = tagID
-    }
+    fun setStart(tagID: Int) { this.tagID = tagID }
     private fun lookForTag() {
         val currentDetections = aprilTag.detections
         for (detection in currentDetections) {
@@ -75,7 +68,7 @@ class Shooter(hardwareMap: HardwareMap) {
         return -1
     }
     fun setTurretManual(position: Double) {
-        turret.setTarget(CCW_TURRET - (CCW_TURRET- CW_TURRET)*(position + 180)/360)
+        turret.setTarget(CCW_TURRET - (CCW_TURRET- CW_TURRET)*(position + 180)/360 - turret.getPosition())
         while (abs(turret.getTarget() - turret.getPosition()) > ENCODER_ERROR) {
             turret.setPower(TURRET_ENCODER_KP * (turret.getTarget() - turret.getPosition())/10.0)
         }
@@ -100,9 +93,8 @@ class Shooter(hardwareMap: HardwareMap) {
             turret.setPower(0.0)
         } else {scanTimer.reset()}
     }
-    fun moveTurret(orientation: Double) {
+    fun moveTurret() {
         lookForTag()
-        setScanBounds(orientation-45.0 + boundOffset, orientation+45.0 + boundOffset)
         checkWraparound()
         when (turretState) {
             TurretState.DETECTED -> {
@@ -114,12 +106,6 @@ class Shooter(hardwareMap: HardwareMap) {
                 else wrap()
             }
         }
-    }
-    private fun setScanBounds(min: Double, max: Double) {
-        scanMax = CCW_TURRET - (CCW_TURRET - CW_TURRET)*(min+180)/360
-        scanMin= CCW_TURRET - (CCW_TURRET - CW_TURRET)*(max+180)/360
-        if (scanMin < CW_TURRET) scanMin += CCW_TURRET- CW_TURRET
-        if (scanMax > CCW_TURRET) scanMax -= CCW_TURRET- CW_TURRET
     }
     private fun checkWraparound(): Boolean {
         if (turret.getPosition() > CCW_TURRET/2) {
@@ -136,7 +122,12 @@ class Shooter(hardwareMap: HardwareMap) {
         targetV = 0
         shooterOn = true
     }
-    fun turnOffShooter() { shooterOn = false; targetV = 0 }
+    fun turnOffShooter() {
+        shooterOn = false
+        targetV = 0
+        motors[0].setPower(0.0)
+        motors[1].setPower(0.0)
+    }
     fun spin(): Boolean {
         val velocity = getTargetVelocity()
         val error = targetV - motors.map { it.getVelocity() }.average()
