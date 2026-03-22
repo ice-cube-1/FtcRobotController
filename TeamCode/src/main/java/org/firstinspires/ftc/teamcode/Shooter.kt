@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
+import org.firstinspires.ftc.teamcode.Constants.ADD_TEST
 import org.firstinspires.ftc.teamcode.Constants.CCW_TURRET
 import org.firstinspires.ftc.teamcode.Constants.CW_TURRET
 import org.firstinspires.ftc.teamcode.Constants.ENCODER_ERROR
@@ -20,6 +21,7 @@ import java.lang.Thread.sleep
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 enum class TurretState {DETECTED, WRAPPING}
 
@@ -45,11 +47,12 @@ class Shooter(hardwareMap: HardwareMap) {
     private var targetV = 0
     private var goto = CCW_TURRET
     private var tagID = 20
+    private var manual = false
     init {
         FtcDashboard.getInstance().startCameraStream(visionPortal, 0.0)
         hoodAngle.position = HOOD_ANGLE
     }
-    fun setStart(tagID: Int) { this.tagID = tagID }
+    fun setStart(tagID: Int, manual: Boolean) { this.tagID = tagID; this.manual = manual }
     private fun lookForTag() {
         val currentDetections = aprilTag.detections
         for (detection in currentDetections) {
@@ -76,9 +79,17 @@ class Shooter(hardwareMap: HardwareMap) {
         sleep(1000)
     }
 
-    fun canShoot(): Boolean { return abs(lastAngle) < 3 && lastDist < 120.0 }
-    private fun getTargetVelocity(): Int { return (lastDist * 5.9976 + 1022.8).toInt() }
-    private fun centerOnTag() { turret.setPower(-lastAngle * TURRET_ENCODER_KP) }
+    fun canShoot(): Boolean { return abs(lastAngle) < 3 && lastDist < 120.0 && (targetV - motors[1].getVelocity() < 30) }
+    private fun getTargetVelocity(): Int {
+        return (lastDist * 5.9976 + 1022.8 + ADD_TEST).toInt()
+    }
+    private fun centerOnTag() {
+        if (abs(lastAngle - TURRET_ENCODER_KP) < 0.02) {
+            turret.setPower(0.0)
+        } else {
+            turret.setPower(-lastAngle * TURRET_ENCODER_KP)
+        }
+    }
     private fun wrap() {
         if (scanTimer.milliseconds() < 500) {
             val error = goto - turret.getPosition()
@@ -108,10 +119,10 @@ class Shooter(hardwareMap: HardwareMap) {
         }
     }
     private fun checkWraparound(): Boolean {
-        if (turret.getPosition() > CCW_TURRET/2) {
+        if (turret.getPosition() > CCW_TURRET/3) {
             turretState = TurretState.WRAPPING
             goto = CW_TURRET
-        } else if (turret.getPosition() < CW_TURRET/2) {
+        } else if (turret.getPosition() < CW_TURRET/3) {
             turretState = TurretState.WRAPPING
             goto = CCW_TURRET
         }
@@ -142,6 +153,7 @@ class Shooter(hardwareMap: HardwareMap) {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
                 "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() * 
-                        targetV - motors.map { it.getVelocity() }.average()))}"
+                        targetV - motors.map { it.getVelocity() }.average()))}\n" +
+                "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}"
     }
 }

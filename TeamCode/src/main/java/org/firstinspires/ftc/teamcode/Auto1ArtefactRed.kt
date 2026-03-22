@@ -15,16 +15,19 @@ class Auto1Artefact : LinearOpMode() {
     private val timer = ElapsedTime()
     override fun runOpMode() {
         shooter = Shooter(hardwareMap)
-        shooter.setStart(24)
+        shooter.setStart(24, false)
         drivetrain = DriveTrain(hardwareMap)
-        drivetrain.setStart(90.0, 135.0,0.0)
+        drivetrain.setStart(111.0, 135.0,0.0)
         spindexer = Spindexer(hardwareMap)
         spindexer.release(0)
         waitForStart()
+        drivetrain.startDrive(111.0,102.0)
+        while (!drivetrain.updateDrive()) {}
+        drivetrain.stop()
         drivetrain.startDrive(90.0,102.0)
         while (!drivetrain.updateDrive()) {}
         drivetrain.stop()
-        shooter.setTurretManual(-45.0)
+        shooter.setTurretManual(-60.0)
         timer.reset()
         while (shooter.turretState != TurretState.DETECTED && timer.seconds() < 3) { shooter.moveTurret() }
         shooter.turnOnShooter()

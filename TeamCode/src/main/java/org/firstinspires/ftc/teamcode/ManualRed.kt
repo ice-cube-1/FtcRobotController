@@ -33,7 +33,7 @@ class ManualRed : LinearOpMode() {
         driveTrain = DriveTrain(hardwareMap)
         shooter = Shooter(hardwareMap)
         driveTrain.setStart(0.0, 0.0, -90.0)
-        shooter.setStart(24)
+        shooter.setStart(24, true)
         intake = Intake(hardwareMap)
         spindexer = Spindexer(hardwareMap)
         waitForStart()
@@ -85,20 +85,34 @@ class ManualRed : LinearOpMode() {
             }
             /** shooting logic **/
             if (robotState == RobotStateNew.CAN_SHOOT) {
-                if (gamepad1.y) spindexer.moveKickarm(KICKARM_RELEASE)
-                if (gamepad1.a) spindexer.moveKickarm(KICKARM_DOWN)
+                if (gamepad1.y) release()
                 if (gamepad1.b) shooter.turnOnShooter()
                 if (gamepad1.x) shooter.turnOffShooter()
             }
-            shooter.moveTurret()
-            shooter.spin()
-            intake.run()
-            telemetry.addData("current state", robotState)
-            telemetry.addLine("-----SPINDEXER------")
-            telemetry.addLine(spindexer.getData())
-            telemetry.addLine("-------SHOOTER------")
-            telemetry.addLine(shooter.getData())
-            telemetry.update()
+            update()
         }
+    }
+    fun update() {
+        shooter.moveTurret()
+        shooter.spin()
+        intake.run()
+        telemetry.addData("current state", robotState)
+        telemetry.addLine("-----SPINDEXER------")
+        telemetry.addLine(spindexer.getData())
+        telemetry.addLine("-------SHOOTER------")
+        telemetry.addLine(shooter.getData())
+        telemetry.addLine("-----DRIVETRAIN-----")
+        telemetry.addLine(driveTrain.getData())
+        telemetry.update()
+    }
+    private fun release() {
+        /** blocking as robot should not move during release process **/
+        while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
+        spindexer.kickarm.position = KICKARM_RELEASE
+        timeToEnd = timer.milliseconds()+3000
+        while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
+        spindexer.kickarm.position = KICKARM_DOWN
+        timeToEnd = timer.milliseconds()+1000
+        while (timer.milliseconds() < timeToEnd && opModeIsActive()) { update() }
     }
 }

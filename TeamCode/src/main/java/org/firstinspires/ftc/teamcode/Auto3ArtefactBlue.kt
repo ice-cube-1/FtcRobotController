@@ -7,8 +7,8 @@ import org.firstinspires.ftc.teamcode.Constants.KICKARM_DOWN
 import org.firstinspires.ftc.teamcode.Constants.KICKARM_RELEASE
 
 
-@Autonomous(name="Auto 1 - BLUE", group = "Auto")
-class Auto1ArtefactBlue : LinearOpMode() {
+@Autonomous(name="Auto 3 - BLUE", group = "Auto")
+class Auto3ArtefactBlue : LinearOpMode() {
     private lateinit var spindexer: Spindexer
     private lateinit var shooter: Shooter
     private lateinit var drivetrain: DriveTrain
@@ -27,17 +27,19 @@ class Auto1ArtefactBlue : LinearOpMode() {
         drivetrain.startDrive(54.0,102.0)
         while (!drivetrain.updateDrive()) {}
         drivetrain.stop()
-        shooter.setTurretManual(60.0)
-        timer.reset()
-        while (shooter.turretState != TurretState.DETECTED && timer.seconds() < 3) { shooter.moveTurret() }
+        var motif = -1
+        /** shooter.setTurretManual(-45.0)
+        while (motif == -1 && timer.milliseconds() < 500) { motif = shooter.getMotifID() } **/
+        shooter.setTurretManual(45.0)
         shooter.turnOnShooter()
-        while (timer.seconds() < 7) { shooter.spin() }
-        spindexer.moveKickarm(KICKARM_RELEASE)
-        while (timer.seconds() < 9) { shooter.spin() }
-        spindexer.moveKickarm(KICKARM_DOWN)
-        while (timer.seconds() < 10) {
-            shooter.spin()
-            shooter.moveTurret()
+        timer.reset()
+        while (timer.milliseconds() < 3000) { shooter.spin() }
+        if (shooter.turretState == TurretState.DETECTED && shooter.canShoot()) {
+            when (motif) {
+                21 -> release(arrayOf(0, 1, 2))
+                22 -> release(arrayOf(1, 0, 2))
+                else -> release(arrayOf(1, 2, 0))
+            }
         }
         shooter.turnOffShooter()
         shooter.setTurretManual(0.0)
@@ -45,5 +47,16 @@ class Auto1ArtefactBlue : LinearOpMode() {
         while (!drivetrain.updateDrive() && opModeIsActive()) {}
         drivetrain.stop()
         shooter.setTurretManual(0.0)
+    }
+    fun release(order: Array<Int>) {
+        for (i in order) {
+            spindexer.release(i)
+            timer.reset()
+            while (timer.seconds() < 2) { shooter.spin() }
+            spindexer.moveKickarm(KICKARM_RELEASE)
+            while (timer.seconds() < 3) { shooter.spin() }
+            spindexer.moveKickarm(KICKARM_DOWN)
+            while (timer.seconds() < 5) { shooter.spin() }
+        }
     }
 }

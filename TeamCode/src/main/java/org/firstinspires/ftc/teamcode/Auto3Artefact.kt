@@ -33,7 +33,7 @@ class Auto3Artefact : LinearOpMode() {
             telemetry.update()
         }
         shooter = Shooter(hardwareMap)
-        shooter.setStart(if (alliance ==  Alliance.BLUE) 20 else 24)
+        shooter.setStart(if (alliance ==  Alliance.BLUE) 20 else 24, false)
         drivetrain = DriveTrain(hardwareMap)
         drivetrain.setStart(if (alliance == Alliance.BLUE) 54.0 else 90.0, 135.0,0.0)
         spindexer = Spindexer(hardwareMap)
