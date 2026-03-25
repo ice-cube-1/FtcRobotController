@@ -4,13 +4,13 @@ import com.acmerobotics.dashboard.config.Config
 
 @Config
 object Constants {
-    @JvmField var KP_HEADING = 0.04
-    @JvmField var KD_HEADING = 0.003
-    @JvmField var KP_TRANSLATION = 0.001
-    @JvmField var KD_TRANSLATION = 0.0002
+    @JvmField var KP_HEADING = 1.0
+    @JvmField var KD_HEADING = 0.3
+    @JvmField var KP_TRANSLATION = 0.04
+    @JvmField var KD_TRANSLATION = 0.02
     @JvmField var X_TICKS_PER_INCH = 6453.0/ (223.0/2.54)
     @JvmField var Y_TICKS_PER_INCH = 5793.25 / (223.0/2.54)
-    @JvmField var MANUAL_MULTIPLIER = 1.0F
+    @JvmField var MANUAL_MULTIPLIER = 0.2F
     @JvmField var ENCODER_ERROR = 35
     @JvmField var TURRET_ENCODER_KP = 0.005
     @JvmField var TURRET_SPEED = 0.1
@@ -21,9 +21,9 @@ object Constants {
     @JvmField var INTAKE_POWER = 1.0
     @JvmField var KP_SHOOTER = 0.0005
     @JvmField var VELOCITY_DELTA = 8
-    @JvmField var endVelocity = 0
     @JvmField var HOOD_ANGLE = 0.5
     @JvmField var ADD_TEST = 0
+    @JvmField var ODOMETRY_TICKS_PER_CM = 126.3
 
 
     enum class SpinPosition {
