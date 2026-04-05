@@ -26,12 +26,12 @@ class ManualRed : LinearOpMode() {
     private lateinit var spindexer: Spindexer
     private lateinit var intake: Intake
     private lateinit var driveTrain: DriveTrain
-    private lateinit var shooter: Shooter
+    private lateinit var shooter: ShooterNew
     private var timeToEnd = 0.0
     private var robotState = RobotStateNew.INTAKE
     override fun runOpMode() {
         driveTrain = DriveTrain(hardwareMap)
-        shooter = Shooter(hardwareMap)
+        shooter = ShooterNew(hardwareMap)
         driveTrain.setStart(0.0, 0.0, -90.0)
         shooter.setStart(24, true)
         intake = Intake(hardwareMap)

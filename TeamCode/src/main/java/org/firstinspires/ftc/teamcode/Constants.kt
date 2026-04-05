@@ -12,8 +12,9 @@ object Constants {
     @JvmField var Y_TICKS_PER_INCH = 5793.25 / (223.0/2.54)
     @JvmField var MANUAL_MULTIPLIER = 0.2F
     @JvmField var ENCODER_ERROR = 35
-    @JvmField var TURRET_ENCODER_KP = 0.005
-    @JvmField var TURRET_SPEED = 0.1
+    @JvmField var SERVO_ERROR = 35
+    @JvmField var TURRET_KP = 0.05
+    @JvmField var TURRET_STEP = 5
     @JvmField var CCW_TURRET = 1520
     @JvmField var CW_TURRET = -1520
     @JvmField var KICKARM_DOWN = 0.6

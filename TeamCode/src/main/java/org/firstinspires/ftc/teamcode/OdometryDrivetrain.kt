@@ -1,10 +1,9 @@
 package org.firstinspires.ftc.teamcode
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction
+import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.Constants.KD_HEADING
 import org.firstinspires.ftc.teamcode.Constants.KD_TRANSLATION
@@ -46,8 +45,7 @@ enum class Odometry(private val direction: Int, private var prev: Double = 0.0, 
     }
 }
 
-@TeleOp
-class OdometryTest : LinearOpMode() {
+class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
     private lateinit var wheels: Array<DcMotorEx>
     private val left = Odometry.LEFT
     private val right = Odometry.RIGHT
@@ -63,34 +61,17 @@ class OdometryTest : LinearOpMode() {
     private var theta = 0.0
     private val timer = ElapsedTime()
     private var lastTime = 0.0
-    override fun runOpMode() {
+    init {
         wheels = arrayOf(
             initOdoWheel("lf", Direction.REVERSE),
             initOdoWheel("rf",Direction.REVERSE),
             initOdoWheel("lb", Direction.FORWARD),
             initOdoWheel("rb", Direction.FORWARD)
         )
-        waitForStart()
         left.reset()
         right.reset()
         center.reset()
         timer.reset()
-        lastTime = 0.0
-        while (opModeIsActive()) {
-            getDeltaOdometry()
-            continueDriving()
-            //driveManual(gamepad1.left_stick_x.toDouble(), -gamepad1.left_stick_y.toDouble(), gamepad1.right_stick_x.toDouble())
-            telemetry.addData("left", getOdometryPos(Odometry.LEFT))
-            telemetry.addData("right", getOdometryPos(Odometry.RIGHT))
-            telemetry.addData("center", getOdometryPos(Odometry.CENTER))
-            telemetry.addData("d theta",deltaTheta)
-            telemetry.addData("d x",deltaX)
-            telemetry.addData("d y",deltaY)
-            telemetry.addData("theta",theta)
-            telemetry.addData("x",x)
-            telemetry.addData("y",y)
-            telemetry.update()
-        }
     }
     private fun driveManual(moveX: Double, moveY: Double, turn: Double) {
         val xRobot = cos(theta) * moveX - sin(theta) * moveY
@@ -116,9 +97,6 @@ class OdometryTest : LinearOpMode() {
         val xComp = (KP_TRANSLATION * (targetX-x)) + (KD_TRANSLATION * deltaX / deltaTime)
         val yComp = (KP_TRANSLATION * (targetY-y)) + (KD_TRANSLATION * deltaY / deltaTime)
         val turnComp = (KP_HEADING * headingError) + (KD_HEADING * deltaTheta / deltaTime)
-        telemetry.addData("error x", targetX-x)
-        telemetry.addData("error y", targetY-y)
-        telemetry.addData("error theta", headingError)
         driveManual(xComp, yComp, turnComp)
         return abs(targetY-y) < 2 && abs(targetX-x) < 2 && abs(headingError) < .1
     }
