@@ -20,9 +20,7 @@ class DrivetrainTest : LinearOpMode() {
             if (gamepad1.dpad_down) s.position = 1.0/4.0
             if (gamepad1.dpad_right) s.position = 2.0/4.0
             if (gamepad1.left_bumper) s.position = 3.0/4.0
-            if (gamepad1.dpad_up) {
-                s.position = 1.0
-            }
+            if (gamepad1.dpad_up) { s.position = 1.0 }
         }
     }
 }

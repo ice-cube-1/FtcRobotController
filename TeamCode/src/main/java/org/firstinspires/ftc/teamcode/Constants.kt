@@ -10,20 +10,18 @@ object Constants {
     @JvmField var KD_TRANSLATION = 0.02
     @JvmField var X_TICKS_PER_INCH = 6453.0/ (223.0/2.54)
     @JvmField var Y_TICKS_PER_INCH = 5793.25 / (223.0/2.54)
-    @JvmField var MANUAL_MULTIPLIER = 0.2F
+    @JvmField var MANUAL_MULTIPLIER = 0.2
     @JvmField var ENCODER_ERROR = 35
-    @JvmField var TURRET_KP = 0.5
-    @JvmField var TURRET_STEP = 0.0001
-    @JvmField var CCW_TURRET = 1520
-    @JvmField var CW_TURRET = -1520
-    @JvmField var KICKARM_DOWN = 0.6
-    @JvmField var KICKARM_RELEASE = 0.4
+    @JvmField var TURRET_KP = 0.03
+    @JvmField var TURRET_STEP = 0.0003
+    @JvmField var STOP_DOWN = 0.32
+    @JvmField var STOP_UP = 0.4
     @JvmField var INTAKE_POWER = 1.0
-    @JvmField var KP_SHOOTER = 0.0005
+    @JvmField var KP_SHOOTER = 0.0003
     @JvmField var VELOCITY_DELTA = 8
     @JvmField var HOOD_ANGLE = 0.5
-    @JvmField var TURRET_MAX_DEGREES = ((35/15)*(20/82))*360
-    @JvmField var TURRET_ZERO_DEG = 100
+    @JvmField var TURRET_MAX_DEGREES = ((35.0/15.0)*(20.0/82.0))*360.0
+    @JvmField var TURRET_ZERO_DEG = ((35.0/15.0)*(20.0/82.0))*180.0
     @JvmField var ODOMETRY_TICKS_PER_CM = 126.3
 
 

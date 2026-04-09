@@ -73,7 +73,7 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         center.reset()
         timer.reset()
     }
-    private fun driveManual(moveX: Double, moveY: Double, turn: Double) {
+    fun driveManual(moveX: Double, moveY: Double, turn: Double) {
         val xRobot = cos(theta) * moveX - sin(theta) * moveY
         val yRobot = sin(theta) * moveX + cos(theta) * moveY
         val denominator = max(0.1, abs(yRobot) + abs(xRobot) + abs(turn)) / MANUAL_MULTIPLIER

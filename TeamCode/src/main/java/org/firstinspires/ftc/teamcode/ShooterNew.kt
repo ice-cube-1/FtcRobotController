@@ -7,10 +7,9 @@ import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
-import org.firstinspires.ftc.teamcode.Constants.CCW_TURRET
-import org.firstinspires.ftc.teamcode.Constants.CW_TURRET
 import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
+import org.firstinspires.ftc.teamcode.Constants.TURRET_KP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
 import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_ZERO_DEG
@@ -30,9 +29,11 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     private val turret = arrayOf(
         hardwareMap.get(ServoImplEx::class.java, "t1").apply {
             pwmRange = PwmControl.PwmRange(500.0, 2500.0)
+            position = 0.5
         },
         hardwareMap.get(ServoImplEx::class.java, "t2").apply {
             pwmRange = PwmControl.PwmRange(500.0, 2500.0)
+            position = 0.5
         }
     )
     private val hoodAngle = hardwareMap.get(Servo::class.java, "hood").apply { position = HOOD_ANGLE }
@@ -47,15 +48,16 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     private var mostRecent = 0.0
     private var timer = ElapsedTime()
     private var scanTimer = ElapsedTime()
-    var turretState = TurretState.WRAPPING
+    private var turretState = TurretState.WRAPPING
     private var shooterOn = false
     private var targetV = 0
-    private var goto = CCW_TURRET
+    private var goto = -TURRET_ZERO_DEG
     private var nextPos = 0.0
+    private var deltaT = ElapsedTime()
     fun getMotifID(): Int {
         val currentDetections = limelight.latestResult
         for (tag in currentDetections.fiducialResults) {
-            if (tag.fiducialId in 21..23) {return tag.fiducialId }
+            if (tag.fiducialId in 21..23) { return tag.fiducialId }
         }
         return -1
     }
@@ -77,40 +79,42 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
     fun moveTurret() {
         lookForTag()
+        val delta = deltaT.seconds()
+        deltaT.reset()
         when (turretState) {
             TurretState.DETECTED -> {
                 if (timer.milliseconds() > mostRecent + 500) turretState = TurretState.WRAPPING
-                else if (abs(lastAngle) > 0.02) {
-                    nextPos = lastAngle + getTurretAngle()
-                }
+                else if (abs(lastAngle) > 1.0) nextPos = lastAngle * TURRET_KP + getTurretAngle()
             }
             TurretState.WRAPPING -> {
                 if (timer.milliseconds() < mostRecent + 500) turretState = TurretState.DETECTED
                 else {
-                    if (scanTimer.milliseconds() > 500) {
-                        val error = goto - getTurretAngle()
-                        nextPos = (if (error > 0) TURRET_STEP else -TURRET_STEP) + getTurretAngle()
-                        scanTimer.reset()
-                    } else {
-                        nextPos = getTurretAngle()
-                    }
+                    nextPos = (if (goto - getTurretAngle() > 0) TURRET_STEP else -TURRET_STEP) * delta + getTurretAngle()
+                    scanTimer.reset()
                 }
             }
         }
-        if (nextPos > CW_TURRET) {
-            goto = CCW_TURRET
-        } else if (nextPos < CCW_TURRET) {
-            goto = CW_TURRET
+        if (nextPos >= TURRET_MAX_DEGREES * delta - TURRET_ZERO_DEG) {
+            goto = -TURRET_ZERO_DEG
+        } else if (nextPos <= -TURRET_ZERO_DEG * delta) {
+            goto = TURRET_MAX_DEGREES - TURRET_ZERO_DEG
         } else {
             setTurretPos(nextPos)
         }
     }
     private fun getTurretAngle() : Double {
-        return ((turret[0].position + turret[1].position) / 2) * TURRET_MAX_DEGREES - TURRET_ZERO_DEG
+        return ((turret[0].position + turret[1].position) / 2.0) * TURRET_MAX_DEGREES - TURRET_ZERO_DEG
+    }
+    fun manualRotate(goto: Double) : Boolean {
+        val delta = deltaT.seconds()
+        deltaT.reset()
+        setTurretPos((if (goto - getTurretAngle() > 0) TURRET_STEP else -TURRET_STEP) * delta + getTurretAngle())
+        return abs(goto - getTurretAngle()) < 1.0
     }
     private fun setTurretPos(pos: Double) {
-        turret[0].position = (pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES
-        turret[1].position = (pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES
+        val goto = min(1.0, max((pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES, 0.0))
+        turret[0].position = goto
+        turret[1].position = goto
     }
 
     fun turnOnShooter() {
@@ -135,6 +139,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
     fun getData() : String {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
+                "Turret current position ${getTurretAngle()}, going to $goto\n"+
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
                 "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() *
                         targetV - motors.map { it.getVelocity() }.average()))}\n" +
