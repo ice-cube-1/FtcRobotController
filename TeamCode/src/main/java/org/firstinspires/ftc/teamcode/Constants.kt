@@ -12,9 +12,8 @@ object Constants {
     @JvmField var Y_TICKS_PER_INCH = 5793.25 / (223.0/2.54)
     @JvmField var MANUAL_MULTIPLIER = 0.2F
     @JvmField var ENCODER_ERROR = 35
-    @JvmField var SERVO_ERROR = 35
-    @JvmField var TURRET_KP = 0.05
-    @JvmField var TURRET_STEP = 5
+    @JvmField var TURRET_KP = 0.5
+    @JvmField var TURRET_STEP = 0.0001
     @JvmField var CCW_TURRET = 1520
     @JvmField var CW_TURRET = -1520
     @JvmField var KICKARM_DOWN = 0.6
@@ -23,7 +22,8 @@ object Constants {
     @JvmField var KP_SHOOTER = 0.0005
     @JvmField var VELOCITY_DELTA = 8
     @JvmField var HOOD_ANGLE = 0.5
-    @JvmField var ADD_TEST = 0
+    @JvmField var TURRET_MAX_DEGREES = ((35/15)*(20/82))*360
+    @JvmField var TURRET_ZERO_DEG = 100
     @JvmField var ODOMETRY_TICKS_PER_CM = 126.3
 
 

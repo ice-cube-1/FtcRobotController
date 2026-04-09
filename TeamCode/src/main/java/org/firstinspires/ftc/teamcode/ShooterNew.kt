@@ -11,7 +11,9 @@ import org.firstinspires.ftc.teamcode.Constants.CCW_TURRET
 import org.firstinspires.ftc.teamcode.Constants.CW_TURRET
 import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
+import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
 import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP
+import org.firstinspires.ftc.teamcode.Constants.TURRET_ZERO_DEG
 import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
 import java.lang.Math.toDegrees
 import kotlin.math.abs
@@ -79,18 +81,18 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
             TurretState.DETECTED -> {
                 if (timer.milliseconds() > mostRecent + 500) turretState = TurretState.WRAPPING
                 else if (abs(lastAngle) > 0.02) {
-                    nextPos = lastAngle + turret[0].position * 360.0
+                    nextPos = lastAngle + getTurretAngle()
                 }
             }
             TurretState.WRAPPING -> {
                 if (timer.milliseconds() < mostRecent + 500) turretState = TurretState.DETECTED
                 else {
                     if (scanTimer.milliseconds() > 500) {
-                        val error = goto - turret[0].position * 360.0
-                        nextPos = (if (error > 0) TURRET_STEP else -TURRET_STEP) + turret[0].position * 360.0
+                        val error = goto - getTurretAngle()
+                        nextPos = (if (error > 0) TURRET_STEP else -TURRET_STEP) + getTurretAngle()
                         scanTimer.reset()
                     } else {
-                        nextPos = turret[0].position * 360.0
+                        nextPos = getTurretAngle()
                     }
                 }
             }
@@ -100,9 +102,15 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         } else if (nextPos < CCW_TURRET) {
             goto = CW_TURRET
         } else {
-            turret[0].position = nextPos / 360.0
-            turret[1].position = (360 - nextPos) / 360.0
+            setTurretPos(nextPos)
         }
+    }
+    private fun getTurretAngle() : Double {
+        return ((turret[0].position + turret[1].position) / 2) * TURRET_MAX_DEGREES - TURRET_ZERO_DEG
+    }
+    private fun setTurretPos(pos: Double) {
+        turret[0].position = (pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES
+        turret[1].position = (pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES
     }
 
     fun turnOnShooter() {
