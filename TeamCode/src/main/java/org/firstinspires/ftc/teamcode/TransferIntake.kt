@@ -9,9 +9,10 @@ import org.firstinspires.ftc.teamcode.Constants.INTAKE_POWER
 import org.firstinspires.ftc.teamcode.Constants.STOP_DOWN
 import org.firstinspires.ftc.teamcode.Constants.STOP_UP
 
-enum class IntakeStates {INTAKE_ON, SHOOTING, IDLE}
+enum class IntakeStates {INTAKE, SHOOTING}
 
 class TransferIntake(hardwareMap: HardwareMap) {
+    private var intakePower = 0.0
     private val intake = hardwareMap.get(DcMotorEx::class.java, "intake").apply {
         direction = DcMotorSimple.Direction.FORWARD
         zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
@@ -23,39 +24,32 @@ class TransferIntake(hardwareMap: HardwareMap) {
     private val stop = hardwareMap.get(Servo::class.java, "stop").apply {
         position = STOP_DOWN
     }
-    private var intakeState = IntakeStates.IDLE
+    private var intakeState = IntakeStates.INTAKE
     fun prepShooter() {
         stop.position = STOP_UP
     }
     fun shoot(s : Boolean) {
         if (s) {
             stop.position = STOP_UP
+            transfer.power = 0.0
+            intake.power = 0.0
             intakeState = IntakeStates.SHOOTING
         } else {
             stop.position = STOP_DOWN
-            intakeState = IntakeStates.IDLE
+            transfer.power = 0.0
+            intake.power = 0.0
+            intakeState = IntakeStates.INTAKE
         }
     }
-    fun intake(i: Boolean) {
-        if (i) {
-            stop.position = STOP_DOWN
-            intakeState = IntakeStates.INTAKE_ON
-        } else {
-            stop.position = STOP_DOWN
-            intakeState = IntakeStates.IDLE
-        }
-    }
+    fun intake(i: Float) { intakePower = i.toDouble() }
     fun update() {
         when (intakeState) {
-            IntakeStates.INTAKE_ON -> {
-                intake.power = INTAKE_POWER
-                transfer.power = 0.0
-            } IntakeStates.SHOOTING -> {
+            IntakeStates.SHOOTING -> {
                 intake.power = INTAKE_POWER
                 transfer.power = INTAKE_POWER
             }
-            IntakeStates.IDLE -> {
-                intake.power = 0.0
+            IntakeStates.INTAKE -> {
+                intake.power = intakePower
                 transfer.power = 0.0
             }
         }

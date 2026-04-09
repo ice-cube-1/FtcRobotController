@@ -61,6 +61,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         }
         return -1
     }
+    var atSpeed = false
 
     fun canShoot(): Boolean { return abs(lastAngle) < 3 && lastDist < 120.0 && (targetV - motors[1].getVelocity() < 30) }
     private fun getTargetVelocity(): Int {
@@ -94,9 +95,9 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
                 }
             }
         }
-        if (nextPos >= TURRET_MAX_DEGREES * delta - TURRET_ZERO_DEG) {
+        if (nextPos >= TURRET_MAX_DEGREES - TURRET_ZERO_DEG) {
             goto = -TURRET_ZERO_DEG
-        } else if (nextPos <= -TURRET_ZERO_DEG * delta) {
+        } else if (nextPos <= -TURRET_ZERO_DEG) {
             goto = TURRET_MAX_DEGREES - TURRET_ZERO_DEG
         } else {
             setTurretPos(nextPos)
@@ -127,7 +128,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         motors[0].setPower(0.0)
         motors[1].setPower(0.0)
     }
-    fun spin(): Boolean {
+    fun spin() {
         val velocity = getTargetVelocity()
         val error = targetV - motors.map { it.getVelocity() }.average()
         power = max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() * error))
@@ -135,14 +136,14 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         if (shooterOn) { for (m in motors) { m.setPower(power) } }
         else {for (m in motors) {m.setPower(0.0) } }
         spinnerTimer.reset()
-        return abs(error) < 100 && abs(targetV - velocity) < 100
+        atSpeed = abs(targetV - velocity) < 10 && abs(error) < 100
     }
     fun getData() : String {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
                 "Turret current position ${getTurretAngle()}, going to $goto\n"+
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
                 "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() *
-                        targetV - motors.map { it.getVelocity() }.average()))}\n" +
+                        (targetV - motors.map { it.getVelocity() }.average())))}\n" +
                 "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}"
     }
 }
