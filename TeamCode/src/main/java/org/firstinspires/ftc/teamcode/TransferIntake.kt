@@ -13,7 +13,7 @@ enum class IntakeStates {INTAKE, SHOOTING}
 
 class TransferIntake(hardwareMap: HardwareMap) {
     private var intakePower = 0.0
-    private val intake = hardwareMap.get(DcMotorEx::class.java, "intake").apply {
+    val intake = hardwareMap.get(DcMotorEx::class.java, "intake").apply {
         direction = DcMotorSimple.Direction.FORWARD
         zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
@@ -21,7 +21,7 @@ class TransferIntake(hardwareMap: HardwareMap) {
         direction = DcMotorSimple.Direction.FORWARD
         zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
     }
-    private val stop = hardwareMap.get(Servo::class.java, "stop").apply {
+    val stop = hardwareMap.get(Servo::class.java, "stop").apply {
         position = STOP_DOWN
     }
     private var intakeState = IntakeStates.INTAKE
