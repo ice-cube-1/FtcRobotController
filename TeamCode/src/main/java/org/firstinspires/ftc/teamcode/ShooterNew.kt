@@ -25,7 +25,11 @@ import kotlin.math.sqrt
 enum class TurretState {DETECTED, WRAPPING}
 
 class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
-    private var limelight = hardwareMap.get(Limelight3A::class.java, "limelight")
+    private var limelight = hardwareMap.get(Limelight3A::class.java, "limelight").apply {
+        setPollRateHz(100)
+        start()
+        pipelineSwitch(0)
+    }
     private val turret = arrayOf(
         hardwareMap.get(ServoImplEx::class.java, "t1").apply {
             pwmRange = PwmControl.PwmRange(500.0, 2500.0)
@@ -45,15 +49,15 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     )
     private var power = 0.0
     private var spinnerTimer = ElapsedTime()
-    private var mostRecent = 0.0
+    private var mostRecent = -1000.0
     private var timer = ElapsedTime()
     private var scanTimer = ElapsedTime()
     private var turretState = TurretState.WRAPPING
     private var shooterOn = false
     private var targetV = 0
+    private var data = ""
     private var goto = -TURRET_ZERO_DEG
     private var nextPos = 0.0
-    private var deltaT = ElapsedTime()
     fun getMotifID(): Int {
         val currentDetections = limelight.latestResult
         for (tag in currentDetections.fiducialResults) {
@@ -70,6 +74,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     private fun lookForTag() {
         val result = limelight.latestResult
         for (tag in result.fiducialResults) {
+            data = " " + tag.fiducialId + " " + tag.targetPoseCameraSpace.position
             if (tag.fiducialId == tagID) {
                 mostRecent = timer.milliseconds() - result.staleness
                 val pos = tag.targetPoseCameraSpace.position
@@ -80,8 +85,6 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
     fun moveTurret() {
         lookForTag()
-        val delta = deltaT.seconds()
-        deltaT.reset()
         when (turretState) {
             TurretState.DETECTED -> {
                 if (timer.milliseconds() > mostRecent + 500) turretState = TurretState.WRAPPING
@@ -90,7 +93,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
             TurretState.WRAPPING -> {
                 if (timer.milliseconds() < mostRecent + 500) turretState = TurretState.DETECTED
                 else {
-                    nextPos = (if (goto - getTurretAngle() > 0) TURRET_STEP else -TURRET_STEP) * delta + getTurretAngle()
+                    nextPos = (if (goto - getTurretAngle() > 0) TURRET_STEP else -TURRET_STEP) + getTurretAngle()
                     scanTimer.reset()
                 }
             }
@@ -107,9 +110,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         return ((turret[0].position + turret[1].position) / 2.0) * TURRET_MAX_DEGREES - TURRET_ZERO_DEG
     }
     fun manualRotate(goto: Double) : Boolean {
-        val delta = deltaT.seconds()
-        deltaT.reset()
-        setTurretPos((if (goto - getTurretAngle() > 0) TURRET_STEP else -TURRET_STEP) * delta + getTurretAngle())
+        setTurretPos((if (goto - getTurretAngle() > 0) TURRET_STEP else -TURRET_STEP) + getTurretAngle())
         return abs(goto - getTurretAngle()) < 1.0
     }
     private fun setTurretPos(pos: Double) {
@@ -140,7 +141,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
     fun getData() : String {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
-                "Turret current position ${getTurretAngle()}, going to $goto\n"+
+                "Turret current position ${getTurretAngle()}, going to $goto + $data\n"+
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
                 "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() *
                         (targetV - motors.map { it.getVelocity() }.average())))}\n" +

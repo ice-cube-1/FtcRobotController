@@ -8,9 +8,8 @@ class ShooterTest : LinearOpMode() {
     override fun runOpMode() {
         waitForStart()
         val shooter = ShooterNew(hardwareMap,20)
-        shooter.turnOnShooter()
         while (opModeIsActive()) {
-            shooter.spin()
+            shooter.moveTurret()
             telemetry.addLine(shooter.getData())
             telemetry.update()
         }
