@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
+import org.firstinspires.ftc.teamcode.Constants.SHOOTER_IDLE_VELOCITY
+import org.firstinspires.ftc.teamcode.Constants.TARGET_VELOCITY
 import org.firstinspires.ftc.teamcode.Constants.TURRET_KP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
 import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP
@@ -54,7 +56,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     private var scanTimer = ElapsedTime()
     private var turretState = TurretState.WRAPPING
     private var shooterOn = false
-    private var targetV = 0
+    private var targetV = SHOOTER_IDLE_VELOCITY
     private var data = ""
     private var goto = -TURRET_ZERO_DEG
     private var nextPos = 0.0
@@ -67,9 +69,10 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
     var atSpeed = false
 
-    fun canShoot(): Boolean { return abs(lastAngle) < 3 && lastDist < 120.0 && (targetV - motors[1].getVelocity() < 30) }
+    fun canShoot(): Boolean { return true/** abs(lastAngle) < 3 && lastDist < 120.0 && (targetV - motors[1].getVelocity() < 30) **/ }
     private fun getTargetVelocity(): Int {
-        return (lastDist * 5.9976 + 1022.8).toInt()
+        if (shooterOn) return TARGET_VELOCITY//(lastDist * 5.9976 + 1022.8).toInt()
+        return SHOOTER_IDLE_VELOCITY
     }
     private fun lookForTag() {
         val result = limelight.latestResult
@@ -120,12 +123,12 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
 
     fun turnOnShooter() {
-        targetV = 0
+        targetV = SHOOTER_IDLE_VELOCITY
         shooterOn = true
     }
     fun turnOffShooter() {
         shooterOn = false
-        targetV = 0
+        targetV = SHOOTER_IDLE_VELOCITY
         motors[0].setPower(0.0)
         motors[1].setPower(0.0)
     }
@@ -133,9 +136,8 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         val velocity = getTargetVelocity()
         val error = targetV - motors.map { it.getVelocity() }.average()
         power = max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() * error))
-        if (shooterOn) { targetV = min(targetV + VELOCITY_DELTA, velocity) }
-        if (shooterOn) { for (m in motors) { m.setPower(power) } }
-        else {for (m in motors) {m.setPower(0.0) } }
+        targetV = min(targetV + VELOCITY_DELTA, velocity)
+        for (m in motors) { m.setPower(power) }
         spinnerTimer.reset()
         atSpeed = abs(targetV - velocity) < 10 && abs(error) < 100
     }
@@ -143,8 +145,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
                 "Turret current position ${getTurretAngle()}, going to $goto + $data\n"+
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
-                "power ${max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() *
-                        (targetV - motors.map { it.getVelocity() }.average())))}\n" +
+                "power ${power}\n" +
                 "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}"
     }
 }

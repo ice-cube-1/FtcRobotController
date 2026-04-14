@@ -12,7 +12,7 @@ class TransferTest : LinearOpMode() {
         val transferIntake = TransferIntake(hardwareMap)
         while (opModeIsActive()) {
             transferIntake.intake.power = (gamepad1.left_trigger - gamepad1.right_trigger).toDouble()
-            transferIntake.intake.power = (gamepad1.left_stick_x).toDouble()
+            transferIntake.transfer.power = (gamepad1.left_stick_x).toDouble()
             if (gamepad1.dpad_up) transferIntake.stop.position = STOP_UP
             if (gamepad1.dpad_down) transferIntake.stop.position = STOP_DOWN
         }

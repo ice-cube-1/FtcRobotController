@@ -13,7 +13,7 @@ object Constants {
     @JvmField var TURRET_KP = 0.03
     @JvmField var TURRET_STEP = 0.4
     @JvmField var STOP_DOWN = 0.32
-    @JvmField var STOP_UP = 0.4
+    @JvmField var STOP_UP = 1.0
     @JvmField var INTAKE_POWER = 1.0
     @JvmField var KP_SHOOTER = 0.0003
     @JvmField var VELOCITY_DELTA = 8
@@ -21,4 +21,6 @@ object Constants {
     @JvmField var TURRET_MAX_DEGREES = ((35.0/15.0)*(20.0/82.0))*360.0
     @JvmField var TURRET_ZERO_DEG = ((35.0/15.0)*(20.0/82.0))*180.0
     @JvmField var ODOMETRY_TICKS_PER_CM = 126.3
+    @JvmField var SHOOTER_IDLE_VELOCITY = 200
+    @JvmField var TARGET_VELOCITY = 200
 }

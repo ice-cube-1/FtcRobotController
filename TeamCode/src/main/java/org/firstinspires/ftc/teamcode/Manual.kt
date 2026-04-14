@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
-import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
 
 enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
 
@@ -18,7 +17,7 @@ enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
 @TeleOp
 class Manual : LinearOpMode() {
     private lateinit var shooter: ShooterNew
-    private lateinit var drivetrain: OdometryDrivetrain
+    //private lateinit var drivetrain: OdometryDrivetrain
     private lateinit var transferIntake: TransferIntake
     private var robotState = RobotState.INTAKE
     private var timeToEnd = 0.0
@@ -26,20 +25,19 @@ class Manual : LinearOpMode() {
     override fun runOpMode() {
         waitForStart()
         shooter = ShooterNew(hardwareMap, 20)
-        drivetrain = OdometryDrivetrain(hardwareMap)
         transferIntake = TransferIntake(hardwareMap)
         while (opModeIsActive()) {
             /** expected field centric control **/
-            drivetrain.driveManual(
-                gamepad1.left_stick_x * MANUAL_MULTIPLIER,
-                -gamepad1.left_stick_y * MANUAL_MULTIPLIER,
-                gamepad1.right_stick_x.toDouble()
-            )
+            //drivetrain.driveManual(
+            //    gamepad1.left_stick_x * MANUAL_MULTIPLIER,
+            //    -gamepad1.left_stick_y * MANUAL_MULTIPLIER,
+            //    gamepad1.right_stick_x.toDouble()
+            //)
             if (gamepad1.left_bumper && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_SPIN_UP
                 transferIntake.prepShooter()
                 shooter.turnOnShooter()
-                timeToEnd = timer.milliseconds() + 200
+                timeToEnd = timer.milliseconds() + 500
             }
             if (gamepad1.right_bumper && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.INTAKE
@@ -50,12 +48,15 @@ class Manual : LinearOpMode() {
             if (robotState == RobotState.INTAKE) {
                 transferIntake.intake(gamepad1.left_trigger - gamepad1.right_trigger)
             }
-            if (shooter.atSpeed && robotState == RobotState.SHOOTER_SPIN_UP && shooter.canShoot()) {
+            if (shooter.atSpeed && robotState == RobotState.SHOOTER_SPIN_UP && shooter.canShoot() && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_ON
                 transferIntake.shoot(true)
             }
             transferIntake.update()
             shooter.moveTurret()
+            telemetry.addLine(shooter.getData())
+            telemetry.addLine(transferIntake.getData())
+            telemetry.update()
             shooter.spin()
         }
     }

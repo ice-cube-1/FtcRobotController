@@ -22,7 +22,6 @@ class LimeLightTest: LinearOpMode() {
             val result = limelight.latestResult
             if (result != null && result.isValid) {
                 val fiducials = result.fiducialResults
-
                 for (fiducial in fiducials) {
                     val pose = fiducial.targetPoseCameraSpace
 
