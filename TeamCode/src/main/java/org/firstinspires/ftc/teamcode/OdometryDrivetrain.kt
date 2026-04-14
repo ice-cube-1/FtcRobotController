@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.Constants.KD_HEADING
 import org.firstinspires.ftc.teamcode.Constants.KD_TRANSLATION
 import org.firstinspires.ftc.teamcode.Constants.KP_HEADING
 import org.firstinspires.ftc.teamcode.Constants.KP_TRANSLATION
-import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
 import org.firstinspires.ftc.teamcode.Constants.ODOMETRY_TICKS_PER_CM
+import org.firstinspires.ftc.teamcode.Constants.xDisp
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -21,14 +21,14 @@ import kotlin.math.sin
 enum class Wheels {LEFT_FRONT, RIGHT_FRONT, LEFT_BACK, RIGHT_BACK}
 enum class Odometry(private val direction: Int, private var prev: Double = 0.0, var delta: Double = 0.0) {
     LEFT(direction = -1) {
-        override fun x() = -10.7
+        override fun x() = -xDisp
         override fun y() = -3.5
     },
     RIGHT(direction = -1) {
-        override fun x() = 10.7
+        override fun x() = xDisp
         override fun y() = -3.5
     },
-    CENTER(direction = 1) {
+    CENTER(direction = -1) {
         override fun x() = -18.0
         override fun y() = -20.0
     };
@@ -46,7 +46,7 @@ enum class Odometry(private val direction: Int, private var prev: Double = 0.0, 
 }
 
 class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
-    private lateinit var wheels: Array<DcMotorEx>
+    private var wheels: Array<DcMotorEx>
     private val left = Odometry.LEFT
     private val right = Odometry.RIGHT
     private val center = Odometry.CENTER
@@ -64,8 +64,8 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
     init {
         wheels = arrayOf(
             initOdoWheel("lf", Direction.REVERSE),
-            initOdoWheel("rf",Direction.REVERSE),
-            initOdoWheel("lb", Direction.FORWARD),
+            initOdoWheel("rf",Direction.FORWARD),
+            initOdoWheel("lb", Direction.REVERSE),
             initOdoWheel("rb", Direction.FORWARD)
         )
         left.reset()
@@ -74,9 +74,10 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         timer.reset()
     }
     fun driveManual(moveX: Double, moveY: Double, turn: Double) {
+        getDeltaOdometry()
         val xRobot = cos(theta) * moveX - sin(theta) * moveY
         val yRobot = sin(theta) * moveX + cos(theta) * moveY
-        val denominator = max(0.1, abs(yRobot) + abs(xRobot) + abs(turn)) / MANUAL_MULTIPLIER
+        val denominator = max(1.0, abs(yRobot) + abs(xRobot) + abs(turn))
         getWheel(Wheels.LEFT_FRONT).power = (yRobot + xRobot + turn) / denominator
         getWheel(Wheels.RIGHT_FRONT).power = (yRobot - xRobot - turn) / denominator
         getWheel(Wheels.LEFT_BACK).power = (yRobot - xRobot + turn) / denominator
@@ -125,10 +126,13 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
     }
     private fun getOdometryPos(name: Odometry): Int {
         return when (name) {
-            Odometry.LEFT -> wheels[2].currentPosition
+            Odometry.LEFT -> wheels[0].currentPosition
             Odometry.RIGHT -> wheels[1].currentPosition
-            Odometry.CENTER -> wheels[0].currentPosition
+            Odometry.CENTER -> wheels[2].currentPosition
         }
+    }
+    fun getData(): String {
+        return "X: $x, Y: $y, theta: $theta"
     }
     private fun initOdoWheel(name: String, direction: Direction): DcMotorEx {
         return hardwareMap.get(DcMotorEx::class.java, name).apply {

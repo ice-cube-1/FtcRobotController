@@ -117,7 +117,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         return abs(goto - getTurretAngle()) < 1.0
     }
     private fun setTurretPos(pos: Double) {
-        val goto = min(1.0, max((pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES, 0.0))
+        val goto = min(0.9, max((pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES, 0.1))
         turret[0].position = goto
         turret[1].position = goto
     }

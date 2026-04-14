@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
+import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
 
 enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
 
@@ -17,22 +18,23 @@ enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
 @TeleOp
 class Manual : LinearOpMode() {
     private lateinit var shooter: ShooterNew
-    //private lateinit var drivetrain: OdometryDrivetrain
+    private lateinit var drivetrain: OdometryDrivetrain
     private lateinit var transferIntake: TransferIntake
     private var robotState = RobotState.INTAKE
     private var timeToEnd = 0.0
     private val timer = ElapsedTime()
     override fun runOpMode() {
         waitForStart()
+        drivetrain = OdometryDrivetrain(hardwareMap)
         shooter = ShooterNew(hardwareMap, 20)
         transferIntake = TransferIntake(hardwareMap)
         while (opModeIsActive()) {
             /** expected field centric control **/
-            //drivetrain.driveManual(
-            //    gamepad1.left_stick_x * MANUAL_MULTIPLIER,
-            //    -gamepad1.left_stick_y * MANUAL_MULTIPLIER,
-            //    gamepad1.right_stick_x.toDouble()
-            //)
+            drivetrain.driveManual(
+                gamepad1.left_stick_x * MANUAL_MULTIPLIER,
+                -gamepad1.left_stick_y * MANUAL_MULTIPLIER,
+                gamepad1.right_stick_x.toDouble()
+            )
             if (gamepad1.left_bumper && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_SPIN_UP
                 transferIntake.prepShooter()
@@ -52,12 +54,13 @@ class Manual : LinearOpMode() {
                 robotState = RobotState.SHOOTER_ON
                 transferIntake.shoot(true)
             }
-            transferIntake.update()
+            transferIntake.update(shooter.atSpeed)
             shooter.moveTurret()
+            shooter.spin()
             telemetry.addLine(shooter.getData())
             telemetry.addLine(transferIntake.getData())
+            telemetry.addLine(drivetrain.getData())
             telemetry.update()
-            shooter.spin()
         }
     }
 }
