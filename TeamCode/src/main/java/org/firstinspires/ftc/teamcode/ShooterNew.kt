@@ -71,7 +71,16 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
 
     fun canShoot(): Boolean { return true/** abs(lastAngle) < 3 && lastDist < 120.0 && (targetV - motors[1].getVelocity() < 30) **/ }
     private fun getTargetVelocity(): Int {
-        if (shooterOn) return TARGET_VELOCITY//(lastDist * 5.9976 + 1022.8).toInt()
+        if (lastDist > 1.78) hoodAngle.position = 0.9 else hoodAngle.position = 1.0
+        if (shooterOn) {
+            if (lastDist > 1.78) {
+                hoodAngle.position = 0.9
+                return (lastDist*224.3+979.7).toInt()
+            } else {
+                hoodAngle.position = 1.0
+                return (lastDist*260.7 +883.9).toInt()
+            }
+        }
         return SHOOTER_IDLE_VELOCITY
     }
     private fun lookForTag() {

@@ -3,17 +3,23 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.firstinspires.ftc.teamcode.Constants.STOP_DOWN
+import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
 
 @TeleOp
-class SingleServoTest : LinearOpMode() {
+class ZeroHood : LinearOpMode() {
     private lateinit var turret: Array<ServoImplEx>
     public override fun runOpMode() {
         waitForStart()
-        val s = hardwareMap.get(ServoImplEx::class.java, "s")
+        val s = hardwareMap.get(ServoImplEx::class.java, "hood")
         sleep(500)
+        telemetry.addLine("Left bumper to move down once in, right bumper to reset")
+        telemetry.update()
+        var sPos = 0.0
         while (opModeIsActive()) {
-            s.position = STOP_DOWN
+            s.position = sPos
+            if (gamepad1.left_bumper) {sPos = HOOD_ANGLE}
+            if (gamepad1.right_bumper) {sPos = 0.0}
+
         }
     }
 

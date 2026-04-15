@@ -52,7 +52,7 @@ class Manual : LinearOpMode() {
                 transferIntake.intake(gamepad1.left_trigger - gamepad1.right_trigger)
             }
             if (!shooter.atSpeed) atSpeed.reset()
-            if (atSpeed.milliseconds() > 500 && robotState == RobotState.SHOOTER_SPIN_UP && shooter.canShoot() && timer.milliseconds() > timeToEnd) {
+            if (atSpeed.milliseconds() > 500 && (robotState == RobotState.SHOOTER_SPIN_UP) && shooter.canShoot() && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_ON
                 transferIntake.shoot(true)
             }

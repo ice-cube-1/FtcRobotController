@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Constants.SHOOT_MULTIPLIER
 import org.firstinspires.ftc.teamcode.Constants.STOP_DOWN
 import org.firstinspires.ftc.teamcode.Constants.STOP_UP
 import org.firstinspires.ftc.teamcode.Constants.TRANSFER_POWER
-import kotlin.math.max
+import kotlin.math.min
 
 enum class IntakeStates {INTAKE, SHOOTING}
 
@@ -57,7 +57,7 @@ class TransferIntake(hardwareMap: HardwareMap) {
             IntakeStates.SHOOTING -> {
                 val t = timer.milliseconds()
                 if (t < SHOOT_INITIAL) {
-                    intake.power = 0.0
+                    intake.power = if (lengthEachGo <= SHOOT_INITIAL * SHOOT_MULTIPLIER) 0.0 else INTAKE_POWER
                     transfer.power = TRANSFER_POWER
                 } else if (t < lengthEachGo + SHOOT_INITIAL) {
                     intake.power = INTAKE_POWER
@@ -68,6 +68,7 @@ class TransferIntake(hardwareMap: HardwareMap) {
                     transfer.power = 0.0
                 } else {
                     timer.reset()
+                    lengthEachGo = min(lengthEachGo* SHOOT_MULTIPLIER, 1400.0)
                     lengthEachGo *= SHOOT_MULTIPLIER
                 }
             }
