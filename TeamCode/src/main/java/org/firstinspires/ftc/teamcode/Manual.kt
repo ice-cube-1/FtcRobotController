@@ -23,6 +23,7 @@ class Manual : LinearOpMode() {
     private var robotState = RobotState.INTAKE
     private var timeToEnd = 0.0
     private val timer = ElapsedTime()
+    private val atSpeed = ElapsedTime()
     override fun runOpMode() {
         waitForStart()
         drivetrain = OdometryDrivetrain(hardwareMap)
@@ -50,7 +51,8 @@ class Manual : LinearOpMode() {
             if (robotState == RobotState.INTAKE) {
                 transferIntake.intake(gamepad1.left_trigger - gamepad1.right_trigger)
             }
-            if (shooter.atSpeed && robotState == RobotState.SHOOTER_SPIN_UP && shooter.canShoot() && timer.milliseconds() > timeToEnd) {
+            if (!shooter.atSpeed) atSpeed.reset()
+            if (atSpeed.milliseconds() > 500 && robotState == RobotState.SHOOTER_SPIN_UP && shooter.canShoot() && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_ON
                 transferIntake.shoot(true)
             }

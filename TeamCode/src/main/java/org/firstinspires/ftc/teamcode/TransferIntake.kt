@@ -7,9 +7,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.Constants.INTAKE_POWER
+import org.firstinspires.ftc.teamcode.Constants.SHOOT_INITIAL
+import org.firstinspires.ftc.teamcode.Constants.SHOOT_MULTIPLIER
 import org.firstinspires.ftc.teamcode.Constants.STOP_DOWN
 import org.firstinspires.ftc.teamcode.Constants.STOP_UP
 import org.firstinspires.ftc.teamcode.Constants.TRANSFER_POWER
+import kotlin.math.max
 
 enum class IntakeStates {INTAKE, SHOOTING}
 
@@ -26,6 +29,7 @@ class TransferIntake(hardwareMap: HardwareMap) {
     val stop: Servo = hardwareMap.get(Servo::class.java, "stop").apply { position = STOP_DOWN }
     private val timer = ElapsedTime()
     private var intakeState = IntakeStates.INTAKE
+    private var lengthEachGo = 0.0
     fun prepShooter() {
         stop.position = STOP_UP
     }
@@ -34,6 +38,7 @@ class TransferIntake(hardwareMap: HardwareMap) {
             stop.position = STOP_UP
             transfer.power = 0.0
             intake.power = 0.0
+            lengthEachGo = SHOOT_INITIAL
             timer.reset()
             intakeState = IntakeStates.SHOOTING
         } else {
@@ -50,12 +55,21 @@ class TransferIntake(hardwareMap: HardwareMap) {
     fun update(canShoot: Boolean) {
         when (intakeState) {
             IntakeStates.SHOOTING -> {
-                if (200 > timer.milliseconds()) {
+                val t = timer.milliseconds()
+                if (t < SHOOT_INITIAL) {
                     intake.power = 0.0
-                } else if (400 > timer.milliseconds() && canShoot) {
+                    transfer.power = TRANSFER_POWER
+                } else if (t < lengthEachGo + SHOOT_INITIAL) {
                     intake.power = INTAKE_POWER
-                } else timer.reset()
-                transfer.power = TRANSFER_POWER
+                    transfer.power = 0.0
+
+                } else if (t < lengthEachGo * 4) {
+                    intake.power = 0.0
+                    transfer.power = 0.0
+                } else {
+                    timer.reset()
+                    lengthEachGo *= SHOOT_MULTIPLIER
+                }
             }
             IntakeStates.INTAKE -> {
                 intake.power = intakePower
