@@ -10,8 +10,8 @@ object Constants {
     @JvmField var KD_TRANSLATION = 0.02
     @JvmField var MANUAL_MULTIPLIER = 1.0
     @JvmField var ENCODER_ERROR = 35
-    @JvmField var TURRET_KP = 0.03
-    @JvmField var TURRET_STEP = 0.4
+    @JvmField var TURRET_KP = 0.15
+    @JvmField var TURRET_STEP = 3.0
     @JvmField var STOP_DOWN = 0.32
     @JvmField var STOP_UP = 1.0
     @JvmField var INTAKE_POWER = 1.0
