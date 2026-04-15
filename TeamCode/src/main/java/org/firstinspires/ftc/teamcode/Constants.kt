@@ -23,8 +23,7 @@ object Constants {
     @JvmField var TURRET_ZERO_DEG = ((35.0/15.0)*(20.0/82.0))*180.0
     @JvmField var ODOMETRY_TICKS_PER_CM = 126.3
     @JvmField var SHOOTER_IDLE_VELOCITY = 400
-    @JvmField var TARGET_VELOCITY = 1200
     @JvmField var xDisp = 10.39
     @JvmField var SHOOT_MULTIPLIER = 3.6
-    @JvmField var SHOOT_INITIAL = 125.0
+    @JvmField var SHOOT_INITIAL = 100.0
 }
