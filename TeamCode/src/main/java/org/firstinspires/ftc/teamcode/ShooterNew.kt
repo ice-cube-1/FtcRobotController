@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
 import org.firstinspires.ftc.teamcode.Constants.SHOOTER_IDLE_VELOCITY
-import org.firstinspires.ftc.teamcode.Constants.TARGET_VELOCITY
 import org.firstinspires.ftc.teamcode.Constants.TURRET_KP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
 import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP

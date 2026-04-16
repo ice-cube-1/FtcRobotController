@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
+import kotlin.math.abs
 
 enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
 
@@ -17,8 +18,8 @@ enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
 
 @TeleOp
 class Manual : LinearOpMode() {
-    private lateinit var shooter: ShooterNew
     private lateinit var drivetrain: OdometryDrivetrain
+    private lateinit var shooter: ShooterNew
     private lateinit var transferIntake: TransferIntake
     private var robotState = RobotState.INTAKE
     private var timeToEnd = 0.0
@@ -32,9 +33,9 @@ class Manual : LinearOpMode() {
         while (opModeIsActive()) {
             /** expected field centric control **/
             drivetrain.driveManual(
-                gamepad1.left_stick_x * MANUAL_MULTIPLIER,
-                -gamepad1.left_stick_y * MANUAL_MULTIPLIER,
-                gamepad1.right_stick_x.toDouble()
+                gamepad1.left_stick_x*abs(gamepad1.left_stick_x) * MANUAL_MULTIPLIER,
+                -gamepad1.left_stick_y*abs(gamepad1.left_stick_y) * MANUAL_MULTIPLIER,
+                gamepad1.right_stick_x*abs(gamepad1.right_stick_x).toDouble()
             )
             if (gamepad1.left_bumper && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_SPIN_UP
