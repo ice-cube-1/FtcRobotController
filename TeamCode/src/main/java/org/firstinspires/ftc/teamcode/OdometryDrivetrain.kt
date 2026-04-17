@@ -11,10 +11,13 @@ import org.firstinspires.ftc.teamcode.Constants.KP_HEADING
 import org.firstinspires.ftc.teamcode.Constants.KP_TRANSLATION
 import org.firstinspires.ftc.teamcode.Constants.K_S
 import org.firstinspires.ftc.teamcode.Constants.ODOMETRY_TICKS_PER_CM
+import org.firstinspires.ftc.teamcode.Constants.POWER_DELTA
+import org.firstinspires.ftc.teamcode.Constants.POWER_MAX
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -64,7 +67,8 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
     private var theta = 0.0
     private val timer = ElapsedTime()
     private var lastTime = 0.0
-    private var velocity = 0.0
+    private var maxPower = 1.0
+    private var deltaTime = 0.0
     init {
         wheels = arrayOf(
             initOdoWheel("lf", Direction.REVERSE),
@@ -81,7 +85,9 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         getDeltaOdometry()
         val xRobot = cos(theta) * moveX - sin(theta) * moveY
         val yRobot = sin(theta) * moveX + cos(theta) * moveY
-        val denominator = max(1.0, abs(yRobot) + abs(xRobot) + abs(turn))
+        maxPower = min(maxPower + deltaTime * POWER_DELTA, POWER_MAX)
+        val attemptPower = abs(yRobot) + abs(xRobot) + abs(turn)
+        val denominator = if (attemptPower > maxPower) attemptPower / maxPower else 1.0
         setWheelPower(Wheels.LEFT_FRONT, (yRobot + xRobot + turn) / denominator)
         setWheelPower(Wheels.RIGHT_FRONT, (yRobot - xRobot - turn) / denominator)
         setWheelPower(Wheels.LEFT_BACK, (yRobot - xRobot + turn) / denominator)
@@ -91,10 +97,11 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         targetX = newX
         targetY = newY
         targetTheta = newTheta
+        maxPower = 0.0
     }
     fun continueDriving() : Boolean {
         val currentTime = timer.milliseconds()
-        val deltaTime = (currentTime - lastTime)
+        deltaTime = (currentTime - lastTime)
         lastTime = currentTime
         var headingError = targetTheta - theta
         while (headingError > PI) headingError -= 2*PI
@@ -146,7 +153,7 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         }
     }
     fun getData(): String {
-        return "X: $x\n Y: $y\n, theta: $theta\nvelocity: $velocity\nPowers ${wheels[0].power}, ${wheels[1].power}, ${wheels[2].power}, ${wheels[3].power}"
+        return "X: $x\n Y: $y\n, theta: $theta\nmaxPower: $maxPower\nPowers ${wheels[0].power}, ${wheels[1].power}, ${wheels[2].power}, ${wheels[3].power}"
     }
     private fun initOdoWheel(name: String, direction: Direction): DcMotorEx {
         return hardwareMap.get(DcMotorEx::class.java, name).apply {

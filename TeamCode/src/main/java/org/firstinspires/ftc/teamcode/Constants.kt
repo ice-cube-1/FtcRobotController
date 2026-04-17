@@ -4,10 +4,10 @@ import com.acmerobotics.dashboard.config.Config
 
 @Config
 object Constants {
-    @JvmField var KP_HEADING = 1.5
-    @JvmField var KD_HEADING = 2.5
-    @JvmField var KP_TRANSLATION = 0.04
-    @JvmField var KD_TRANSLATION = 0.5
+    @JvmField var KP_HEADING = 3
+    @JvmField var KD_HEADING = 0.1
+    @JvmField var KP_TRANSLATION = 0.02
+    @JvmField var KD_TRANSLATION = 0.001
     @JvmField var MANUAL_MULTIPLIER = 1.0
     @JvmField var ENCODER_ERROR = 35
     @JvmField var TURRET_KP = 0.15
@@ -27,4 +27,6 @@ object Constants {
     @JvmField var SHOOT_INITIAL = 100.0
     @JvmField var ODOMETRY_TEST_CM = 40.0
     @JvmField var K_S = 0.18
+    @JvmField var POWER_MAX = 0.5
+    @JvmField var POWER_DELTA = 0.001
 }
