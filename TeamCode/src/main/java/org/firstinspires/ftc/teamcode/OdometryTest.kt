@@ -9,7 +9,11 @@ class OdometryTest : LinearOpMode() {
     override fun runOpMode() {
         drivetrain = OdometryDrivetrain(hardwareMap)
         waitForStart()
-        while (opModeIsActive()) {drivetrain.continueDriving()}
+        while (opModeIsActive()) {
+            drivetrain.continueDriving()
+            telemetry.addLine(drivetrain.getData())
+            telemetry.update()
+        }
 
     }
 }

@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Constants.KD_HEADING
 import org.firstinspires.ftc.teamcode.Constants.KD_TRANSLATION
 import org.firstinspires.ftc.teamcode.Constants.KP_HEADING
 import org.firstinspires.ftc.teamcode.Constants.KP_TRANSLATION
-import org.firstinspires.ftc.teamcode.Constants.MAX_ERROR
+import org.firstinspires.ftc.teamcode.Constants.K_S
 import org.firstinspires.ftc.teamcode.Constants.ODOMETRY_TICKS_PER_CM
 import kotlin.math.PI
 import kotlin.math.abs
@@ -64,6 +64,7 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
     private var theta = 0.0
     private val timer = ElapsedTime()
     private var lastTime = 0.0
+    private var velocity = 0.0
     init {
         wheels = arrayOf(
             initOdoWheel("lf", Direction.REVERSE),
@@ -81,10 +82,10 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         val xRobot = cos(theta) * moveX - sin(theta) * moveY
         val yRobot = sin(theta) * moveX + cos(theta) * moveY
         val denominator = max(1.0, abs(yRobot) + abs(xRobot) + abs(turn))
-        getWheel(Wheels.LEFT_FRONT).power = (yRobot + xRobot + turn) / denominator
-        getWheel(Wheels.RIGHT_FRONT).power = (yRobot - xRobot - turn) / denominator
-        getWheel(Wheels.LEFT_BACK).power = (yRobot - xRobot + turn) / denominator
-        getWheel(Wheels.RIGHT_BACK).power = (yRobot + xRobot - turn) / denominator
+        setWheelPower(Wheels.LEFT_FRONT, (yRobot + xRobot + turn) / denominator)
+        setWheelPower(Wheels.RIGHT_FRONT, (yRobot - xRobot - turn) / denominator)
+        setWheelPower(Wheels.LEFT_BACK, (yRobot - xRobot + turn) / denominator)
+        setWheelPower(Wheels.RIGHT_BACK, (yRobot + xRobot - turn) / denominator)
     }
     fun updateGoto(newX: Double, newY: Double, newTheta: Double) {
         targetX = newX
@@ -98,11 +99,18 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         var headingError = targetTheta - theta
         while (headingError > PI) headingError -= 2*PI
         while (headingError < -PI) headingError += 2*PI
-        val xComp = (KP_TRANSLATION * (targetX-x)) + (KD_TRANSLATION * deltaX / deltaTime)
-        val yComp = (KP_TRANSLATION * (targetY-y)) + (KD_TRANSLATION * deltaY / deltaTime)
+        val xError = targetX - x
+        val yError = targetY - y
+        val totalError = sqrt(xError * xError + yError * yError)
+        if (totalError < 2.5 && abs(headingError) < 0.05) {
+            driveManual(0.0, 0.0, 0.0)
+            return true
+        }
+        val xComp = (KP_TRANSLATION * (xError)) + (KD_TRANSLATION * deltaX / deltaTime)
+        val yComp = (KP_TRANSLATION * (yError)) + (KD_TRANSLATION * deltaY / deltaTime)
         val turnComp = (KP_HEADING * headingError) + (KD_HEADING * deltaTheta / deltaTime)
         driveManual(xComp, yComp, turnComp)
-        return abs(targetY-y) < 2.5 && abs(targetX-x) < 2.5 && abs(headingError) < .05
+        return false
     }
 
     private fun getDeltaOdometry() {
@@ -121,12 +129,13 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         y += -sin(theta) * deltaX + cos(theta) * deltaY
     }
 
-    private fun getWheel(name: Wheels) : DcMotorEx {
-        return when (name) {
-            Wheels.LEFT_FRONT -> wheels[0]
-            Wheels.RIGHT_FRONT -> wheels[1]
-            Wheels.LEFT_BACK -> wheels[2]
-            Wheels.RIGHT_BACK -> wheels[3]
+    private fun setWheelPower(name: Wheels, power: Double) {
+        val wheelPower = power + if (abs(power) < 0.02) power else (if (power > 0) K_S else -K_S)
+        when (name) {
+            Wheels.LEFT_FRONT -> wheels[0].power = wheelPower
+            Wheels.RIGHT_FRONT -> wheels[1].power = wheelPower
+            Wheels.LEFT_BACK -> wheels[2].power = wheelPower
+            Wheels.RIGHT_BACK -> wheels[3].power = wheelPower
         }
     }
     private fun getOdometryPos(name: Odometry): Int {
@@ -137,7 +146,7 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         }
     }
     fun getData(): String {
-        return "X: $x\n Y: $y\n, theta: $theta\nPowers ${wheels[0].power}, ${wheels[1].power}, ${wheels[2].power}, ${wheels[3].power}"
+        return "X: $x\n Y: $y\n, theta: $theta\nvelocity: $velocity\nPowers ${wheels[0].power}, ${wheels[1].power}, ${wheels[2].power}, ${wheels[3].power}"
     }
     private fun initOdoWheel(name: String, direction: Direction): DcMotorEx {
         return hardwareMap.get(DcMotorEx::class.java, name).apply {

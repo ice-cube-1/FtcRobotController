@@ -17,6 +17,12 @@ class SquareTest : LinearOpMode() {
                 telemetry.addLine(drivetrain.getData())
                 telemetry.update()
             }
+            drivetrain.driveManual(0.0,0.0,0.0)
+            sleep(50)
+            while(!drivetrain.continueDriving()) {
+                telemetry.addLine(drivetrain.getData())
+                telemetry.update()
+            }
         }
         drivetrain.driveManual(0.0, 0.0, 0.0)
     }

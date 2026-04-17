@@ -26,5 +26,5 @@ object Constants {
     @JvmField var SHOOT_MULTIPLIER = 3.6
     @JvmField var SHOOT_INITIAL = 100.0
     @JvmField var ODOMETRY_TEST_CM = 40.0
-    @JvmField var MAX_ERROR = 20.0
+    @JvmField var K_S = 0.18
 }
