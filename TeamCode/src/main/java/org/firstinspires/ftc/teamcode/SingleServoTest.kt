@@ -7,8 +7,7 @@ import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
 
 @TeleOp
 class ZeroHood : LinearOpMode() {
-    private lateinit var turret: Array<ServoImplEx>
-    public override fun runOpMode() {
+    override fun runOpMode() {
         waitForStart()
         val s = hardwareMap.get(ServoImplEx::class.java, "hood")
         sleep(500)

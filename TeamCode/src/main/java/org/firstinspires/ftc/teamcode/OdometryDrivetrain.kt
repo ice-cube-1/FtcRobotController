@@ -82,11 +82,11 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap,
         center.reset()
         timer.reset()
     }
-    fun driveManual(moveX: Double, moveY: Double, turn: Double) {
+    fun driveManual(moveX: Double, moveY: Double, turn: Double, powerMaximum: Double) {
         getDeltaOdometry()
         val xRobot = cos(theta) * moveX - sin(theta) * moveY
         val yRobot = sin(theta) * moveX + cos(theta) * moveY
-        maxPower = min(maxPower + deltaTime * POWER_DELTA, POWER_MAX)
+        maxPower = min(maxPower + deltaTime * POWER_DELTA, powerMaximum)
         val attemptPower = abs(yRobot) + abs(xRobot) + abs(turn)
         val denominator = if (attemptPower > maxPower) attemptPower / maxPower else 1.0
         setWheelPower(Wheels.LEFT_FRONT, (yRobot + xRobot + turn) / denominator)
@@ -111,13 +111,13 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap,
         val yError = targetY - y
         val totalError = sqrt(xError * xError + yError * yError)
         if (totalError < 2.5 && abs(headingError) < 0.02) {
-            driveManual(0.0, 0.0, 0.0)
+            driveManual(0.0, 0.0, 0.0, POWER_MAX)
             return true
         }
         val xComp = (KP_TRANSLATION * (xError)) + (KD_TRANSLATION * deltaX / deltaTime)
         val yComp = (KP_TRANSLATION * (yError)) + (KD_TRANSLATION * deltaY / deltaTime)
         val turnComp = (KP_HEADING * headingError) + (KD_HEADING * deltaTheta / deltaTime)
-        driveManual(xComp, yComp, turnComp)
+        driveManual(xComp, yComp, turnComp, POWER_MAX)
         return false
     }
 
@@ -154,7 +154,7 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap,
         }
     }
     fun getData(): String {
-        return "X: $x\n Y: $y\n, theta: $theta\nmaxPower: $maxPower\nPowers ${wheels[0].power}, ${wheels[1].power}, ${wheels[2].power}, ${wheels[3].power}"
+        return "X: $x\n Y: $y\n, theta: $theta\n"
     }
     private fun initOdoWheel(name: String, direction: Direction): DcMotorEx {
         return hardwareMap.get(DcMotorEx::class.java, name).apply {

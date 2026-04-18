@@ -53,19 +53,18 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         Wheel("m1", hardwareMap, DcMotorSimple.Direction.REVERSE),
         Wheel("m2", hardwareMap, DcMotorSimple.Direction.FORWARD)
     )
-    var power = 0.0
+    private var power = 0.0
     private var mostRecent = -1000.0
     private var timer = ElapsedTime()
     private var scanTimer = ElapsedTime()
     private var turretState = TurretState.WRAPPING
     private var shooterOn = false
     private var targetV = SHOOTER_IDLE_VELOCITY
-    private var data = ""
     private var goto = -TURRET_ZERO_DEG
     private var nextPos = 0.0
     private var yaw = 0.0
-    var currentV = 0.0
     var atSpeed = false
+    var turretOffset = 0.0
 
     fun canShoot(): Boolean { return abs(lastAngle) < 3 && turretState == TurretState.DETECTED }
     private fun getTargetVelocity(): Int {
@@ -82,7 +81,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
                 val offset = OFFSET
                 val targetX = pos.x - offset * sin(yaw)
                 val targetZ = pos.z - offset * cos(yaw)
-                lastDist = sqrt(targetX * targetX + targetZ * targetZ)
+                lastDist = sqrt(targetX * targetX + targetZ * targetZ) + turretOffset
                 lastAngle = toDegrees(atan2(targetX, targetZ))
             }
         }
@@ -113,10 +112,6 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     private fun getTurretAngle() : Double {
         return ((turret[0].position + turret[1].position) / 2.0) * TURRET_MAX_DEGREES - TURRET_ZERO_DEG
     }
-    fun manualRotate(goto: Double) : Boolean {
-        setTurretPos((if (goto - getTurretAngle() > 0) TURRET_STEP else -TURRET_STEP) + getTurretAngle())
-        return abs(goto - getTurretAngle()) < 1.0
-    }
     private fun setTurretPos(pos: Double) {
         val goto = min(1.0, max((pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES, 0.0))
         turret[0].position = goto
@@ -135,7 +130,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
     fun spin() {
         targetV = getTargetVelocity()
-        currentV = motors.map { it.getVelocity() }.average()
+        val currentV = motors.map { it.getVelocity() }.average()
         val errorV = targetV - currentV
         power = max(0.0, min(1.0, KP_SHOOTER * errorV + targetV * K_FF + KFF_INTERCEPT))
         for (m in motors) { m.setPower(power) }
@@ -143,9 +138,9 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
     fun getData() : String {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
-                "Turret current position ${getTurretAngle()}, going to $goto + $data\n"+
+                "Turret current position ${getTurretAngle()}, going to $goto\n"+
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
                 "power ${power}\n" +
-                "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}\nyaw: $yaw"
+                "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}\n"
     }
 }

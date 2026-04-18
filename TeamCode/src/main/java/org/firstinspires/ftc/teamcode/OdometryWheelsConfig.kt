@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction
 
 @TeleOp
 class OdometryWheelsConfig : LinearOpMode() {
-    public override fun runOpMode() {
+    override fun runOpMode() {
         waitForStart()
         val wheels = arrayOf(
             initOdoWheel("lf", Direction.REVERSE),

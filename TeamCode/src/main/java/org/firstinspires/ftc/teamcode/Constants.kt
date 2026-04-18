@@ -9,7 +9,6 @@ object Constants {
     @JvmField var KP_TRANSLATION = 0.01
     @JvmField var KD_TRANSLATION = 0.0005
     @JvmField var MANUAL_MULTIPLIER = 1.0
-    @JvmField var ENCODER_ERROR = 35
     @JvmField var TURRET_KP = 0.1
     @JvmField var TURRET_STEP = 1.5
     @JvmField var STOP_DOWN = 0.32
@@ -22,7 +21,6 @@ object Constants {
     @JvmField var TURRET_ZERO_DEG = ((35.0/15.0)*(20.0/82.0))*180.0
     @JvmField var ODOMETRY_TICKS_PER_CM = 132.0
     @JvmField var SHOOTER_IDLE_VELOCITY = 400
-    @JvmField var SHOOT_INITIAL = 100.0
     @JvmField var K_S = 0.18
     @JvmField var POWER_MAX = 0.75
     @JvmField var POWER_DELTA = 0.001

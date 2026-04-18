@@ -4,10 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.teamcode.Constants.ENCODER_ERROR
-import org.firstinspires.ftc.teamcode.Constants.KD_TRANSLATION
-import org.firstinspires.ftc.teamcode.Constants.KP_TRANSLATION
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -18,31 +14,6 @@ class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Dir
         mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
-    private var target = 0.0
-    private var lastError = 0.0
-    private var lastTime = 0L
-    private var moving = false
     fun setPower(power: Double) { drive.power = max(min(power,1.0),-1.0) }
     fun getVelocity(): Double { return drive.velocity }
-    fun autoMove(headingError: Double, currentTime: Long, toTarget: Boolean): Boolean {
-        val error = target - drive.currentPosition.toDouble()
-        val deltaTime = (currentTime - lastTime) / 1e9
-        var derivative = 0.0
-        if (deltaTime > 0) { derivative = (error -  lastError) / deltaTime }
-        lastError = error
-        lastTime = currentTime
-        if (toTarget) { setPower((KP_TRANSLATION * error) + (KD_TRANSLATION * derivative) + headingError) }
-        else { setPower(headingError) }
-        return abs(error) < ENCODER_ERROR && moving
-    }
-    fun setTarget(t: Double) {
-        moving = abs(t) > 2
-        target = t + drive.currentPosition
-    }
-    fun getTarget(): Double { return target }
-    fun getPosition(): Int { return drive.currentPosition }
-    fun resetEncoder() {
-        drive.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        drive.mode = DcMotor.RunMode.RUN_USING_ENCODER
-    }
 }

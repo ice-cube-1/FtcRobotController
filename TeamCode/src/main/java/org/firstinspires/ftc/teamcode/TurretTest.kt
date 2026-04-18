@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.Constants.TURRET_KP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
 import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP
@@ -13,9 +12,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 @TeleOp
-class servoTest : LinearOpMode() {
+class TurretTest : LinearOpMode() {
     private lateinit var turret: Array<ServoImplEx>
-    public override fun runOpMode() {
+    override fun runOpMode() {
         waitForStart()
         turret = arrayOf(
             hardwareMap.get(ServoImplEx::class.java, "t1").apply {
