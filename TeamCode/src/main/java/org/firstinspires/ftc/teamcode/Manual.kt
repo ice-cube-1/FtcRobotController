@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
+import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
@@ -26,8 +27,9 @@ class Manual : LinearOpMode() {
     private val timer = ElapsedTime()
     private val atSpeed = ElapsedTime()
     override fun runOpMode() {
+        val dashboard = FtcDashboard.getInstance()
         waitForStart()
-        drivetrain = OdometryDrivetrain(hardwareMap)
+        drivetrain = OdometryDrivetrain(hardwareMap, 0.0,0.0,0.0)
         shooter = ShooterNew(hardwareMap, 20)
         transferIntake = TransferIntake(hardwareMap)
         while (opModeIsActive()) {
@@ -57,12 +59,15 @@ class Manual : LinearOpMode() {
                 robotState = RobotState.SHOOTER_ON
                 transferIntake.shoot(true)
             }
-            transferIntake.update(shooter.atSpeed)
+            transferIntake.update()
             shooter.moveTurret()
             shooter.spin()
             telemetry.addLine(shooter.getData())
             telemetry.addLine(transferIntake.getData())
             telemetry.addLine(drivetrain.getData())
+            dashboard.telemetry.addData("current velocity",shooter.currentV)
+            dashboard.telemetry.addData("power",shooter.power)
+            dashboard.telemetry.update()
             telemetry.update()
         }
     }

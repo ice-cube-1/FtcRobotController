@@ -7,13 +7,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 class OdometryTest : LinearOpMode() {
     private lateinit var drivetrain: OdometryDrivetrain
     override fun runOpMode() {
-        drivetrain = OdometryDrivetrain(hardwareMap)
+        drivetrain = OdometryDrivetrain(hardwareMap,0.0,0.0,0.0)
         waitForStart()
         while (opModeIsActive()) {
             drivetrain.continueDriving()
             telemetry.addLine(drivetrain.getData())
             telemetry.update()
         }
-
     }
 }

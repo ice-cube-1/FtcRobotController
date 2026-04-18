@@ -7,19 +7,24 @@ import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
+import org.firstinspires.ftc.teamcode.Constants.KFF_INTERCEPT
 import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
+import org.firstinspires.ftc.teamcode.Constants.K_FF
+import org.firstinspires.ftc.teamcode.Constants.OFFSET
 import org.firstinspires.ftc.teamcode.Constants.SHOOTER_IDLE_VELOCITY
 import org.firstinspires.ftc.teamcode.Constants.TURRET_KP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
 import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP
 import org.firstinspires.ftc.teamcode.Constants.TURRET_ZERO_DEG
-import org.firstinspires.ftc.teamcode.Constants.VELOCITY_DELTA
 import java.lang.Math.toDegrees
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 
@@ -42,14 +47,13 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         }
     )
     private val hoodAngle = hardwareMap.get(Servo::class.java, "hood").apply { position = HOOD_ANGLE }
-    private var lastDist = 0.0
+    private var lastDist = 162.0
     private var lastAngle = 0.0
     private val motors =  arrayOf(
         Wheel("m1", hardwareMap, DcMotorSimple.Direction.REVERSE),
         Wheel("m2", hardwareMap, DcMotorSimple.Direction.FORWARD)
     )
-    private var power = 0.0
-    private var spinnerTimer = ElapsedTime()
+    var power = 0.0
     private var mostRecent = -1000.0
     private var timer = ElapsedTime()
     private var scanTimer = ElapsedTime()
@@ -59,38 +63,27 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     private var data = ""
     private var goto = -TURRET_ZERO_DEG
     private var nextPos = 0.0
-    fun getMotifID(): Int {
-        val currentDetections = limelight.latestResult
-        for (tag in currentDetections.fiducialResults) {
-            if (tag.fiducialId in 21..23) { return tag.fiducialId }
-        }
-        return -1
-    }
+    private var yaw = 0.0
+    var currentV = 0.0
     var atSpeed = false
 
-    fun canShoot(): Boolean { return true/** abs(lastAngle) < 3 && lastDist < 120.0 && (targetV - motors[1].getVelocity() < 30) **/ }
+    fun canShoot(): Boolean { return abs(lastAngle) < 3 && turretState == TurretState.DETECTED }
     private fun getTargetVelocity(): Int {
-        if (lastDist > 1.78) hoodAngle.position = 0.9 else hoodAngle.position = 1.0
-        if (shooterOn) {
-            if (lastDist > 1.78) {
-                hoodAngle.position = 0.9
-                return (lastDist*224.3+979.7).toInt()
-            } else {
-                hoodAngle.position = 1.0
-                return (lastDist*260.7 +883.9).toInt()
-            }
-        }
-        return SHOOTER_IDLE_VELOCITY
+        hoodAngle.position = HOOD_ANGLE
+        return if (shooterOn) (177.92*lastDist + 937.31).toInt() else SHOOTER_IDLE_VELOCITY // was 977.31
     }
     private fun lookForTag() {
         val result = limelight.latestResult
         for (tag in result.fiducialResults) {
-            data = " " + tag.fiducialId + " " + tag.targetPoseCameraSpace.position
             if (tag.fiducialId == tagID) {
                 mostRecent = timer.milliseconds() - result.staleness
                 val pos = tag.targetPoseCameraSpace.position
-                lastDist = sqrt(pos.x * pos.x + pos.z * pos.z)
-                lastAngle = toDegrees(atan2(pos.x , pos.z))
+                yaw = tag.targetPoseCameraSpace.orientation.getYaw(AngleUnit.RADIANS)
+                val offset = OFFSET
+                val targetX = pos.x - offset * sin(yaw)
+                val targetZ = pos.z - offset * cos(yaw)
+                lastDist = sqrt(targetX * targetX + targetZ * targetZ)
+                lastAngle = toDegrees(atan2(targetX, targetZ))
             }
         }
     }
@@ -131,7 +124,7 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     }
 
     fun turnOnShooter() {
-        targetV = SHOOTER_IDLE_VELOCITY
+        targetV = motors.map { it.getVelocity() }.average().toInt()
         shooterOn = true
     }
     fun turnOffShooter() {
@@ -141,19 +134,18 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
         motors[1].setPower(0.0)
     }
     fun spin() {
-        val velocity = getTargetVelocity()
-        val error = targetV - motors.map { it.getVelocity() }.average()
-        power = max(0.0, min(1.0, power + KP_SHOOTER * spinnerTimer.seconds() * error))
-        targetV = min(targetV + VELOCITY_DELTA, velocity)
+        targetV = getTargetVelocity()
+        currentV = motors.map { it.getVelocity() }.average()
+        val errorV = targetV - currentV
+        power = max(0.0, min(1.0, KP_SHOOTER * errorV + targetV * K_FF + KFF_INTERCEPT))
         for (m in motors) { m.setPower(power) }
-        spinnerTimer.reset()
-        atSpeed = abs(targetV - velocity) < 10 && abs(error) < 100
+        atSpeed = abs(errorV) < 40
     }
     fun getData() : String {
         return "Turret state: $turretState, last tag range = $lastDist, bearing = $lastAngle\n" +
                 "Turret current position ${getTurretAngle()}, going to $goto + $data\n"+
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
                 "power ${power}\n" +
-                "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}"
+                "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}\nyaw: $yaw"
     }
 }

@@ -13,10 +13,11 @@ import org.firstinspires.ftc.teamcode.Constants.K_S
 import org.firstinspires.ftc.teamcode.Constants.ODOMETRY_TICKS_PER_CM
 import org.firstinspires.ftc.teamcode.Constants.POWER_DELTA
 import org.firstinspires.ftc.teamcode.Constants.POWER_MAX
+import org.firstinspires.ftc.teamcode.Constants.xDisp
+import org.firstinspires.ftc.teamcode.Constants.yDisp
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -25,16 +26,16 @@ import kotlin.math.sqrt
 enum class Wheels {LEFT_FRONT, RIGHT_FRONT, LEFT_BACK, RIGHT_BACK}
 enum class Odometry(private val direction: Int, private var prev: Double = 0.0, var delta: Double = 0.0) {
     LEFT(direction = -1) {
-        override fun x() = -10.39
+        override fun x() = -xDisp
         override fun y() = 0.0
     },
     RIGHT(direction = -1) {
-        override fun x() = 10.39
+        override fun x() = xDisp
         override fun y() = 0.0
     },
     CENTER(direction = -1) {
         override fun x() = -18.0
-        override fun y() = 15.1
+        override fun y() = yDisp
     };
     abstract fun x(): Double
     abstract fun y(): Double
@@ -49,7 +50,10 @@ enum class Odometry(private val direction: Int, private var prev: Double = 0.0, 
     }
 }
 
-class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
+class OdometryDrivetrain (private val hardwareMap: HardwareMap,
+                          private var x: Double,
+                          private var y: Double,
+                          private var theta: Double) {
     private var wheels: Array<DcMotorEx>
     private val left = Odometry.LEFT
     private val right = Odometry.RIGHT
@@ -57,14 +61,11 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
     private var deltaX = 0.0
     private var deltaY = 0.0
     private var deltaTheta = 0.0
-    private var x = 0.0
-    private var y = 0.0
     private var xNoRotation = 0.0
     private var yNoRotation = 0.0
     private var targetX = 0.0
     private var targetY = 0.0
     private var targetTheta = 0.0
-    private var theta = 0.0
     private val timer = ElapsedTime()
     private var lastTime = 0.0
     private var maxPower = 1.0
@@ -109,7 +110,7 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
         val xError = targetX - x
         val yError = targetY - y
         val totalError = sqrt(xError * xError + yError * yError)
-        if (totalError < 2.5 && abs(headingError) < 0.05) {
+        if (totalError < 2.5 && abs(headingError) < 0.02) {
             driveManual(0.0, 0.0, 0.0)
             return true
         }
@@ -137,7 +138,7 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap) {
     }
 
     private fun setWheelPower(name: Wheels, power: Double) {
-        val wheelPower = power + if (abs(power) < 0.02) power else (if (power > 0) K_S else -K_S)
+        val wheelPower = power + if (abs(power) < 0.01) power else (if (power > 0) K_S else -K_S)
         when (name) {
             Wheels.LEFT_FRONT -> wheels[0].power = wheelPower
             Wheels.RIGHT_FRONT -> wheels[1].power = wheelPower

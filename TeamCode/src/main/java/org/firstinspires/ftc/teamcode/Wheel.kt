@@ -15,7 +15,7 @@ class Wheel(name: String, hardwareMap: HardwareMap, direction: DcMotorSimple.Dir
     private val drive: DcMotorEx = hardwareMap.get(DcMotorEx::class.java, name).apply {
         setDirection(direction)
         mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        mode = DcMotor.RunMode.RUN_USING_ENCODER
+        mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
     private var target = 0.0

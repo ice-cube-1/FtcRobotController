@@ -2,24 +2,24 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.Constants.ODOMETRY_TEST_CM
+import com.qualcomm.robotcore.util.ElapsedTime
+import kotlin.math.PI
 
 @TeleOp(name = "Square Test (Odometry)")
 class SquareTest : LinearOpMode() {
     private lateinit var drivetrain: OdometryDrivetrain
+    private val timer = ElapsedTime()
     override fun runOpMode() {
-        drivetrain = OdometryDrivetrain(hardwareMap)
+        drivetrain = OdometryDrivetrain(hardwareMap, 0.0,0.0,0.0)
         waitForStart()
-        val points = arrayOf(arrayOf(0.0,ODOMETRY_TEST_CM,ODOMETRY_TEST_CM,0.0), arrayOf(ODOMETRY_TEST_CM,ODOMETRY_TEST_CM,0.0,0.0))
-        for (i in 0..<points[0].size) {
-            drivetrain.updateGoto(points[0][i], points[1][i], 0.0)
+        for (i in 0..4) {
+            drivetrain.updateGoto(0.0,0.0, PI/2*i)
             while (!drivetrain.continueDriving()) {
                 telemetry.addLine(drivetrain.getData())
                 telemetry.update()
             }
-            drivetrain.driveManual(0.0,0.0,0.0)
-            sleep(50)
-            while(!drivetrain.continueDriving()) {
+            timer.reset()
+            while (opModeIsActive() && (timer.milliseconds() < 500 || !drivetrain.continueDriving())) {
                 telemetry.addLine(drivetrain.getData())
                 telemetry.update()
             }
