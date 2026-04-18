@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.config
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.Constants.STOP_DOWN
-import org.firstinspires.ftc.teamcode.Constants.STOP_UP
+import org.firstinspires.ftc.teamcode.robotParts.Constants.STOP_DOWN
+import org.firstinspires.ftc.teamcode.robotParts.Constants.STOP_UP
+import org.firstinspires.ftc.teamcode.robotParts.TransferIntake
 
 @TeleOp
 class TransferTest : LinearOpMode() {

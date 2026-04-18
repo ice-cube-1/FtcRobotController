@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.robotParts
 
 import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -8,16 +8,16 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
-import org.firstinspires.ftc.teamcode.Constants.KFF_INTERCEPT
-import org.firstinspires.ftc.teamcode.Constants.KP_SHOOTER
-import org.firstinspires.ftc.teamcode.Constants.K_FF
-import org.firstinspires.ftc.teamcode.Constants.OFFSET
-import org.firstinspires.ftc.teamcode.Constants.SHOOTER_IDLE_VELOCITY
-import org.firstinspires.ftc.teamcode.Constants.TURRET_KP
-import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
-import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP
-import org.firstinspires.ftc.teamcode.Constants.TURRET_ZERO_DEG
+import org.firstinspires.ftc.teamcode.robotParts.Constants.HOOD_ANGLE
+import org.firstinspires.ftc.teamcode.robotParts.Constants.KFF_INTERCEPT
+import org.firstinspires.ftc.teamcode.robotParts.Constants.KP_SHOOTER
+import org.firstinspires.ftc.teamcode.robotParts.Constants.K_FF
+import org.firstinspires.ftc.teamcode.robotParts.Constants.OFFSET
+import org.firstinspires.ftc.teamcode.robotParts.Constants.SHOOTER_IDLE_VELOCITY
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_KP
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_MAX_DEGREES
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_STEP
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_ZERO_DEG
 import java.lang.Math.toDegrees
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -30,7 +30,7 @@ import kotlin.math.sqrt
 
 enum class TurretState {DETECTED, WRAPPING}
 
-class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
+class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
     private var limelight = hardwareMap.get(Limelight3A::class.java, "limelight").apply {
         setPollRateHz(100)
         start()
@@ -66,7 +66,8 @@ class ShooterNew(hardwareMap: HardwareMap, private var tagID: Int) {
     var atSpeed = false
     var turretOffset = 0.0
 
-    fun canShoot(): Boolean { return abs(lastAngle) < 3 && turretState == TurretState.DETECTED }
+    fun canShoot(): Boolean { return abs(lastAngle) < 3 && turretState == TurretState.DETECTED
+    }
     private fun getTargetVelocity(): Int {
         hoodAngle.position = HOOD_ANGLE
         return if (shooterOn) (177.92*lastDist + 937.31).toInt() else SHOOTER_IDLE_VELOCITY // was 977.31

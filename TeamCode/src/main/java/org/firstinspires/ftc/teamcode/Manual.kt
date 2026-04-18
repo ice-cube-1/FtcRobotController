@@ -3,7 +3,10 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
-import org.firstinspires.ftc.teamcode.Constants.MANUAL_MULTIPLIER
+import org.firstinspires.ftc.teamcode.robotParts.Constants.MANUAL_MULTIPLIER
+import org.firstinspires.ftc.teamcode.robotParts.OdometryDrivetrain
+import org.firstinspires.ftc.teamcode.robotParts.Shooter
+import org.firstinspires.ftc.teamcode.robotParts.TransferIntake
 import kotlin.math.abs
 
 enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
@@ -17,10 +20,9 @@ enum class RobotState {INTAKE, SHOOTER_SPIN_UP, SHOOTER_ON}
  * DPAD UP/DOWN to move the goal 10cm FURTHER/NEARER (virtually)
  **/
 
-@TeleOp
-class Manual : LinearOpMode() {
+abstract class Manual(private val orientation: Double, private val tag: Int) : LinearOpMode() {
     private lateinit var drivetrain: OdometryDrivetrain
-    private lateinit var shooter: ShooterNew
+    private lateinit var shooter: Shooter
     private lateinit var transferIntake: TransferIntake
     private var robotState = RobotState.INTAKE
     private var timeToEnd = 0.0
@@ -29,8 +31,8 @@ class Manual : LinearOpMode() {
     private val dpadTimer = ElapsedTime()
     override fun runOpMode() {
         waitForStart()
-        drivetrain = OdometryDrivetrain(hardwareMap, 0.0,0.0,0.0)
-        shooter = ShooterNew(hardwareMap, 20)
+        drivetrain = OdometryDrivetrain(hardwareMap, 0.0,0.0,orientation)
+        shooter = Shooter(hardwareMap, tag)
         transferIntake = TransferIntake(hardwareMap)
         while (opModeIsActive()) {
             /** expected field centric control **/

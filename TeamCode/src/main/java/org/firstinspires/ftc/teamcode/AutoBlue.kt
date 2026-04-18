@@ -3,15 +3,18 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.util.ElapsedTime
-import org.firstinspires.ftc.teamcode.Constants.ROBOT_WIDTH_CM
-import org.firstinspires.ftc.teamcode.Constants.Robot_LENGTH_CM
-import org.firstinspires.ftc.teamcode.Constants.inchesToCm
+import org.firstinspires.ftc.teamcode.robotParts.Constants.ROBOT_WIDTH_CM
+import org.firstinspires.ftc.teamcode.robotParts.Constants.Robot_LENGTH_CM
+import org.firstinspires.ftc.teamcode.robotParts.Constants.inchesToCm
+import org.firstinspires.ftc.teamcode.robotParts.OdometryDrivetrain
+import org.firstinspires.ftc.teamcode.robotParts.Shooter
+import org.firstinspires.ftc.teamcode.robotParts.TransferIntake
 import kotlin.math.PI
 
 @Autonomous(name = "Auto blue")
 class AutoBlue : LinearOpMode() {
     private lateinit var drivetrain: OdometryDrivetrain
-    private lateinit var shooter: ShooterNew
+    private lateinit var shooter: Shooter
     private lateinit var transferIntake: TransferIntake
     private val atSpeed = ElapsedTime()
     private val timer = ElapsedTime()
@@ -20,7 +23,7 @@ class AutoBlue : LinearOpMode() {
             inchesToCm(24.0)+ ROBOT_WIDTH_CM/2.0,
             inchesToCm(144.0) - Robot_LENGTH_CM/2.0,
             -PI)
-        shooter = ShooterNew(hardwareMap, 20)
+        shooter = Shooter(hardwareMap, 20)
         transferIntake = TransferIntake(hardwareMap)
         waitForStart()
         drivetrain.updateGoto(64.0*2.54, 84.0*2.54,-PI)

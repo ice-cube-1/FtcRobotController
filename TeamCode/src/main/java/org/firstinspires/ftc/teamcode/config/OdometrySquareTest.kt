@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.config
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
-import org.firstinspires.ftc.teamcode.Constants.POWER_MAX
+import org.firstinspires.ftc.teamcode.robotParts.Constants.POWER_MAX
+import org.firstinspires.ftc.teamcode.robotParts.OdometryDrivetrain
 import kotlin.math.PI
 
 @TeleOp(name = "Square Test (Odometry)")

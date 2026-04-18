@@ -1,13 +1,13 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.config
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.firstinspires.ftc.teamcode.Constants.TURRET_KP
-import org.firstinspires.ftc.teamcode.Constants.TURRET_MAX_DEGREES
-import org.firstinspires.ftc.teamcode.Constants.TURRET_STEP
-import org.firstinspires.ftc.teamcode.Constants.TURRET_ZERO_DEG
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_KP
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_MAX_DEGREES
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_STEP
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TURRET_ZERO_DEG
 import kotlin.math.max
 import kotlin.math.min
 

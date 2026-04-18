@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.config
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.firstinspires.ftc.teamcode.Constants.HOOD_ANGLE
+import org.firstinspires.ftc.teamcode.robotParts.Constants.HOOD_ANGLE
 
 @TeleOp
 class ZeroHood : LinearOpMode() {

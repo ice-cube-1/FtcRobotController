@@ -1,14 +1,14 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.robotParts
 
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.Constants.INTAKE_POWER
-import org.firstinspires.ftc.teamcode.Constants.STOP_DOWN
-import org.firstinspires.ftc.teamcode.Constants.STOP_UP
-import org.firstinspires.ftc.teamcode.Constants.TRANSFER_POWER
+import org.firstinspires.ftc.teamcode.robotParts.Constants.INTAKE_POWER
+import org.firstinspires.ftc.teamcode.robotParts.Constants.STOP_DOWN
+import org.firstinspires.ftc.teamcode.robotParts.Constants.STOP_UP
+import org.firstinspires.ftc.teamcode.robotParts.Constants.TRANSFER_POWER
 
 enum class IntakeStates {INTAKE, SHOOTING}
 
