@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.config
 
+import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.robotParts.OdometryDrivetrain
@@ -8,7 +9,7 @@ import org.firstinspires.ftc.teamcode.robotParts.OdometryDrivetrain
 class OdometryTest : LinearOpMode() {
     private lateinit var drivetrain: OdometryDrivetrain
     override fun runOpMode() {
-        drivetrain = OdometryDrivetrain(hardwareMap,0.0,0.0,0.0)
+        drivetrain = OdometryDrivetrain(hardwareMap,0.0,0.0,0.0,  FtcDashboard.getInstance().telemetry)
         waitForStart()
         while (opModeIsActive()) {
             drivetrain.continueDriving()

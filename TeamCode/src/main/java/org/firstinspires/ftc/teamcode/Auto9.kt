@@ -19,7 +19,7 @@ abstract class Auto9(private val offset: Double, private val direction: Double, 
         drivetrain = OdometryDrivetrain(hardwareMap,
             offset-direction*(24.0*2.54+ ROBOT_WIDTH_CM/2.0),
             144.0*2.54 - Robot_LENGTH_CM/2.0,
-            direction*PI)
+            direction*PI, telemetry)
         shooter = Shooter(hardwareMap, tagID)
         shooter.setSubRange(-90.0,0.0)
         transferIntake = TransferIntake(hardwareMap)
@@ -35,22 +35,16 @@ abstract class Auto9(private val offset: Double, private val direction: Double, 
         drivetrain.updateGoto(offset-direction*(18.0*2.54),84.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.intake(0.0F)
-        drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI/2)
-        if (!driveToPoint()) return
         transferIntake.prepShooter()
         drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI)
         if (!driveToPoint()) return
         shoot()
-        drivetrain.updateGoto(offset-direction*(60.0 * 2.54), 58.0*2.54, direction*PI)
-        if (!driveToPoint()) return
         drivetrain.updateGoto(offset-direction*(60.0 * 2.54), 58.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.intake(1.0F)
         drivetrain.updateGoto(offset-direction*(18.0*2.54),58.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.intake(0.0F)
-        drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI/2)
-        if (!driveToPoint()) return
         transferIntake.prepShooter()
         drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI)
         if (!driveToPoint()) return

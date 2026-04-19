@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
+import com.acmerobotics.dashboard.FtcDashboard
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.robotParts.Constants.MANUAL_MULTIPLIER
@@ -30,7 +31,7 @@ abstract class Manual(private val orientation: Double, private val tag: Int) : L
     private val dpadTimer = ElapsedTime()
     override fun runOpMode() {
         waitForStart()
-        drivetrain = OdometryDrivetrain(hardwareMap, 0.0,0.0,orientation)
+        drivetrain = OdometryDrivetrain(hardwareMap, 0.0,0.0,orientation,  FtcDashboard.getInstance().telemetry)
         shooter = Shooter(hardwareMap, tag)
         transferIntake = TransferIntake(hardwareMap)
         while (opModeIsActive()) {

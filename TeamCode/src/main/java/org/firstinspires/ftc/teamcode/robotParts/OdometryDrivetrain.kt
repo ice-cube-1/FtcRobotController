@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.util.ElapsedTime
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.robotParts.Constants.KD_HEADING
 import org.firstinspires.ftc.teamcode.robotParts.Constants.KD_TRANSLATION
 import org.firstinspires.ftc.teamcode.robotParts.Constants.KP_HEADING
@@ -25,7 +26,7 @@ import kotlin.math.sqrt
 
 
 enum class Wheels {LEFT_FRONT, RIGHT_FRONT, LEFT_BACK, RIGHT_BACK}
-enum class Odometry(private val direction: Int, private var prev: Double = 0.0, var delta: Double = 0.0) {
+enum class Odometry(private val direction: Int, var prev: Double = 0.0, var delta: Double = 0.0) {
     LEFT(direction = -1) {
         override fun x() = -xDisp
         override fun y() = 0.0
@@ -54,7 +55,8 @@ enum class Odometry(private val direction: Int, private var prev: Double = 0.0, 
 class OdometryDrivetrain (private val hardwareMap: HardwareMap,
                           private var x: Double,
                           private var y: Double,
-                          private var theta: Double) {
+                          private var theta: Double,
+                          private var dashboardTelemetry: Telemetry) {
     private var wheels: Array<DcMotorEx>
     private val left = Odometry.LEFT
     private val right = Odometry.RIGHT
@@ -115,6 +117,14 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap,
             driveManual(0.0, 0.0, 0.0, POWER_MAX, false)
             return true
         }
+        dashboardTelemetry.addData("x", x)
+        dashboardTelemetry.addData("y", y)
+        dashboardTelemetry.addData("theta", theta)
+        dashboardTelemetry.addData("deltaT", deltaTime)
+        dashboardTelemetry.addData("left",center.prev)
+        dashboardTelemetry.addData("right",right.prev)
+        dashboardTelemetry.addData("center",left.prev)
+        dashboardTelemetry.update()
         val xComp = (KP_TRANSLATION * (xError)) + (KD_TRANSLATION * deltaX / deltaTime)
         val yComp = (KP_TRANSLATION * (yError)) + (KD_TRANSLATION * deltaY / deltaTime)
         val turnComp = (KP_HEADING * headingError) + (KD_HEADING * deltaTheta / deltaTime)
