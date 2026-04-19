@@ -1,18 +1,15 @@
 package org.firstinspires.ftc.teamcode
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.robotParts.Constants.ROBOT_WIDTH_CM
 import org.firstinspires.ftc.teamcode.robotParts.Constants.Robot_LENGTH_CM
-import org.firstinspires.ftc.teamcode.robotParts.Constants.inchesToCm
 import org.firstinspires.ftc.teamcode.robotParts.OdometryDrivetrain
 import org.firstinspires.ftc.teamcode.robotParts.Shooter
 import org.firstinspires.ftc.teamcode.robotParts.TransferIntake
 import kotlin.math.PI
 
-@Autonomous(name = "Auto blue")
-class AutoBlue : LinearOpMode() {
+abstract class Auto9(private val offset: Double, private val direction: Double, private val tagID: Int) : LinearOpMode() {
     private lateinit var drivetrain: OdometryDrivetrain
     private lateinit var shooter: Shooter
     private lateinit var transferIntake: TransferIntake
@@ -20,46 +17,49 @@ class AutoBlue : LinearOpMode() {
     private val timer = ElapsedTime()
     override fun runOpMode() {
         drivetrain = OdometryDrivetrain(hardwareMap,
-            inchesToCm(24.0)+ ROBOT_WIDTH_CM/2.0,
-            inchesToCm(144.0) - Robot_LENGTH_CM/2.0,
-            -PI)
-        shooter = Shooter(hardwareMap, 20)
+            offset-direction*(24.0*2.54+ ROBOT_WIDTH_CM/2.0),
+            144.0*2.54 - Robot_LENGTH_CM/2.0,
+            direction*PI)
+        shooter = Shooter(hardwareMap, tagID)
+        shooter.setSubRange(-90.0,0.0)
         transferIntake = TransferIntake(hardwareMap)
         waitForStart()
-        drivetrain.updateGoto(64.0*2.54, 84.0*2.54,-PI)
+        drivetrain.updateGoto(offset-direction*(64.0*2.54), 84.0*2.54,direction*PI)
         transferIntake.prepShooter()
         shooter.turnOnShooter()
         if (!driveToPoint()) return
         shoot()
-        drivetrain.updateGoto(64.0*2.54, 84.0*2.54,-PI/2)
+        drivetrain.updateGoto(offset-direction*(64.0*2.54), 84.0*2.54,direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.intake(1.0F)
-        drivetrain.updateGoto(18.0*2.54,84.0*2.54, -PI/2)
+        drivetrain.updateGoto(offset-direction*(18.0*2.54),84.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.intake(0.0F)
-        drivetrain.updateGoto(60.0*2.54,84.0*2.54, -PI/2)
+        drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.prepShooter()
-        drivetrain.updateGoto(60.0*2.54,84.0*2.54, -PI)
+        drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI)
         if (!driveToPoint()) return
         shoot()
-        drivetrain.updateGoto(60.0 * 2.54, 58.0*2.54, -PI)
+        drivetrain.updateGoto(offset-direction*(60.0 * 2.54), 58.0*2.54, direction*PI)
         if (!driveToPoint()) return
-        drivetrain.updateGoto(60.0 * 2.54, 58.0*2.54, -PI/2)
+        drivetrain.updateGoto(offset-direction*(60.0 * 2.54), 58.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.intake(1.0F)
-        drivetrain.updateGoto(18.0*2.54,58.0*2.54, -PI/2)
+        drivetrain.updateGoto(offset-direction*(18.0*2.54),58.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.intake(0.0F)
-        drivetrain.updateGoto(60.0*2.54,84.0*2.54, -PI/2)
+        drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI/2)
         if (!driveToPoint()) return
         transferIntake.prepShooter()
-        drivetrain.updateGoto(60.0*2.54,84.0*2.54, -PI)
+        drivetrain.updateGoto(offset-direction*(60.0*2.54),84.0*2.54, direction*PI)
         if (!driveToPoint()) return
         shoot()
-        drivetrain.updateGoto(60.0*2.54,60.0*2.54,-PI)
+        drivetrain.updateGoto(offset-direction*(60.0*2.54),60.0*2.54,direction*PI)
         if (!driveToPoint()) return
-        drivetrain.updateGoto(24.0*2.54 + ROBOT_WIDTH_CM/2.0, 144.0*2.54 - Robot_LENGTH_CM/2.0, -PI)
+        drivetrain.updateGoto(offset-direction*(24.0*2.54 + ROBOT_WIDTH_CM/2.0),
+            144.0*2.54 - Robot_LENGTH_CM/2.0,
+            direction*PI)
         if (!driveToPoint()) return
     }
     private fun shoot() {
@@ -72,13 +72,13 @@ class AutoBlue : LinearOpMode() {
             }
         }
         timer.reset()
-        while (opModeIsActive() && timer.milliseconds() < 1500) { updateAllNonDrivetrain() }
+        while (opModeIsActive() && timer.milliseconds() < 2000) { updateAllNonDrivetrain() }
         transferIntake.shoot(false)
     }
     private fun driveToPoint() : Boolean {
         while (opModeIsActive()  && !drivetrain.continueDriving()) { updateAllNonDrivetrain() }
         timer.reset()
-        while (opModeIsActive() && (timer.milliseconds() < 200 || !drivetrain.continueDriving())) { updateAllNonDrivetrain() }
+        while (opModeIsActive() && (timer.milliseconds() < 50 || !drivetrain.continueDriving())) { updateAllNonDrivetrain() }
         return opModeIsActive()
     }
     private fun updateAllNonDrivetrain() {

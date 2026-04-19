@@ -37,17 +37,11 @@ class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
         pipelineSwitch(0)
     }
     private val turret = arrayOf(
-        hardwareMap.get(ServoImplEx::class.java, "t1").apply {
-            pwmRange = PwmControl.PwmRange(500.0, 2500.0)
-            position = 0.5
-        },
-        hardwareMap.get(ServoImplEx::class.java, "t2").apply {
-            pwmRange = PwmControl.PwmRange(500.0, 2500.0)
-            position = 0.5
-        }
+        hardwareMap.get(ServoImplEx::class.java, "t1").apply { position = 0.5 },
+        hardwareMap.get(ServoImplEx::class.java, "t2").apply { position = 0.5 }
     )
     private val hoodAngle = hardwareMap.get(Servo::class.java, "hood").apply { position = HOOD_ANGLE }
-    private var lastDist = 162.0
+    private var lastDist = 0.0
     private var lastAngle = 0.0
     private val motors =  arrayOf(
         Wheel("m1", hardwareMap, DcMotorSimple.Direction.REVERSE),
@@ -60,11 +54,13 @@ class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
     private var turretState = TurretState.WRAPPING
     private var shooterOn = false
     private var targetV = SHOOTER_IDLE_VELOCITY
-    private var goto = -TURRET_ZERO_DEG
     private var nextPos = 0.0
     private var yaw = 0.0
     var atSpeed = false
     var turretOffset = 0.0
+    private var turretMin = -TURRET_ZERO_DEG
+    private var turretMax = TURRET_MAX_DEGREES - TURRET_ZERO_DEG
+    private var goto = turretMin
 
     fun canShoot(): Boolean { return abs(lastAngle) < 3 && turretState == TurretState.DETECTED
     }
@@ -102,14 +98,15 @@ class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
                 }
             }
         }
-        if (nextPos >= TURRET_MAX_DEGREES - TURRET_ZERO_DEG) {
-            goto = -TURRET_ZERO_DEG
-        } else if (nextPos <= -TURRET_ZERO_DEG) {
-            goto = TURRET_MAX_DEGREES - TURRET_ZERO_DEG
+        if (nextPos >= turretMax) {
+            goto = turretMin
+        } else if (nextPos <= turretMin) {
+            goto = turretMax
         } else {
             setTurretPos(nextPos)
         }
     }
+    fun reverseGoto() { goto = if (goto > 0) turretMin else turretMax }
     private fun getTurretAngle() : Double {
         return ((turret[0].position + turret[1].position) / 2.0) * TURRET_MAX_DEGREES - TURRET_ZERO_DEG
     }
@@ -117,6 +114,10 @@ class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
         val goto = min(1.0, max((pos + TURRET_ZERO_DEG) / TURRET_MAX_DEGREES, 0.0))
         turret[0].position = goto
         turret[1].position = goto
+    }
+    fun setSubRange(min: Double, max: Double) {
+        turretMin = min
+        turretMax = max
     }
 
     fun turnOnShooter() {
@@ -142,6 +143,7 @@ class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
                 "Turret current position ${getTurretAngle()}, going to $goto\n"+
                 "Shooter target: $targetV, aiming for ${getTargetVelocity()}\n" +
                 "power ${power}\n" +
-                "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}\n"
+                "actually going at ${motors[0].getVelocity()}, ${motors[1].getVelocity()}\n"+
+                "OFFSET - $turretOffset CM"
     }
 }

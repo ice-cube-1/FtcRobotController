@@ -26,6 +26,6 @@ class SquareTest : LinearOpMode() {
                 telemetry.update()
             }
         }
-        drivetrain.driveManual(0.0, 0.0, 0.0,POWER_MAX)
+        drivetrain.driveManual(0.0, 0.0, 0.0,POWER_MAX, false)
     }
 }

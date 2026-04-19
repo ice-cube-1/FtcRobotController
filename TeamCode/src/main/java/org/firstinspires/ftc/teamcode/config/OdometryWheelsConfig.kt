@@ -18,16 +18,16 @@ class OdometryWheelsConfig : LinearOpMode() {
         )
         while (opModeIsActive()) {
             if (gamepad1.left_trigger > 0.5) {
-                wheels[0].power = 0.2
+                wheels[0].power = 0.5
             } else wheels[0].power = 0.0
             if (gamepad1.right_trigger > 0.5) {
-                wheels[1].power = 0.2
+                wheels[1].power = 0.5
             } else wheels[1].power = 0.0
             if (gamepad1.left_bumper) {
-                wheels[2].power = 0.2
+                wheels[2].power = 0.5
             } else wheels[2].power = 0.0
             if (gamepad1.right_bumper) {
-                wheels[3].power = 0.2
+                wheels[3].power = 0.5
             } else wheels[3].power = 0.0
             telemetry.addLine("LT - LF, RT - RF, LB - LB, RB - RB")
             telemetry.addData("LF encoder", wheels[0].currentPosition)

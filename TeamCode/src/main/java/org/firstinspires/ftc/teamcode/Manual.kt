@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.teamcode.robotParts.Constants.MANUAL_MULTIPLIER
 import org.firstinspires.ftc.teamcode.robotParts.OdometryDrivetrain
@@ -39,7 +38,8 @@ abstract class Manual(private val orientation: Double, private val tag: Int) : L
             drivetrain.driveManual(
                 gamepad1.left_stick_x*abs(gamepad1.left_stick_x).toDouble(),
                 -gamepad1.left_stick_y*abs(gamepad1.left_stick_y).toDouble(),
-                gamepad1.right_stick_x*abs(gamepad1.right_stick_x).toDouble(), MANUAL_MULTIPLIER
+                gamepad1.right_stick_x*abs(gamepad1.right_stick_x).toDouble()*0.7, MANUAL_MULTIPLIER,
+                true
             )
             if (gamepad1.left_bumper && timer.milliseconds() > timeToEnd) {
                 robotState = RobotState.SHOOTER_SPIN_UP
@@ -59,6 +59,10 @@ abstract class Manual(private val orientation: Double, private val tag: Int) : L
             }
             if (gamepad1.dpad_down && dpadTimer.milliseconds() > 200) {
                 shooter.turretOffset -= 0.1
+                dpadTimer.reset()
+            }
+            if (gamepad1.a && dpadTimer.milliseconds() > 200) {
+                shooter.reverseGoto()
                 dpadTimer.reset()
             }
             if (robotState == RobotState.INTAKE) { transferIntake.intake(gamepad1.left_trigger - gamepad1.right_trigger) }

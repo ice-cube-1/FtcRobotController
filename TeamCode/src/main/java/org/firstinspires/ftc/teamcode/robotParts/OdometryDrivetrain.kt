@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.robotParts.Constants.KD_HEADING
 import org.firstinspires.ftc.teamcode.robotParts.Constants.KD_TRANSLATION
 import org.firstinspires.ftc.teamcode.robotParts.Constants.KP_HEADING
 import org.firstinspires.ftc.teamcode.robotParts.Constants.KP_TRANSLATION
+import org.firstinspires.ftc.teamcode.robotParts.Constants.KS_MANUAL
 import org.firstinspires.ftc.teamcode.robotParts.Constants.K_S
 import org.firstinspires.ftc.teamcode.robotParts.Constants.ODOMETRY_TICKS_PER_CM
 import org.firstinspires.ftc.teamcode.robotParts.Constants.POWER_DELTA
@@ -82,17 +83,17 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap,
         center.reset()
         timer.reset()
     }
-    fun driveManual(moveX: Double, moveY: Double, turn: Double, powerMaximum: Double) {
+    fun driveManual(moveX: Double, moveY: Double, turn: Double, powerMaximum: Double, manual: Boolean) {
         getDeltaOdometry()
         val xRobot = cos(theta) * moveX - sin(theta) * moveY
         val yRobot = sin(theta) * moveX + cos(theta) * moveY
         maxPower = min(maxPower + deltaTime * POWER_DELTA, powerMaximum)
         val attemptPower = abs(yRobot) + abs(xRobot) + abs(turn)
         val denominator = if (attemptPower > maxPower) attemptPower / maxPower else 1.0
-        setWheelPower(Wheels.LEFT_FRONT, (yRobot + xRobot + turn) / denominator)
-        setWheelPower(Wheels.RIGHT_FRONT, (yRobot - xRobot - turn) / denominator)
-        setWheelPower(Wheels.LEFT_BACK, (yRobot - xRobot + turn) / denominator)
-        setWheelPower(Wheels.RIGHT_BACK, (yRobot + xRobot - turn) / denominator)
+        setWheelPower(Wheels.LEFT_FRONT, (yRobot + xRobot + turn) / denominator, manual)
+        setWheelPower(Wheels.RIGHT_FRONT, (yRobot - xRobot - turn) / denominator, manual)
+        setWheelPower(Wheels.LEFT_BACK, (yRobot - xRobot + turn) / denominator, manual)
+        setWheelPower(Wheels.RIGHT_BACK, (yRobot + xRobot - turn) / denominator, manual)
     }
     fun updateGoto(newX: Double, newY: Double, newTheta: Double) {
         targetX = newX
@@ -111,13 +112,13 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap,
         val yError = targetY - y
         val totalError = sqrt(xError * xError + yError * yError)
         if (totalError < 2.5 && abs(headingError) < 0.02) {
-            driveManual(0.0, 0.0, 0.0, POWER_MAX)
+            driveManual(0.0, 0.0, 0.0, POWER_MAX, false)
             return true
         }
         val xComp = (KP_TRANSLATION * (xError)) + (KD_TRANSLATION * deltaX / deltaTime)
         val yComp = (KP_TRANSLATION * (yError)) + (KD_TRANSLATION * deltaY / deltaTime)
         val turnComp = (KP_HEADING * headingError) + (KD_HEADING * deltaTheta / deltaTime)
-        driveManual(xComp, yComp, turnComp, POWER_MAX)
+        driveManual(xComp, yComp, turnComp, POWER_MAX, false)
         return false
     }
 
@@ -137,8 +138,12 @@ class OdometryDrivetrain (private val hardwareMap: HardwareMap,
         y += -sin(theta) * deltaX + cos(theta) * deltaY
     }
 
-    private fun setWheelPower(name: Wheels, power: Double) {
-        val wheelPower = power + if (abs(power) < 0.01) power else (if (power > 0) K_S else -K_S)
+    private fun setWheelPower(name: Wheels, power: Double, manual: Boolean) {
+        var wheelPower = power
+        if (abs(power) > 0.01) {
+            if (power > 0) wheelPower += if (manual) KS_MANUAL else K_S
+            else wheelPower -= if (manual) KS_MANUAL else K_S
+        }
         when (name) {
             Wheels.LEFT_FRONT -> wheels[0].power = wheelPower
             Wheels.RIGHT_FRONT -> wheels[1].power = wheelPower
