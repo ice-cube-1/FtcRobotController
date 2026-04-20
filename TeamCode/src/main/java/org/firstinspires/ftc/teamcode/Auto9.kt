@@ -21,7 +21,7 @@ abstract class Auto9(private val offset: Double, private val direction: Double, 
             144.0*2.54 - Robot_LENGTH_CM/2.0,
             direction*PI, telemetry)
         shooter = Shooter(hardwareMap, tagID)
-        shooter.setSubRange(-90.0,0.0)
+        shooter.setSubRange(-45.0+45.0*direction,45.0+45.0*direction)
         transferIntake = TransferIntake(hardwareMap)
         waitForStart()
         drivetrain.updateGoto(offset-direction*(64.0*2.54), 84.0*2.54,direction*PI)

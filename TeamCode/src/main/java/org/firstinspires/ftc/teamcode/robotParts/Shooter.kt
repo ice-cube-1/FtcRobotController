@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.robotParts
 import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
-import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.qualcomm.robotcore.util.ElapsedTime
@@ -62,8 +61,7 @@ class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
     private var turretMax = TURRET_MAX_DEGREES - TURRET_ZERO_DEG
     private var goto = turretMin
 
-    fun canShoot(): Boolean { return abs(lastAngle) < 3 && turretState == TurretState.DETECTED
-    }
+    fun canShoot(): Boolean { return abs(lastAngle) < 3 && turretState == TurretState.DETECTED }
     private fun getTargetVelocity(): Int {
         hoodAngle.position = HOOD_ANGLE
         return if (shooterOn) (177.92*lastDist + 937.31).toInt() else SHOOTER_IDLE_VELOCITY // was 977.31
@@ -116,8 +114,8 @@ class Shooter(hardwareMap: HardwareMap, private var tagID: Int) {
         turret[1].position = goto
     }
     fun setSubRange(min: Double, max: Double) {
-        turretMin = min
-        turretMax = max
+        turretMin = Math.max(min,turretMin)
+        turretMax = Math.min(max,turretMax)
     }
 
     fun turnOnShooter() {
