@@ -29,4 +29,8 @@ object Constants {
     @JvmField var K_FF = 0.0004076634
     @JvmField var KFF_INTERCEPT = 0.0652076247
     @JvmField var OFFSET = 0.3
+    @JvmField var shooter_y = 90.0
+    @JvmField var intakePositions = arrayOf(84.0,60.0,36.0)
+    @JvmField var intake_far_x = 34.0
+    @JvmField var numberToCollect = 3
 }
